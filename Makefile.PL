@@ -36,6 +36,7 @@ if($ENV{RELEASE_TESTING}) {
 
 You appear to be directly connected to the Internet.  I have some tests
 that try to query Whois servers.
+These searches will be slow, consider installing IP::Country or Geo::IP
 
 EOF
 				close($s);

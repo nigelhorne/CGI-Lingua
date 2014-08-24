@@ -73,8 +73,8 @@ For a list of country-codes refer to ISO-3166 (e.g. 'gb' for United Kingdom).
 
 Takes optional parameter cache, an object which is used to cache country
 lookups.
-This cache object is an object that understands get() and
-set() messages, such as an L<CHI> object.
+This cache object is an object that understands get() and set() messages,
+such as a L<CHI> object.
 
 Takes an optional boolean parameter syslog, to log messages to
 L<Sys::Syslog>.
