@@ -39,7 +39,7 @@ LANGUAGES: {
 	ok($l->language() eq 'English');
 	ok(defined($l->requested_language()));
 	ok($l->requested_language() eq 'English (United States)');
-	ok($l->sublanguage() eq 'United States');
+	ok(!defined($l->sublanguage()));
 	ok($l->code_alpha2() eq 'en');
 	ok(!defined($l->country()));
 

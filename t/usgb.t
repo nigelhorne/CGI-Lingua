@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 42;
+use Test::More tests => 49;
 use Test::NoWarnings;
 
 BEGIN {
@@ -70,7 +70,7 @@ USGB: {
 
 	$ENV{'HTTP_ACCEPT_LANGUAGE'} = 'en-US';
 	$l = new_ok('CGI::Lingua' => [
-		supported => ['en-gb', 'da', 'fr', 'nl', 'de', 'it', 'cy', 'pt', 'pl', 'ja'],
+		supported => ['en-us', 'da', 'fr', 'nl', 'de', 'it', 'cy', 'pt', 'pl', 'ja'],
 		cache => $cache
 	]);
 	ok(defined $l);
@@ -100,18 +100,36 @@ USGB: {
 	ok($l->language() eq 'English');
 	ok($l->sublanguage() eq 'United Kingdom');
 
-	$l = new_ok('CGI::Lingua' => [
+	$l = $l->new(
 		supported => ['en', 'da', 'fr', 'nl', 'de', 'it', 'cy', 'pt', 'pl', 'ja'],
 		cache => $cache
-	]);
+	);
 	ok(defined $l);
-	ok($l->isa('CGI::Lingua'));
+	isa_ok($l, 'CGI::Lingua');
 	SKIP: {
 		skip 'Test requires Internet access', 1 unless(-e 't/online.enabled');
 		ok($l->country() eq 'gb');
 	}
 	ok(defined($l->requested_language()));
 	ok($l->requested_language() eq 'English');
+	ok($l->language() eq 'English');
+	ok(!defined($l->sublanguage()));
+
+	# We want US English, but only Britsh English is served, return English
+	# but with no sublanguage support
+	$ENV{'HTTP_ACCEPT_LANGUAGE'} = 'en-us';
+	$l = new_ok('CGI::Lingua' => [
+		supported => ['en-gb'],
+		cache => $cache
+	]);
+	ok(defined $l);
+	isa_ok($l, 'CGI::Lingua');
+	SKIP: {
+		skip 'Test requires Internet access', 1 unless(-e 't/online.enabled');
+		ok($l->country() eq 'gb');
+	}
+	ok(defined($l->requested_language()));
+	ok($l->requested_language() eq 'English (United States)');
 	ok($l->language() eq 'English');
 	ok(!defined($l->sublanguage()));
 }
