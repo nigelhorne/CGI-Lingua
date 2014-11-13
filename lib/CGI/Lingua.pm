@@ -679,19 +679,10 @@ sub country {
 				}
 			}
 		}
-
-		if($self->{_country}) {
-			$self->{_country} = lc($self->{_country});
-			if($self->{_cache}) {
-				$self->{_cache}->set($ip, $self->{_country}, '1 hour');
-				if($self->{_logger}) {
-					$self->{_logger}->trace("Set $ip to $self->{_country}");
-				}
-			}
-		}
 	}
 
 	if($self->{_country}) {
+		$self->{_country} = lc($self->{_country});
 		if($self->{_country} eq 'hk') {
 			# Hong Kong is no longer a country, but Whois thinks
 			# it is - try "whois 218.213.130.87"
