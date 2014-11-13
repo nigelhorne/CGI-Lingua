@@ -73,8 +73,8 @@ For a list of country-codes refer to ISO-3166 (e.g. 'gb' for United Kingdom).
 
 Takes optional parameter cache, an object which is used to cache country
 lookups.
-This cache object is an object that understands get() and
-set() messages, such as an L<CHI> object.
+This cache object is an object that understands get() and set() messages,
+such as a L<CHI> object.
 
 Takes an optional boolean parameter syslog, to log messages to
 L<Sys::Syslog>.
@@ -208,6 +208,9 @@ sub name {
 Tells the CGI what variant to use e.g. 'United Kingdom', or 'Unknown' if
 it can't be determined.
 
+Sublanguages are handled sensibly, so that if a client requests U.S. English
+on a site that only serves British English, sublanguage() will return undef.
+
 =cut
 
 sub sublanguage {
@@ -315,7 +318,9 @@ sub _find_language {
 			# The calling program can detect that it's not the
 			# wanted flavour of English by looking at
 			# requested_language
-			$l = I18N::AcceptLanguage->new()->accepts($1, $self->{_supported});
+			if(I18N::AcceptLanguage->new()->accepts($1, $self->{_supported})) {
+				$l = $1;
+			}
 		}
 		if($l) {
 			$self->{_slanguage} = Locale::Language::code2language($l);
@@ -867,7 +872,7 @@ L<http://search.cpan.org/dist/CGI-Lingua/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010-2013 Nigel Horne.
+Copyright 2010-2014 Nigel Horne.
 
 This program is released under the following licence: GPL
 

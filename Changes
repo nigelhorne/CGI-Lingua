@@ -12,6 +12,8 @@ Revision history for CGI-Lingua
 	Added workaround for RT 74338
 	Handle fixed clients which set en-uk instead of en-gb for their
 		language
+	Sublanguage() wasn't returning undef correctly if the requested one
+		wasn't supported.
 
 0.50	Sun Apr  7 11:24:51 EDT 2013
 	Bumped minimum version of I18N::LangTags::Detect to 1.04

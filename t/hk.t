@@ -15,7 +15,7 @@ use Test::Requires {
 unless(-e 't/online.enabled') {
 	plan skip_all => 'On-line tests disabled';
 } else {
-	plan tests => 14;
+	plan tests => 13;
 
 	my $cache;
 
@@ -46,9 +46,10 @@ unless(-e 't/online.enabled') {
 
         $ENV{'REMOTE_ADDR'} = '218.213.130.87';
 
-	my $l = CGI::Lingua->new(supported => ['en', 'fr', 'en-gb', 'en-us'], cache => $cache);
-	ok(defined $l);
-	ok($l->isa('CGI::Lingua'));
+	my $l = new_ok('CGI::Lingua' => [
+		supported => ['en', 'fr', 'en-gb', 'en-us'],
+		cache => $cache
+	]);
 	ok(defined $l->requested_language());
 	ok(defined $l->language());
 	ok($l->language() eq 'Unknown');

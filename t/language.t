@@ -126,9 +126,9 @@ unless(-e 't/online.enabled') {
 	ok($l->language() eq 'English');
 	ok(defined($l->requested_language()));
 	ok($l->requested_language() eq 'English (United States)');
-	ok($l->sublanguage() eq 'United States');
+	ok(!defined($l->sublanguage()));
 	ok($l->language_code_alpha2() eq 'en');
-	ok($l->sublanguage_code_alpha2() eq 'us');
+	ok(!defined($l->sublanguage_code_alpha2()));
 	ok(!defined($l->country()));
 
 	# Ask for US English on a site serving British English and English
@@ -249,7 +249,7 @@ unless(-e 't/online.enabled') {
 		supported => [ 'en-gb' ]
 	]);
 	ok($l->language() eq 'English');
-	ok($l->sublanguage() eq 'Unknown');
+	ok(!defined($l->sublanguage()));
 
 	$ENV{'HTTP_ACCEPT_LANGUAGE'} = 'en-gb';
 	$l = new_ok('CGI::Lingua' => [
