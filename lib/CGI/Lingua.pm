@@ -120,7 +120,7 @@ sub new {
 		# _slanguage_code_alpha2 => undef, # E.g en, fr
 		# _sublanguage_code_alpha2 => undef, # E.g. us, gb
 		# _country => undef,	# Two letters, e.g. gb
-		# _locale => undef,
+		# _locale => undef,	# Locale::Object::Country
 		_syslog => $params{syslog},
 		_dont_use_ip => $params{dont_use_ip} || 0,
 		_logger => $params{logger},
