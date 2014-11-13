@@ -730,7 +730,7 @@ which would be useful for default currency, date formatting etc.
 This method attempts to detect the information, but it is a best guess
 and is not 100% reliable.  But it's better than nothing ;-)
 
-Returns a Locale::Object::Country object.
+Returns a L<Locale::Object::Country> object.
 
 To be clear, if you're in the US and request the language in Spanish,
 and the site supports it, language() will return 'Spanish', and locale() will
