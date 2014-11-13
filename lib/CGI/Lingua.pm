@@ -705,7 +705,7 @@ sub country {
 		if($self->{_cache}) {
 			$self->{_cache}->set($ip, $self->{_country}, '1 hour');
 			if($self->{_logger}) {
-				$self->{_logger}->trace("Set $ip to $self->{_country}");
+				$self->{_logger}->debuf("Set $ip to $self->{_country}");
 			}
 		}
 	}
