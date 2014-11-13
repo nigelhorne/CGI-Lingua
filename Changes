@@ -1,6 +1,6 @@
 Revision history for CGI-Lingua
 
-0.51
+0.51	Thu Nov 13 17:32:45 EST 2014
 	Fix typo
 	Added test for GEOIP_COUNTRY_CODE
 	Slight optimisation to _warn()
