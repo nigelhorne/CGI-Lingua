@@ -581,102 +581,103 @@ sub country {
 				$self->{_logger}->trace("$ip isn't in the cache");
 			}
 		}
+		if(defined($self->{_country})) {
+			return $self->{_country};
+		}
 	}
 
-	unless(defined($self->{_country})) {
-		if(($ENV{'HTTP_CF_IPCOUNTRY'}) && ($ENV{'HTTP_CF_IPCOUNTRY'} ne 'XX')) {
-			# Hosted by Cloudfare
-			$self->{_country} = lc($ENV{'HTTP_CF_IPCOUNTRY'});
-		} else {
-			if($self->{_have_ipcountry} == -1) {
-				if(eval { require IP::Country; }) {
-					IP::Country->import();
-					$self->{_have_ipcountry} = 1;
-					$self->{_ipcountry} = IP::Country::Fast->new();
-				} else {
-					$self->{_have_ipcountry} = 0;
-				}
-			}
-			if($self->{_logger}) {
-				$self->{_logger}->debug("have_ipcountry $self->{_have_ipcountry}");
-			}
-
-			if($self->{_have_ipcountry} == 1) {
-				$self->{_country} = $self->{_ipcountry}->inet_atocc($ip);
-				if($self->{_country}) {
-					$self->{_country} = lc($self->{_country});
-				} else {
-					$self->_warn({
-						warning => "$ip is not known by IP::Country"
-					});
-				}
-			}
-			unless(defined($self->{_country})) {
-				if($self->{_have_geoip} == -1) {
-					if(eval { require Geo::IP; }) {
-						Geo::IP->import();
-						$self->{_have_geoip} = 1;
-						# GEOIP_STANDARD = 0, can't use that because you'll
-						# get a syntax error
-						$self->{_geoip} = Geo::IP->new(0);
-					} else {
-						$self->{_have_geoip} = 0;
-					}
-				}
-				if($self->{_have_geoip} == 1) {
-					$self->{_country} = $self->{_geoip}->country_code_by_addr($ip);
-				}
+	if(($ENV{'HTTP_CF_IPCOUNTRY'}) && ($ENV{'HTTP_CF_IPCOUNTRY'} ne 'XX')) {
+		# Hosted by Cloudfare
+		$self->{_country} = lc($ENV{'HTTP_CF_IPCOUNTRY'});
+	} else {
+		if($self->{_have_ipcountry} == -1) {
+			if(eval { require IP::Country; }) {
+				IP::Country->import();
+				$self->{_have_ipcountry} = 1;
+				$self->{_ipcountry} = IP::Country::Fast->new();
+			} else {
+				$self->{_have_ipcountry} = 0;
 			}
 		}
-		if($self->{_country} && ($self->{_country} eq 'eu')) {
-			delete($self->{_country});
+		if($self->{_logger}) {
+			$self->{_logger}->debug("have_ipcountry $self->{_have_ipcountry}");
 		}
-		unless($self->{_country}) {
-			require Net::Whois::IP;
-			Net::Whois::IP->import();
 
-			my $whois;
-
-			eval {
-				# Catch connection timeouts to
-				# whois.ripe.net by turning the carp
-				# into an error
-				local $SIG{__WARN__} = sub { die $_[0] };
-				$whois = Net::Whois::IP::whoisip_query($ip);
-			};
-			unless($@ || !defined($whois) || (ref($whois) ne 'HASH')) {
-				if(defined($whois->{Country})) {
-					$self->{_country} = $whois->{Country};
-				} elsif(defined($whois->{country})) {
-					$self->{_country} = $whois->{country};
-				}
-				if($self->{_country} && ($self->{_country} eq 'eu')) {
-					delete($self->{_country});
+		if($self->{_have_ipcountry} == 1) {
+			$self->{_country} = $self->{_ipcountry}->inet_atocc($ip);
+			if($self->{_country}) {
+				$self->{_country} = lc($self->{_country});
+			} else {
+				$self->_warn({
+					warning => "$ip is not known by IP::Country"
+				});
+			}
+		}
+		unless(defined($self->{_country})) {
+			if($self->{_have_geoip} == -1) {
+				if(eval { require Geo::IP; }) {
+					Geo::IP->import();
+					$self->{_have_geoip} = 1;
+					# GEOIP_STANDARD = 0, can't use that because you'll
+					# get a syntax error
+					$self->{_geoip} = Geo::IP->new(0);
+				} else {
+					$self->{_have_geoip} = 0;
 				}
 			}
-
-			unless($self->{_country}) {
-				require Net::Whois::IANA;
-				Net::Whois::IANA->import();
-
-				my $iana = new Net::Whois::IANA;
-				eval {
-					$iana->whois_query(-ip => $ip);
-				};
-				unless ($@) {
-					$self->{_country} = $iana->country();
-				}
+			if($self->{_have_geoip} == 1) {
+				$self->{_country} = $self->{_geoip}->country_code_by_addr($ip);
 			}
-			if($self->{_country} eq 'eu') {
+		}
+	}
+	if($self->{_country} && ($self->{_country} eq 'eu')) {
+		delete($self->{_country});
+	}
+	unless($self->{_country}) {
+		require Net::Whois::IP;
+		Net::Whois::IP->import();
+
+		my $whois;
+
+		eval {
+			# Catch connection timeouts to
+			# whois.ripe.net by turning the carp
+			# into an error
+			local $SIG{__WARN__} = sub { die $_[0] };
+			$whois = Net::Whois::IP::whoisip_query($ip);
+		};
+		unless($@ || !defined($whois) || (ref($whois) ne 'HASH')) {
+			if(defined($whois->{Country})) {
+				$self->{_country} = $whois->{Country};
+			} elsif(defined($whois->{country})) {
+				$self->{_country} = $whois->{country};
+			}
+			if($self->{_country} && ($self->{_country} eq 'eu')) {
 				delete($self->{_country});
 			}
-			if($self->{_country}) {
-				# 190.24.1.122 has carriage return in its WHOIS record
-				$self->{_country} =~ s/[\r\n]//g;
-				if($self->{_country} =~ /^(..)\s*#.*/) {
-					# Remove comments in the Whois record
-					$self->{_country} = $1;
-				}
+		}
+
+		unless($self->{_country}) {
+			require Net::Whois::IANA;
+			Net::Whois::IANA->import();
+
+			my $iana = new Net::Whois::IANA;
+			eval {
+				$iana->whois_query(-ip => $ip);
+			};
+			unless ($@) {
+				$self->{_country} = $iana->country();
+			}
+		}
+		if($self->{_country} eq 'eu') {
+			delete($self->{_country});
+		}
+		if($self->{_country}) {
+			# 190.24.1.122 has carriage return in its WHOIS record
+			$self->{_country} =~ s/[\r\n]//g;
+			if($self->{_country} =~ /^(..)\s*#.*/) {
+				# Remove comments in the Whois record
+				$self->{_country} = $1;
 			}
 		}
 	}
