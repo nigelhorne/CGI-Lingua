@@ -298,6 +298,9 @@ sub _find_language {
 
 	# Use what the client has said
 	if($ENV{'HTTP_ACCEPT_LANGUAGE'}) {
+		if($self->{_logger}) {
+			$self->{_logger}->debug("HTTP_ACCEPT_LANGUAGE: $ENV{HTTP_ACCEPT_LANGUAGE}");
+		}
 		require I18N::AcceptLanguage;
 		require Locale::Language;
 
@@ -455,6 +458,9 @@ sub _find_language {
 	# address for an alternative
 	my $country = $self->country();
 	if(defined($country)) {
+		if($self->{_logger}) {
+			$self->{_logger}->debug("country: $country");
+		}
 		# Determine the first official language of the country
 
 		my $l = Locale::Object::Country->new(code_alpha2 => uc($country));
