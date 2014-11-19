@@ -216,7 +216,7 @@ on a site that only serves British English, sublanguage() will return undef.
 sub sublanguage {
 	my $self = shift;
 
-	unless($self->{_sublanguage}) {
+	unless($self->{_slanguage}) {
 		$self->_find_language();
 	}
 	return $self->{_sublanguage};
@@ -235,7 +235,7 @@ language_code_alpha2() returns undef.
 sub language_code_alpha2 {
 	my $self = shift;
 
-	unless($self->{_slanguage_code_alpha2}) {
+	unless($self->{_slanguage}) {
 		$self->_find_language();
 	}
 	return $self->{_slanguage_code_alpha2};
@@ -264,7 +264,7 @@ when you've asked for en-gb, or undef.
 sub sublanguage_code_alpha2 {
 	my $self = shift;
 
-	unless($self->{_sublanguage_code_alpha2}) {
+	unless($self->{_slanguage}) {
 		$self->_find_language();
 	}
 	return $self->{_sublanguage_code_alpha2};
@@ -298,14 +298,14 @@ sub _find_language {
 
 	# Use what the client has said
 	if($ENV{'HTTP_ACCEPT_LANGUAGE'}) {
+		require Locale::Language;
+		Locale::Language->import();
+		require I18N::AcceptLanguage;
+		I18N::AcceptLanguage->import();
+
 		if($self->{_logger}) {
 			$self->{_logger}->debug("HTTP_ACCEPT_LANGUAGE: $ENV{HTTP_ACCEPT_LANGUAGE}");
 		}
-		require I18N::AcceptLanguage;
-		require Locale::Language;
-
-		I18N::AcceptLanguage->import();
-		Locale::Language->import();
 
 		# Workaround for RT 74338
 		local $SIG{__WARN__} = sub {
@@ -434,7 +434,7 @@ sub _find_language {
 				my $l = Locale::Language::code2language($self->{_rlanguage});
 				if($l) {
 					$self->{_rlanguage} = $l;
-				} else {
+				# } else {
 					# We have the language, but not the right
 					# sublanguage, e.g. they want US English but we
 					# only support British English
@@ -470,6 +470,9 @@ sub _find_language {
 		my $ip = $ENV{'REMOTE_ADDR'};
 		if($l && $l->name) {
 			$self->{_rlanguage} = $l->name;
+			if($self->{_logger} && $l->name) {
+				$self->{_logger}->debug("Official language: $self->{_rlanguage}");
+			}
 			unless((exists($self->{_slanguage})) && ($self->{_slanguage} ne 'Unknown')) {
 				# Check if the language is one that we support
 				# Don't bother with secondary language
@@ -497,10 +500,14 @@ sub _find_language {
 				}
 				if($code) {
 					$self->_get_closest($code, $l->code_alpha2);
+					unless($self->{_slanguage}) {
+						$self->_warn({
+							warning => "Couldn't determine closest language for $l->name in $self->{_supported}"
+						});
+					} elsif($self->{_logger}) {
+						$self->{_logger}->debug("language set to $self->{_slanguage}");
+					}
 				}
-			}
-			if($self->{_cache} && defined($ip)) {
-				$country = $self->{_cache}->set($ip, $country, '1 hour');
 			}
 		} elsif(defined($ip)) {
 			$self->_warn({
@@ -710,10 +717,10 @@ sub country {
 			}
 		}
 		if($self->{_cache}) {
-			$self->{_cache}->set($ip, $self->{_country}, '1 hour');
 			if($self->{_logger}) {
 				$self->{_logger}->debug("Set $ip to $self->{_country}");
 			}
+			$self->{_cache}->set($ip, $self->{_country}, '1 hour');
 		}
 	}
 

@@ -7,7 +7,7 @@ use Test::More;
 unless(-e 't/online.enabled') {
 	plan skip_all => 'On-line tests disabled';
 } else {
-	plan tests => 116;
+	plan tests => 117;
 
 	use_ok('CGI::Lingua');
 	require Test::NoWarnings;
@@ -165,8 +165,8 @@ unless(-e 't/online.enabled') {
 	eval { $l->language() };
 	ok($@ =~ /a\.b\.c\.d isn't a valid IPv4 address/);
 	ok(defined($l->requested_language()));
-	eval { $l->language_code_alpha2() };
-	ok($@ =~ /a\.b\.c\.d isn't a valid IPv4 address/);
+	ok($l->requested_language() eq 'Unknown');
+	ok(!defined($l->language_code_alpha2()));
 
 	SKIP: {
 		eval { require IP::Country; };
