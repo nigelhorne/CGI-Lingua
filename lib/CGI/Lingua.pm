@@ -297,14 +297,15 @@ sub _find_language {
 	Locale::Object::Country->import();
 
 	# Use what the client has said
-	if($ENV{'HTTP_ACCEPT_LANGUAGE'}) {
+	my $http_accept_language = $ENV{'HTTP_ACCEPT_LANGUAGE'};
+	if($http_accept_language) {
 		require Locale::Language;
 		Locale::Language->import();
 		require I18N::AcceptLanguage;
 		I18N::AcceptLanguage->import();
 
 		if($self->{_logger}) {
-			$self->{_logger}->debug("HTTP_ACCEPT_LANGUAGE: $ENV{HTTP_ACCEPT_LANGUAGE}");
+			$self->{_logger}->debug("HTTP_ACCEPT_LANGUAGE: $http_accept_language");
 		}
 
 		# Workaround for RT 74338
@@ -313,9 +314,9 @@ sub _find_language {
 				warn $_[0];
 			}
 		};
-		my $l = I18N::AcceptLanguage->new()->accepts($ENV{'HTTP_ACCEPT_LANGUAGE'}, $self->{_supported});
+		my $l = I18N::AcceptLanguage->new()->accepts($http_accept_language, $self->{_supported});
 		$SIG{__WARN__} = 'DEFAULT';
-		if((!$l) && ($ENV{'HTTP_ACCEPT_LANGUAGE'} =~ /(.+)-.+/)) {
+		if((!$l) && ($http_accept_language =~ /(.+)-.+/)) {
 			# Fall back position, e,g. we want US English on a site
 			# only giving British English, so allow it as English.
 			# The calling program can detect that it's not the
@@ -335,7 +336,7 @@ sub _find_language {
 				$self->{_slanguage_code_alpha2} = $l;
 				$self->{_rlanguage} = $self->{_slanguage};
 
-				if($ENV{'HTTP_ACCEPT_LANGUAGE'} =~ /..-(..)$/) {
+				if($http_accept_language =~ /..-(..)$/) {
 					my $l = Locale::Object::Country->new(code_alpha2 => $1);
 					if($l) {
 						$self->{_rlanguage} .= ' (' . $l->name . ')';
@@ -343,7 +344,7 @@ sub _find_language {
 						# isn't supported so don't
 						# define that
 					}
-				} elsif($ENV{'HTTP_ACCEPT_LANGUAGE'} =~ /..-([a-z]{2,3})$/i) {
+				} elsif($http_accept_language =~ /..-([a-z]{2,3})$/i) {
 					my $l = Locale::Object::Country->new(code_alpha3 => $1);
 					if($l) {
 						$self->{_rlanguage} .= ' (' . $l->name . ')';
@@ -383,14 +384,14 @@ sub _find_language {
 				$self->{_rlanguage} = $lang;
 				$self->_get_closest($alpha2, $alpha2);
 				if($self->{_sublanguage}) {
-					$ENV{'HTTP_ACCEPT_LANGUAGE'} =~ /(.{2})-(..)/;
+					$http_accept_language =~ /(.{2})-(..)/;
 					$variety = lc($2);
 					# Ignore en-029 etc (Carribean English)
 					if($variety =~ /[a-z]{2,3}/) {
 						if($variety eq 'uk') {
 							# ???
 							$self->_warn({
-								warning => "Resetting country code to GB for $ENV{'HTTP_ACCEPT_LANGUAGE'}"
+								warning => "Resetting country code to GB for $http_accept_language"
 							});
 							$variety = 'gb';
 						}
@@ -411,7 +412,7 @@ sub _find_language {
 						if($@ || !defined($lang)) {
 							$self->{_sublanguage} = 'Unknown';
 							$self->_warn({
-								warning => "Can't determine values for $ENV{'HTTP_ACCEPT_LANGUAGE'}"
+								warning => "Can't determine values for $http_accept_language"
 							});
 						} else {
 							$self->{_sublanguage} = $lang->name;
@@ -499,14 +500,16 @@ sub _find_language {
 
 				my $code = Locale::Language::language2code($self->{_rlanguage});
 				unless($code) {
-					if($ENV{'HTTP_ACCEPT_LANGUAGE'}) {
-						$code = Locale::Language::language2code($ENV{'HTTP_ACCEPT_LANGUAGE'});
+					if($http_accept_language && ($http_accept_language ne $self->{_rlanguage})) {
+						$code = Locale::Language::language2code($http_accept_language);
 					}
 					unless($code) {
 						# If language is Norwegian (Nynorsk)
 						# lookup Norwegian
 						if($self->{_rlanguage} =~ /(.+)\s\(.+/) {
-							$code = Locale::Language::language2code($1);
+							if((!defined($http_accept_language)) || ($1 ne $self->{_rlanguage})) {
+								$code = Locale::Language::language2code($1);
+							}
 						}
 						unless($code) {
 							$self->_warn({
@@ -531,7 +534,7 @@ sub _find_language {
 					if($self->{_logger}) {
 						$self->{_logger}->debug("Set $country to $language_name=$language_code2");
 					}
-					$from_cache = $self->{_cache}->set($country, "$language_name=$language_code2", '1 month');
+					$self->{_cache}->set($country, "$language_name=$language_code2", '1 month');
 				}
 			}
 		} elsif(defined($ip)) {
