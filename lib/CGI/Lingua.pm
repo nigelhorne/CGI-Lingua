@@ -489,32 +489,50 @@ sub _find_language {
 		if($language_name) {
 			$self->{_rlanguage} = $language_name;
 			if($self->{_logger} && $language_name) {
-				$self->{_logger}->debug("Official language: $self->{_rlanguage}");
+				$self->{_logger}->debug("Official language: $language_name");
 			}
 			unless((exists($self->{_slanguage})) && ($self->{_slanguage} ne 'Unknown')) {
 				# Check if the language is one that we support
 				# Don't bother with secondary language
-				require Locale::Language;
+				my $code;
 
-				Locale::Language->import();
-
-				my $code = Locale::Language::language2code($self->{_rlanguage});
-				unless($code) {
-					if($http_accept_language && ($http_accept_language ne $self->{_rlanguage})) {
-						$code = Locale::Language::language2code($http_accept_language);
+				if($language_name && $language_code2 && !defined($http_accept_language)) {
+					# This sort of thing speeds up search engine access a lot
+					if($self->{_logger}) {
+						$self->{_logger}->debug("Fast assign to $language_code2");
 					}
+					$code = $language_code2;
+				} else {
+					require Locale::Language;
+					Locale::Language->import();
+
+					if($self->{_logger}) {
+						$self->{_logger}->debug("Call language2code on $self->{_rlanguage}");
+					}
+					$code = Locale::Language::language2code($self->{_rlanguage});
 					unless($code) {
-						# If language is Norwegian (Nynorsk)
-						# lookup Norwegian
-						if($self->{_rlanguage} =~ /(.+)\s\(.+/) {
-							if((!defined($http_accept_language)) || ($1 ne $self->{_rlanguage})) {
-								$code = Locale::Language::language2code($1);
+						if($http_accept_language && ($http_accept_language ne $self->{_rlanguage})) {
+							if($self->{_logger}) {
+								$self->{_logger}->debug("Call language2code on $http_accept_language");
 							}
+							$code = Locale::Language::language2code($http_accept_language);
 						}
 						unless($code) {
-							$self->_warn({
-								warning => "Can\'t determine code from IP $ip for requested language $self->{_rlanguage}"
-							});
+							# If language is Norwegian (Nynorsk)
+							# lookup Norwegian
+							if($self->{_rlanguage} =~ /(.+)\s\(.+/) {
+								if((!defined($http_accept_language)) || ($1 ne $self->{_rlanguage})) {
+									if($self->{_logger}) {
+										$self->{_logger}->debug("Call language2code on $1");
+									}
+									$code = Locale::Language::language2code($1);
+								}
+							}
+							unless($code) {
+								$self->_warn({
+									warning => "Can\'t determine code from IP $ip for requested language $self->{_rlanguage}"
+								});
+							}
 						}
 					}
 				}
@@ -525,7 +543,7 @@ sub _find_language {
 							warning => "Couldn't determine closest language for $language_name in $self->{_supported}"
 						});
 					} elsif($self->{_logger}) {
-						$self->{_logger}->debug("language set to $self->{_slanguage}");
+						$self->{_logger}->debug("language set to $self->{_slanguage}, code set to $code");
 					}
 				}
 			}
