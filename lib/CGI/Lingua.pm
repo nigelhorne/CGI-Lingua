@@ -463,14 +463,31 @@ sub _find_language {
 		}
 		# Determine the first official language of the country
 
-		my $l = Locale::Object::Country->new(code_alpha2 => uc($country));
-		if($l) {
-			$l = ($l->languages_official)[0];
+		my $from_cache;
+		if($self->{_cache}) {
+			$from_cache = $self->{_cache}->get($country);
+		}
+		my $language_name;
+		my $language_code2;
+		if($from_cache) {
+			if($self->{_logger}) {
+				$self->{_logger}->debug("$country is in cache as $from_cache");
+			}
+			($language_name, $language_code2) = split(/=/, $from_cache);
+		} else {
+			my $l = Locale::Object::Country->new(code_alpha2 => uc($country));
+			if($l) {
+				$l = ($l->languages_official)[0];
+				if(defined($l)) {
+					$language_name = $l->name;
+					$language_code2 = $l->code_alpha2;
+				}
+			}
 		}
 		my $ip = $ENV{'REMOTE_ADDR'};
-		if($l && $l->name) {
-			$self->{_rlanguage} = $l->name;
-			if($self->{_logger} && $l->name) {
+		if($language_name) {
+			$self->{_rlanguage} = $language_name;
+			if($self->{_logger} && $language_name) {
 				$self->{_logger}->debug("Official language: $self->{_rlanguage}");
 			}
 			unless((exists($self->{_slanguage})) && ($self->{_slanguage} ne 'Unknown')) {
@@ -499,14 +516,22 @@ sub _find_language {
 					}
 				}
 				if($code) {
-					$self->_get_closest($code, $l->code_alpha2);
+					$self->_get_closest($code, $language_code2);
 					unless($self->{_slanguage}) {
 						$self->_warn({
-							warning => "Couldn't determine closest language for $l->name in $self->{_supported}"
+							warning => "Couldn't determine closest language for $language_name in $self->{_supported}"
 						});
 					} elsif($self->{_logger}) {
 						$self->{_logger}->debug("language set to $self->{_slanguage}");
 					}
+				}
+			}
+			unless(defined($from_cache)) {
+				if($self->{_cache}) {
+					if($self->{_logger}) {
+						$self->{_logger}->debug("Set $country to $language_name=$language_code2");
+					}
+					$from_cache = $self->{_cache}->set($country, "$language_name=$language_code2", '1 month');
 				}
 			}
 		} elsif(defined($ip)) {
