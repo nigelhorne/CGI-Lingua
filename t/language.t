@@ -43,8 +43,6 @@ unless(-e 't/online.enabled') {
 	ok($l->language() eq 'English');
 	ok($l->requested_language() eq 'English');
 
-	$ENV{'HTTP_ACCEPT_LANGUAGE'} = '';
-	$ENV{'REMOTE_ADDR'} = '66.249.67.232';	# Google
 	$l = CGI::Lingua->new(
 		supported => ['en', 'fr', 'en-gb', 'en-us'],
 		dont_use_ip => 1,

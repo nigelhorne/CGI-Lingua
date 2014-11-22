@@ -331,35 +331,37 @@ sub _find_language {
 				$self->{_logger}->debug("l: $l");
 			}
 			
-			$self->{_slanguage} = Locale::Language::code2language($l);
-			if($self->{_logger}) {
-				$self->{_logger}->debug("_slanguage: $self->{_slanguage}");
-			}
-			if($self->{_slanguage}) {
-				# We have the language, but not the right
-				# sublanguage, e.g. they want US English but we
-				# only support British English or English
-				# wanted: en-us, got en-gb and en
-				$self->{_slanguage_code_alpha2} = $l;
-				$self->{_rlanguage} = $self->{_slanguage};
-
-				if($http_accept_language =~ /..-(..)$/) {
-					my $l = Locale::Object::Country->new(code_alpha2 => $1);
-					if($l) {
-						$self->{_rlanguage} .= ' (' . $l->name . ')';
-						# The requested sublanguage
-						# isn't supported so don't
-						# define that
-					}
-				} elsif($http_accept_language =~ /..-([a-z]{2,3})$/i) {
-					my $l = Locale::Object::Country->new(code_alpha3 => $1);
-					if($l) {
-						$self->{_rlanguage} .= ' (' . $l->name . ')';
-						# The requested sublanguage isn't
-						# supported so don't define that
-					}
+			unless($l =~ /^..-..$/) {
+				$self->{_slanguage} = Locale::Language::code2language($l);
+				if($self->{_logger}) {
+					$self->{_logger}->debug("_slanguage: $self->{_slanguage}");
 				}
-				return;
+				if($self->{_slanguage}) {
+					# We have the language, but not the right
+					# sublanguage, e.g. they want US English but we
+					# only support British English or English
+					# wanted: en-us, got en-gb and en
+					$self->{_slanguage_code_alpha2} = $l;
+					$self->{_rlanguage} = $self->{_slanguage};
+
+					if($http_accept_language =~ /..-(..)$/) {
+						my $l = Locale::Object::Country->new(code_alpha2 => $1);
+						if($l) {
+							$self->{_rlanguage} .= ' (' . $l->name . ')';
+							# The requested sublanguage
+							# isn't supported so don't
+							# define that
+						}
+					} elsif($http_accept_language =~ /..-([a-z]{2,3})$/i) {
+						my $l = Locale::Object::Country->new(code_alpha3 => $1);
+						if($l) {
+							$self->{_rlanguage} .= ' (' . $l->name . ')';
+							# The requested sublanguage isn't
+							# supported so don't define that
+						}
+					}
+					return;
+				}
 			}
 			# TODO: Handle es-419 "Spanish (Latin America)"
 			if($l =~ /(.+)-(..)$/) {
