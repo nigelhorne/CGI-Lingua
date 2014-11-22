@@ -333,7 +333,7 @@ sub _find_language {
 			
 			$self->{_slanguage} = Locale::Language::code2language($l);
 			if($self->{_logger}) {
-				$self->{_logger}->debug("_slanguage: $_slanguage");
+				$self->{_logger}->debug("_slanguage: $self->{_slanguage}");
 			}
 			if($self->{_slanguage}) {
 				# We have the language, but not the right
