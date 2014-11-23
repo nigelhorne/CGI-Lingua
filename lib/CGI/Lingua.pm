@@ -559,9 +559,9 @@ sub _find_language {
 			unless(defined($from_cache)) {
 				if($self->{_cache}) {
 					if($self->{_logger}) {
-						$self->{_logger}->debug("Set $country to $language_name=$language_code2");
+						$self->{_logger}->debug("Set $country to $language_name=$self->{_slanguage_code_alpha2}");
 					}
-					$self->{_cache}->set($country, "$language_name=$language_code2", '1 month');
+					$self->{_cache}->set($country, "$language_name=$self->{_slanguage_code_alpha2}", '1 month');
 				}
 			}
 		} elsif(defined($ip)) {
