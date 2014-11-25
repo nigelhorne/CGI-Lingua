@@ -333,10 +333,10 @@ sub _find_language {
 			
 			unless($l =~ /^..-..$/) {
 				$self->{_slanguage} = Locale::Language::code2language($l);
-				if($self->{_logger}) {
-					$self->{_logger}->debug("_slanguage: $self->{_slanguage}");
-				}
 				if($self->{_slanguage}) {
+					if($self->{_logger}) {
+						$self->{_logger}->debug("_slanguage: $self->{_slanguage}");
+					}
 					# We have the language, but not the right
 					# sublanguage, e.g. they want US English but we
 					# only support British English or English
