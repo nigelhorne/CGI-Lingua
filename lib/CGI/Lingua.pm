@@ -381,6 +381,9 @@ sub _find_language {
 						$self->{_slanguage_code_alpha2} = $accepts;
 						if($self->{_sublanguage}) {
 							$self->{_rlanguage} = "$self->{_slanguage} ($self->{_sublanguage})";
+							if($self->{_logger}) {
+								$self->{_logger}->debug("rlanguage: $self->{_rlanguage}");
+							}
 						}
 						$self->{_sublanguage_code_alpha2} = $variety;
 						return;
