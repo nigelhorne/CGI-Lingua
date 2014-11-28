@@ -365,12 +365,14 @@ sub _find_language {
 					if($self->{_logger}) {
 						$self->{_logger}->debug("accepts: $accepts");
 					}
-					$self->{_slanguage} = Locale::Language::code2language($accepts);
-					if(length($variety) == 2) {
-						my $c = Locale::Object::Country->new(code_alpha2 => $variety);
-						if(defined($c)) {
-							$self->{_sublanguage} = $c->name;
-						}
+					if($accepts =~ /\-/) {
+						delete $self->{_slanguage};
+					} else  {
+						$self->{_slanguage} = Locale::Language::code2language($accepts);
+					}
+					my $c = Locale::Object::Country->new(code_alpha2 => $variety);
+					if(defined($c)) {
+						$self->{_sublanguage} = $c->name;
 					}
 					if($self->{_slanguage}) {
 						$self->{_slanguage_code_alpha2} = $accepts;
@@ -385,9 +387,9 @@ sub _find_language {
 					}
 				}
 				my $lang = Locale::Language::code2language($alpha2);
-				unless($lang) {
-					$lang = $1;
-				}
+				# unless($lang) {
+					# $lang = $1;
+				# }
 				$self->{_rlanguage} = $lang;
 				$self->_get_closest($alpha2, $alpha2);
 				if($self->{_sublanguage}) {
