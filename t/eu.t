@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 19;
+use Test::More tests => 21;
 
 # Check comments in Whois records
 
@@ -35,8 +35,9 @@ EU: {
 	$l->{_have_ipcountry} = 0;
 
 	SKIP: {
-		skip 'Tests require Internet access', 5 unless(-e 't/online.enabled');
-		ok(!defined($l->country()));
+		skip 'Tests require Internet access', 6 unless(-e 't/online.enabled');
+		ok(defined($l->country()));
+		ok($l->country() eq 'Unknown');
 		ok($l->language_code_alpha2() eq 'en');
 		ok($l->language() eq 'English');
 		ok(defined($l->requested_language()));
@@ -55,8 +56,9 @@ EU: {
 	$l->{_have_ipcountry} = 0;
 
 	SKIP: {
-		skip 'Tests require Internet access', 3 unless(-e 't/online.enabled');
-		ok(!defined($l->country()));
+		skip 'Tests require Internet access', 4 unless(-e 't/online.enabled');
+		ok(defined($l->country()));
+		ok($l->country() eq 'Unknown');
 		ok($l->language_code_alpha2() eq 'en');
 		ok($l->language() eq 'English');
 	}

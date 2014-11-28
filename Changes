@@ -2,6 +2,7 @@ Revision history for CGI-Lingua
 
 0.52
 	Various small performance improvements
+	country: now returns "Unknown" if set to 'eu'
 
 0.51	Thu Nov 13 17:32:45 EST 2014
 	Fix typo

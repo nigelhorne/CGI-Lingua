@@ -93,6 +93,7 @@ WriteMakefile(
 	'Sys::Syslog' => 0,
 	'HTTP::BrowserDetect' => 0,
 	'Net::Subnet' => 0,
+	'Class::Autouse' => 0,
 	# 'Test::Kwalitee' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },

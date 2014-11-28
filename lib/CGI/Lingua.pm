@@ -2,7 +2,7 @@ package CGI::Lingua;
 
 use warnings;
 use strict;
-use Carp;
+use Class::Autouse qw{Carp Locale::Language Locale::Object::Country I18N::AcceptLanguage I18N::LangTags::Detect};
 
 use vars qw($VERSION);
 our $VERSION = '0.51';
@@ -108,7 +108,7 @@ sub new {
 		# croak('You must give a list of supported languages');
 	# }
 	unless($params{supported}) {
-		croak('You must give a list of supported languages');
+		Carp::croak('You must give a list of supported languages');
 	}
 
 	return bless {
@@ -150,7 +150,7 @@ sub _warn {
 	if($self->{_logger}) {
 		$self->{_logger}->warn($warning);
 	} elsif(!defined($self->{_syslog})) {
-		carp($warning);
+		Carp::carp($warning);
 	}
 }
 
@@ -293,17 +293,9 @@ sub _find_language {
 	$self->{_rlanguage} = 'Unknown';
 	$self->{_slanguage} = 'Unknown';
 
-	require Locale::Object::Country;
-	Locale::Object::Country->import();
-
 	# Use what the client has said
 	my $http_accept_language = $ENV{'HTTP_ACCEPT_LANGUAGE'};
 	if($http_accept_language) {
-		require Locale::Language;
-		Locale::Language->import();
-		require I18N::AcceptLanguage;
-		I18N::AcceptLanguage->import();
-
 		if($self->{_logger}) {
 			$self->{_logger}->debug("HTTP_ACCEPT_LANGUAGE: $http_accept_language");
 		}
@@ -370,6 +362,9 @@ sub _find_language {
 				my $accepts = I18N::AcceptLanguage->new()->accepts($l, $self->{_supported});
 
 				if($accepts) {
+					if($self->{_logger}) {
+						$self->{_logger}->debug("accepts: $accepts");
+					}
 					$self->{_slanguage} = Locale::Language::code2language($accepts);
 					if(length($variety) == 2) {
 						my $c = Locale::Object::Country->new(code_alpha2 => $variety);
@@ -440,7 +435,6 @@ sub _find_language {
 		}
 		if($self->{_slanguage} && ($self->{_slanguage} ne 'Unknown')) {
 			if($self->{_rlanguage} eq 'Unknown') {
-				require I18N::LangTags::Detect;
 				$self->{_rlanguage} = I18N::LangTags::Detect::detect();
 			}
 			if($self->{_rlanguage}) {
@@ -515,9 +509,6 @@ sub _find_language {
 					}
 					$code = $language_code2;
 				} else {
-					require Locale::Language;
-					Locale::Language->import();
-
 					if($self->{_logger}) {
 						$self->{_logger}->debug("Call language2code on $self->{_rlanguage}");
 					}
@@ -559,13 +550,16 @@ sub _find_language {
 					}
 				}
 			}
-			unless(defined($from_cache)) {
-				if($self->{_cache}) {
-					if($self->{_logger}) {
-						$self->{_logger}->debug("Set $country to $language_name=$self->{_slanguage_code_alpha2}");
-					}
-					$self->{_cache}->set($country, "$language_name=$self->{_slanguage_code_alpha2}", '1 month');
+			if(!defined($self->{_slanguage_code_alpha2})) {
+				if($self->{_logger}) {
+					$self->{_logger}->debug("Can't determine slanguage_code_alpha2");
+				};
+			} elsif(!defined($from_cache) && $self->{_cache} &&
+			   defined($self->{_slanguage_code_alpha2})) {
+				if($self->{_logger}) {
+					$self->{_logger}->debug("Set $country to $language_name=$self->{_slanguage_code_alpha2}");
 				}
+				$self->{_cache}->set($country, "$language_name=$self->{_slanguage_code_alpha2}", '1 month');
 			}
 		} elsif(defined($ip)) {
 			$self->_warn({
@@ -740,13 +734,10 @@ sub country {
 				$self->{_country} = $iana->country();
 			}
 		}
-		if($self->{_country} eq 'eu') {
-			delete($self->{_country});
-		}
 		if($self->{_country}) {
 			# 190.24.1.122 has carriage return in its WHOIS record
 			$self->{_country} =~ s/[\r\n]//g;
-			if($self->{_country} =~ /^(..)\s*#.*/) {
+			if($self->{_country} =~ /^(..)\s*#/) {
 				# Remove comments in the Whois record
 				$self->{_country} = $1;
 			}
@@ -771,7 +762,7 @@ sub country {
 				$self->_warn({
 					warning => "$ip has country of eu"
 				});
-				delete($self->{_country});
+				$self->{_country} = 'Unknown';
 			}
 		}
 		if($self->{_cache}) {
@@ -807,8 +798,6 @@ sub locale {
 	if($self->{_locale}) {
 		return $self->{_locale};
 	}
-	require Locale::Object::Country;
-	Locale::Object::Country->import();
 
 	# First try from the User Agent.  Probably only works with Mozilla and
 	# Safari.  I don't know about Opera.  It won't work with IE or Chrome.
