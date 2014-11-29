@@ -397,6 +397,9 @@ sub _find_language {
 					$variety = lc($2);
 					# Ignore en-029 etc (Carribean English)
 					if($variety =~ /[a-z]{2,3}/) {
+						if($self->{_logger}) {
+							$self->{_logger}->debug("Find the country code for $variety, for $self->{_sublanguage}");
+						}
 						if($variety eq 'uk') {
 							# ???
 							$self->_warn({
