@@ -624,6 +624,20 @@ sub country {
 	unless($ip) {
 		return();
 	}
+	if($self->{_cache}) {
+		$self->{_country} = $self->{_cache}->get($ip);
+		if($self->{_logger}) {
+			if(defined($self->{_country})) {
+				$self->{_logger}->trace("Get $ip from cache = $self->{_country}");
+			} else {
+				$self->{_logger}->trace("$ip isn't in the cache");
+			}
+		}
+		if(defined($self->{_country})) {
+			return $self->{_country};
+		}
+	}
+
 	require Data::Validate::IP;
 	Data::Validate::IP->import();
 
@@ -636,20 +650,6 @@ sub country {
 				warning => "$ip isn't a valid IPv4 address\n"
 			});
 			return;
-		}
-	}
-
-	if($self->{_cache}) {
-		$self->{_country} = $self->{_cache}->get($ip);
-		if($self->{_logger}) {
-			if(defined($self->{_country})) {
-				$self->{_logger}->trace("Get $ip from cache = $self->{_country}");
-			} else {
-				$self->{_logger}->trace("$ip isn't in the cache");
-			}
-		}
-		if(defined($self->{_country})) {
-			return $self->{_country};
 		}
 	}
 
