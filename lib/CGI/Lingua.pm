@@ -336,21 +336,17 @@ sub _find_language {
 					$self->{_slanguage_code_alpha2} = $l;
 					$self->{_rlanguage} = $self->{_slanguage};
 
+					my $l;
 					if($http_accept_language =~ /..-(..)$/) {
-						my $l = Locale::Object::Country->new(code_alpha2 => $1);
-						if($l) {
-							$self->{_rlanguage} .= ' (' . $l->name . ')';
-							# The requested sublanguage
-							# isn't supported so don't
-							# define that
-						}
+						$l = Locale::Object::Country->new(code_alpha2 => $1);
 					} elsif($http_accept_language =~ /..-([a-z]{2,3})$/i) {
-						my $l = Locale::Object::Country->new(code_alpha3 => $1);
-						if($l) {
-							$self->{_rlanguage} .= ' (' . $l->name . ')';
-							# The requested sublanguage isn't
-							# supported so don't define that
-						}
+						$l = Locale::Object::Country->new(code_alpha3 => $1);
+					}
+					if($l) {
+						$self->{_rlanguage} .= ' (' . $l->name . ')';
+						# The requested sublanguage
+						# isn't supported so don't
+						# define that
 					}
 					return;
 				}
@@ -365,10 +361,22 @@ sub _find_language {
 					if($self->{_logger}) {
 						$self->{_logger}->debug("accepts: $accepts");
 					}
+					my $from_cache;
 					if($accepts =~ /\-/) {
 						delete $self->{_slanguage};
 					} else  {
-						$self->{_slanguage} = Locale::Language::code2language($accepts);
+						if($self->{_cache}) {
+							$from_cache = $self->{_cache}->get($accepts);
+						}
+						if($from_cache) {
+							if($self->{_logger}) {
+								$self->{_logger}->debug("$accepts is in cache as $from_cache");
+							}
+							my ($language_name, $language_code2) = split(/=/, $from_cache);
+							$self->{_rlanguage} = $self->{_slanguage} = $language_name;
+						} else {
+							$self->{_slanguage} = Locale::Language::code2language($accepts);
+						}
 					}
 					my $c = Locale::Object::Country->new(code_alpha2 => $variety);
 					if(defined($c)) {
@@ -383,6 +391,12 @@ sub _find_language {
 							}
 						}
 						$self->{_sublanguage_code_alpha2} = $variety;
+						unless($from_cache) {
+							if($self->{_logger}) {
+								$self->{_logger}->debug("Set $accepts to $self->{_slanguage}=$self->{_slanguage_code_alpha2}");
+							}
+							$self->{_cache}->set($accepts, "$self->{_slanguage}=$self->{_slanguage_code_alpha2}", '1 month');
+						}
 						return;
 					}
 				}
@@ -428,6 +442,9 @@ sub _find_language {
 							});
 						} else {
 							$self->{_sublanguage} = $lang->name;
+							if($self->{_logger}) {
+								$self->{_logger}->debug('lang name ' . $self->{_sublanguage});
+							}
 						}
 						if(defined($self->{_sublanguage})) {
 							$self->{_rlanguage} = "$self->{_slanguage} ($self->{_sublanguage})";
