@@ -2,7 +2,7 @@ package CGI::Lingua;
 
 use warnings;
 use strict;
-use Class::Autouse qw{Carp Locale::Language Locale::Object::Country I18N::AcceptLanguage I18N::LangTags::Detect};
+use Class::Autouse qw{Carp Locale::Language Locale::Object::Country Locale::Object::DB I18N::AcceptLanguage I18N::LangTags::Detect};
 
 use vars qw($VERSION);
 our $VERSION = '0.51';
@@ -361,10 +361,10 @@ sub _find_language {
 					if($self->{_logger}) {
 						$self->{_logger}->debug("accepts: $accepts");
 					}
-					my $from_cache;
 					if($accepts =~ /\-/) {
 						delete $self->{_slanguage};
 					} else  {
+						my $from_cache;
 						if($self->{_cache}) {
 							$from_cache = $self->{_cache}->get($accepts);
 						}
@@ -377,36 +377,40 @@ sub _find_language {
 						} else {
 							$self->{_slanguage} = Locale::Language::code2language($accepts);
 						}
-					}
-					my $c = Locale::Object::Country->new(code_alpha2 => $variety);
-					if(defined($c)) {
-						$self->{_sublanguage} = $c->name;
-					}
-					if($self->{_slanguage}) {
-						$self->{_slanguage_code_alpha2} = $accepts;
-						if($self->{_sublanguage}) {
-							$self->{_rlanguage} = "$self->{_slanguage} ($self->{_sublanguage})";
-							if($self->{_logger}) {
-								$self->{_logger}->debug("rlanguage: $self->{_rlanguage}");
+						if($self->{_slanguage}) {
+							if($variety eq 'uk') {
+								# ???
+								$self->_warn({
+									warning => "Resetting country code to GB for $http_accept_language"
+								});
+								$variety = 'gb';
 							}
-						}
-						$self->{_sublanguage_code_alpha2} = $variety;
-						unless($from_cache) {
-							if($self->{_logger}) {
-								$self->{_logger}->debug("Set $accepts to $self->{_slanguage}=$self->{_slanguage_code_alpha2}");
+							my $c = Locale::Object::Country->new(code_alpha2 => $variety);
+							if(defined($c)) {
+								$self->{_sublanguage} = $c->name;
 							}
-							$self->{_cache}->set($accepts, "$self->{_slanguage}=$self->{_slanguage_code_alpha2}", '1 month');
+							$self->{_slanguage_code_alpha2} = $accepts;
+							if($self->{_sublanguage}) {
+								$self->{_rlanguage} = "$self->{_slanguage} ($self->{_sublanguage})";
+								if($self->{_logger}) {
+									$self->{_logger}->debug("rlanguage: $self->{_rlanguage}");
+								}
+							}
+							$self->{_sublanguage_code_alpha2} = $variety;
+							unless($from_cache) {
+								if($self->{_logger}) {
+									$self->{_logger}->debug("Set $accepts to $self->{_slanguage}=$self->{_slanguage_code_alpha2}");
+								}
+								$self->{_cache}->set($accepts, "$self->{_slanguage}=$self->{_slanguage_code_alpha2}", '1 month');
+							}
+							return;
 						}
-						return;
 					}
 				}
 				my $lang = Locale::Language::code2language($alpha2);
-				# unless($lang) {
-					# $lang = $1;
-				# }
 				$self->{_rlanguage} = $lang;
 				$self->_get_closest($alpha2, $alpha2);
-				if($self->{_sublanguage}) {
+				if($accepts) {
 					$http_accept_language =~ /(.{2})-(..)/;
 					$variety = lc($2);
 					# Ignore en-029 etc (Carribean English)
