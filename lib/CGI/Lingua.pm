@@ -307,7 +307,7 @@ sub _find_language {
 			}
 		};
 		my $l = I18N::AcceptLanguage->new()->accepts($http_accept_language, $self->{_supported});
-		$SIG{__WARN__} = 'DEFAULT';
+		local $SIG{__WARN__} = 'DEFAULT';
 		if((!$l) && ($http_accept_language =~ /(.+)-.+/)) {
 			# Fall back position, e,g. we want US English on a site
 			# only giving British English, so allow it as English.
@@ -322,7 +322,7 @@ sub _find_language {
 			if($self->{_logger}) {
 				$self->{_logger}->debug("l: $l");
 			}
-			
+
 			unless($l =~ /^..-..$/) {
 				$self->{_slanguage} = Locale::Language::code2language($l);
 				if($self->{_slanguage}) {
@@ -414,9 +414,9 @@ sub _find_language {
 					$http_accept_language =~ /(.{2})-(..)/;
 					$variety = lc($2);
 					# Ignore en-029 etc (Carribean English)
-					if($variety =~ /[a-z]{2,3}/) {
+					if(($variety =~ /[a-z]{2,3}/) && !defined($self->{_sublanguage})) {
 						if($self->{_logger}) {
-							$self->{_logger}->debug("Find the country code for $variety, for $self->{_sublanguage}");
+							$self->{_logger}->debug("Find the country code for $variety");
 						}
 						if($variety eq 'uk') {
 							# ???
@@ -447,14 +447,14 @@ sub _find_language {
 						} else {
 							$self->{_sublanguage} = $lang->name;
 							if($self->{_logger}) {
-								$self->{_logger}->debug('lang name ' . $self->{_sublanguage});
+								$self->{_logger}->debug('variety name ' . $self->{_sublanguage});
 							}
 						}
-						if(defined($self->{_sublanguage})) {
-							$self->{_rlanguage} = "$self->{_slanguage} ($self->{_sublanguage})";
-							$self->{_sublanguage_code_alpha2} = $variety;
-							return;
-						}
+					}
+					if(defined($self->{_sublanguage})) {
+						$self->{_rlanguage} = "$self->{_slanguage} ($self->{_sublanguage})";
+						$self->{_sublanguage_code_alpha2} = $variety;
+						return;
 					}
 				}
 			}
@@ -593,6 +593,7 @@ sub _find_language {
 			});
 		}
 	}
+	return;
 }
 
 # Try our very best to give the right country - if they ask for en-us and
@@ -614,6 +615,7 @@ sub _get_closest {
 			last;
 		}
 	}
+	return;
 }
 
 =head2 country
@@ -846,13 +848,8 @@ sub locale {
 			}
 		}
 
-		eval {
-			require HTTP::BrowserDetect;
-
+		if(eval { require HTTP::BrowserDetect; } ) {
 			HTTP::BrowserDetect->import();
-		};
-
-		unless($@) {
 			my $browser = HTTP::BrowserDetect->new($agent);
 
 			if($browser && $browser->country()) {
