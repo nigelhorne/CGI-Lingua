@@ -436,9 +436,7 @@ sub _find_language {
 						)};
 						my $from_cache;
 						my $language_name;
-						my $country;
 						if(defined($results[0])) {
-							$country = $results[0]->{name};
 							if($self->{_cache}) {
 								$from_cache = $self->{_cache}->get($variety);
 								if($from_cache) {
