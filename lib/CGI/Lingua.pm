@@ -287,6 +287,8 @@ sub requested_language {
 	return $self->{_rlanguage};
 }
 
+# The language cache is stored as country_2_letter -> $language_human_readable_name=$language_2_letter
+# The IP cache is stored as ip -> country_human_readable_name
 sub _find_language {
 	my $self = shift;
 
@@ -399,9 +401,9 @@ sub _find_language {
 							$self->{_sublanguage_code_alpha2} = $variety;
 							unless($from_cache) {
 								if($self->{_logger}) {
-									$self->{_logger}->debug("Set $accepts to $self->{_slanguage}=$self->{_slanguage_code_alpha2}");
+									$self->{_logger}->debug("Set $variety to $self->{_slanguage}=$self->{_slanguage_code_alpha2}");
 								}
-								$self->{_cache}->set($accepts, "$self->{_slanguage}=$self->{_slanguage_code_alpha2}", '1 month');
+								$self->{_cache}->set($variety, "$self->{_slanguage}=$self->{_slanguage_code_alpha2}", '1 month');
 							}
 							return;
 						}
@@ -426,28 +428,47 @@ sub _find_language {
 							$variety = 'gb';
 						}
 						my $db = Locale::Object::DB->new();
-						my @results = $db->lookup(
+						my @results = @{$db->lookup(
 							table => 'country',
-							result_column => '*',
+							result_column => 'name',
 							search_column => 'code_alpha2',
 							value => $variety
-						);
+						)};
+						my $from_cache;
+						my $language_name;
+						my $country;
 						if(defined($results[0])) {
+							$country = $results[0]->{name};
+							if($self->{_cache}) {
+								$from_cache = $self->{_cache}->get($variety);
+								if($from_cache) {
+									if($self->{_logger}) {
+										$self->{_logger}->debug("$variety is in cache as $from_cache");
+									}
+									my $language_code2;
+									($language_name, $language_code2) = split(/=/, $from_cache);
+								}
+							}
 							eval {
-								$lang = Locale::Object::Country->new(code_alpha2 => $variety);
+								my $lang = Locale::Object::Country->new(code_alpha2 => $variety);
+								$language_name = $lang->name;
 							};
-						} else {
-							$lang = undef;
 						}
-						if($@ || !defined($lang)) {
+						if($@ || !defined($language_name)) {
 							$self->{_sublanguage} = 'Unknown';
 							$self->_warn({
 								warning => "Can't determine values for $http_accept_language"
 							});
 						} else {
-							$self->{_sublanguage} = $lang->name;
+							$self->{_sublanguage} = $language_name;
 							if($self->{_logger}) {
 								$self->{_logger}->debug('variety name ' . $self->{_sublanguage});
+							}
+							if($self->{_cache} && !defined($from_cache)) {
+								if($self->{_logger}) {
+									$self->{_logger}->debug("Set $variety to $self->{_slanguage}=$self->{_slanguage_code_alpha2}");
+								}
+								$self->{_cache}->set($variety, "$self->{_slanguage}=$self->{_slanguage_code_alpha2}", '1 month');
 							}
 						}
 					}
@@ -514,15 +535,15 @@ sub _find_language {
 				if(defined($l)) {
 					$language_name = $l->name;
 					$language_code2 = $l->code_alpha2;
+					if($self->{_logger} && $language_name) {
+						$self->{_logger}->debug("Official language: $language_name");
+					}
 				}
 			}
 		}
 		my $ip = $ENV{'REMOTE_ADDR'};
 		if($language_name) {
 			$self->{_rlanguage} = $language_name;
-			if($self->{_logger} && $language_name) {
-				$self->{_logger}->debug("Official language: $language_name");
-			}
 			unless((exists($self->{_slanguage})) && ($self->{_slanguage} ne 'Unknown')) {
 				# Check if the language is one that we support
 				# Don't bother with secondary language
