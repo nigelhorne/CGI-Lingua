@@ -427,38 +427,41 @@ sub _find_language {
 							});
 							$variety = 'gb';
 						}
-						my $db = Locale::Object::DB->new();
-						my @results = @{$db->lookup(
-							table => 'country',
-							result_column => 'name',
-							search_column => 'code_alpha2',
-							value => $variety
-						)};
 						my $from_cache;
-						my $language_name;
-						if(defined($results[0])) {
-							if($self->{_cache}) {
-								$from_cache = $self->{_cache}->get($variety);
-								if($from_cache) {
-									if($self->{_logger}) {
-										$self->{_logger}->debug("$variety is in cache as $from_cache");
-									}
-									my $language_code2;
-									($language_name, $language_code2) = split(/=/, $from_cache);
+						my $country_name;
+						if($self->{_cache}) {
+							$from_cache = $self->{_cache}->get($variety);
+						}
+						if(defined($from_cache)) {
+							if($self->{_logger}) {
+								$self->{_logger}->debug("$variety is in cache as $from_cache");
+							}
+							my $language_code2;
+							($country_name, $language_code2) = split(/=/, $from_cache);
+							my $lang = Locale::Object::Country->new(code_alpha2 => $variety);
+							$country_name = $lang->name;
+						} else {
+							my $db = Locale::Object::DB->new();
+							my @results = @{$db->lookup(
+								table => 'country',
+								result_column => 'name',
+								search_column => 'code_alpha2',
+								value => $variety
+							)};
+							if(defined($results[0])) {
+								eval {
+									my $lang = Locale::Object::Country->new(code_alpha2 => $variety);
+									$country_name = $lang->name;
 								}
 							}
-							eval {
-								my $lang = Locale::Object::Country->new(code_alpha2 => $variety);
-								$language_name = $lang->name;
-							};
 						}
-						if($@ || !defined($language_name)) {
+						if($@ || !defined($country_name)) {
 							$self->{_sublanguage} = 'Unknown';
 							$self->_warn({
 								warning => "Can't determine values for $http_accept_language"
 							});
 						} else {
-							$self->{_sublanguage} = $language_name;
+							$self->{_sublanguage} = $country_name;
 							if($self->{_logger}) {
 								$self->{_logger}->debug('variety name ' . $self->{_sublanguage});
 							}
@@ -578,7 +581,7 @@ sub _find_language {
 							}
 							unless($code) {
 								$self->_warn({
-									warning => "Can\'t determine code from IP $ip for requested language $self->{_rlanguage}"
+									warning => "Can't determine code from IP $ip for requested language $self->{_rlanguage}"
 								});
 							}
 						}
