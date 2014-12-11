@@ -409,14 +409,19 @@ sub _find_language {
 						}
 					}
 				}
-				my $lang = Locale::Language::code2language($alpha2);
-				$self->{_rlanguage} = $lang;
-				$self->_get_closest($alpha2, $alpha2);
+				if($self->{_logger}) {
+					$self->{_logger}->debug("code2language: $alpha2");
+				}
+				$self->{_rlanguage} = Locale::Language::code2language($alpha2);
+				if($self->{_logger}) {
+					$self->{_logger}->debug("_rlanguage: $self->{_rlanguage}");
+				}
 				if($accepts) {
 					$http_accept_language =~ /(.{2})-(..)/;
 					$variety = lc($2);
 					# Ignore en-029 etc (Carribean English)
 					if(($variety =~ /[a-z]{2,3}/) && !defined($self->{_sublanguage})) {
+						$self->_get_closest($alpha2, $alpha2);
 						if($self->{_logger}) {
 							$self->{_logger}->debug("Find the country code for $variety");
 						}
@@ -428,7 +433,7 @@ sub _find_language {
 							$variety = 'gb';
 						}
 						my $from_cache;
-						my $country_name;
+						my $language_name;
 						if($self->{_cache}) {
 							$from_cache = $self->{_cache}->get($variety);
 						}
@@ -437,9 +442,9 @@ sub _find_language {
 								$self->{_logger}->debug("$variety is in cache as $from_cache");
 							}
 							my $language_code2;
-							($country_name, $language_code2) = split(/=/, $from_cache);
+							($language_name, $language_code2) = split(/=/, $from_cache);
 							my $lang = Locale::Object::Country->new(code_alpha2 => $variety);
-							$country_name = $lang->name;
+							$language_name = $lang->name;
 						} else {
 							my $db = Locale::Object::DB->new();
 							my @results = @{$db->lookup(
@@ -451,17 +456,17 @@ sub _find_language {
 							if(defined($results[0])) {
 								eval {
 									my $lang = Locale::Object::Country->new(code_alpha2 => $variety);
-									$country_name = $lang->name;
+									$language_name = $lang->name;
 								}
 							}
 						}
-						if($@ || !defined($country_name)) {
+						if($@ || !defined($language_name)) {
 							$self->{_sublanguage} = 'Unknown';
 							$self->_warn({
 								warning => "Can't determine values for $http_accept_language"
 							});
 						} else {
-							$self->{_sublanguage} = $country_name;
+							$self->{_sublanguage} = $language_name;
 							if($self->{_logger}) {
 								$self->{_logger}->debug('variety name ' . $self->{_sublanguage});
 							}
