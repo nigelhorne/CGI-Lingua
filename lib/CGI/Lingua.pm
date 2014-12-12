@@ -308,7 +308,8 @@ sub _find_language {
 				warn $_[0];
 			}
 		};
-		my $l = I18N::AcceptLanguage->new()->accepts($http_accept_language, $self->{_supported});
+		my $i18n = I18N::AcceptLanguage->new();
+		my $l = $i18n->accepts($http_accept_language, $self->{_supported});
 		local $SIG{__WARN__} = 'DEFAULT';
 		if((!$l) && ($http_accept_language =~ /(.+)-.+/)) {
 			# Fall back position, e,g. we want US English on a site
@@ -316,7 +317,7 @@ sub _find_language {
 			# The calling program can detect that it's not the
 			# wanted flavour of English by looking at
 			# requested_language
-			if(I18N::AcceptLanguage->new()->accepts($1, $self->{_supported})) {
+			if($i18n->accepts($1, $self->{_supported})) {
 				$l = $1;
 			}
 		}
@@ -357,7 +358,8 @@ sub _find_language {
 			if($l =~ /(.+)-(..)$/) {
 				my $alpha2 = $1;
 				my $variety = $2;
-				my $accepts = I18N::AcceptLanguage->new()->accepts($l, $self->{_supported});
+				# my $accepts = $i18n->accepts($l, $self->{_supported});
+				my $accepts = $l;
 
 				if($accepts) {
 					if($self->{_logger}) {
