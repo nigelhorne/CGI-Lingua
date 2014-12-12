@@ -326,7 +326,7 @@ sub _find_language {
 			}
 
 			unless($l =~ /^..-..$/) {
-				$self->{_slanguage} = Locale::Language::code2language($l);
+				$self->{_slanguage} = $self->_code2language($l);
 				if($self->{_slanguage}) {
 					if($self->{_logger}) {
 						$self->{_logger}->debug("_slanguage: $self->{_slanguage}");
@@ -377,7 +377,7 @@ sub _find_language {
 							my ($language_name, $language_code2) = split(/=/, $from_cache);
 							$self->{_rlanguage} = $self->{_slanguage} = $language_name;
 						} else {
-							$self->{_slanguage} = Locale::Language::code2language($accepts);
+							$self->{_slanguage} = $self->_code2language($accepts);
 						}
 						if($self->{_slanguage}) {
 							if($variety eq 'uk') {
@@ -409,10 +409,7 @@ sub _find_language {
 						}
 					}
 				}
-				if($self->{_logger}) {
-					$self->{_logger}->debug("code2language: $alpha2");
-				}
-				$self->{_rlanguage} = Locale::Language::code2language($alpha2);
+				$self->{_rlanguage} = $self->_code2language($alpha2);
 				if($self->{_logger}) {
 					$self->{_logger}->debug("_rlanguage: $self->{_rlanguage}");
 				}
@@ -491,7 +488,7 @@ sub _find_language {
 				$self->{_rlanguage} = I18N::LangTags::Detect::detect();
 			}
 			if($self->{_rlanguage}) {
-				my $l = Locale::Language::code2language($self->{_rlanguage});
+				my $l = $self->_code2language($self->{_rlanguage});
 				if($l) {
 					$self->{_rlanguage} = $l;
 				# } else {
@@ -671,6 +668,11 @@ sub country {
 		$self->{_country} = lc($ENV{'GEOIP_COUNTRY_CODE'});
 		return $self->{_country};
 	}
+	if(($ENV{'HTTP_CF_IPCOUNTRY'}) && ($ENV{'HTTP_CF_IPCOUNTRY'} ne 'XX')) {
+		# Hosted by Cloudfare
+		$self->{_country} = lc($ENV{'HTTP_CF_IPCOUNTRY'});
+		return $self->{_country};
+	}
 
 	my $ip = $ENV{'REMOTE_ADDR'};
 
@@ -706,48 +708,43 @@ sub country {
 		}
 	}
 
-	if(($ENV{'HTTP_CF_IPCOUNTRY'}) && ($ENV{'HTTP_CF_IPCOUNTRY'} ne 'XX')) {
-		# Hosted by Cloudfare
-		$self->{_country} = lc($ENV{'HTTP_CF_IPCOUNTRY'});
-	} else {
-		if($self->{_have_ipcountry} == -1) {
-			if(eval { require IP::Country; }) {
-				IP::Country->import();
-				$self->{_have_ipcountry} = 1;
-				$self->{_ipcountry} = IP::Country::Fast->new();
-			} else {
-				$self->{_have_ipcountry} = 0;
-			}
+	if($self->{_have_ipcountry} == -1) {
+		if(eval { require IP::Country; }) {
+			IP::Country->import();
+			$self->{_have_ipcountry} = 1;
+			$self->{_ipcountry} = IP::Country::Fast->new();
+		} else {
+			$self->{_have_ipcountry} = 0;
 		}
-		if($self->{_logger}) {
-			$self->{_logger}->debug("have_ipcountry $self->{_have_ipcountry}");
-		}
+	}
+	if($self->{_logger}) {
+		$self->{_logger}->debug("have_ipcountry $self->{_have_ipcountry}");
+	}
 
-		if($self->{_have_ipcountry} == 1) {
-			$self->{_country} = $self->{_ipcountry}->inet_atocc($ip);
-			if($self->{_country}) {
-				$self->{_country} = lc($self->{_country});
+	if($self->{_have_ipcountry} == 1) {
+		$self->{_country} = $self->{_ipcountry}->inet_atocc($ip);
+		if($self->{_country}) {
+			$self->{_country} = lc($self->{_country});
+		} else {
+			$self->_warn({
+				warning => "$ip is not known by IP::Country"
+			});
+		}
+	}
+	unless(defined($self->{_country})) {
+		if($self->{_have_geoip} == -1) {
+			if(eval { require Geo::IP; }) {
+				Geo::IP->import();
+				$self->{_have_geoip} = 1;
+				# GEOIP_STANDARD = 0, can't use that because you'll
+				# get a syntax error
+				$self->{_geoip} = Geo::IP->new(0);
 			} else {
-				$self->_warn({
-					warning => "$ip is not known by IP::Country"
-				});
+				$self->{_have_geoip} = 0;
 			}
 		}
-		unless(defined($self->{_country})) {
-			if($self->{_have_geoip} == -1) {
-				if(eval { require Geo::IP; }) {
-					Geo::IP->import();
-					$self->{_have_geoip} = 1;
-					# GEOIP_STANDARD = 0, can't use that because you'll
-					# get a syntax error
-					$self->{_geoip} = Geo::IP->new(0);
-				} else {
-					$self->{_have_geoip} = 0;
-				}
-			}
-			if($self->{_have_geoip} == 1) {
-				$self->{_country} = $self->{_geoip}->country_code_by_addr($ip);
-			}
+		if($self->{_have_geoip} == 1) {
+			$self->{_country} = $self->{_geoip}->country_code_by_addr($ip);
 		}
 	}
 	if($self->{_country} && ($self->{_country} eq 'eu')) {
@@ -918,6 +915,31 @@ sub locale {
 		}
 	}
 	return ();	# returns undef
+}
+
+# Wrapper to Locale::Language::code2language which makes use of the cache
+sub _code2language
+{
+	my ($self, $code) = @_;
+
+	return unless($code);
+	if($self->{_logger}) {
+		$self->{_logger}->trace("_code2language $code");
+	}
+	unless($self->{_cache}) {
+		return Locale::Language::code2language($code);
+	}
+	my $from_cache = $self->{_cache}->get("code2language/$code");
+	if($from_cache) {
+		if($self->{_logger}) {
+			$self->{_logger}->trace("_code2language found in cache $from_cache");
+		}
+		return $from_cache;
+	}
+	if($self->{_logger}) {
+		$self->{_logger}->trace('_code2language not in cache, storing');
+	}
+	return $self->{_cache}->set("code2language/$code", Locale::Language::code2language($code), '1 month');
 }
 
 =head1 AUTHOR
