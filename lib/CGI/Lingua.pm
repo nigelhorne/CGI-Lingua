@@ -723,7 +723,7 @@ sub country {
 		$self->{_logger}->debug("have_ipcountry $self->{_have_ipcountry}");
 	}
 
-	if($self->{_have_ipcountry} == 1) {
+	if($self->{_have_ipcountry}) {
 		$self->{_country} = $self->{_ipcountry}->inet_atocc($ip);
 		if($self->{_country}) {
 			$self->{_country} = lc($self->{_country});
