@@ -926,7 +926,11 @@ sub _code2language
 
 	return unless($code);
 	if($self->{_logger}) {
-		$self->{_logger}->trace("_code2language $code");
+		if(defined($self->{_country})) {
+			$self->{_logger}->trace("_code2language $code, country " . $self->{_country});
+		} else {
+			$self->{_logger}->trace("_code2language $code");
+		}
 	}
 	unless($self->{_cache}) {
 		return Locale::Language::code2language($code);
@@ -951,7 +955,11 @@ sub _code2country
 
 	return unless($code);
 	if($self->{_logger}) {
-		$self->{_logger}->trace("_code2country $code");
+		if($self->{_country}) {
+			$self->{_logger}->trace("_code2country $code, country " . $self->{_country});
+		} else {
+			$self->{_logger}->trace("_code2country $code");
+		}
 	}
 	return Locale::Object::Country->new(code_alpha2 => $code);
 }
