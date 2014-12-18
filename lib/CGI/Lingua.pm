@@ -389,9 +389,9 @@ sub _find_language {
 								});
 								$variety = 'gb';
 							}
-							my $c = $self->_code2country($variety);
+							my $c = $self->_code2countryname($variety);
 							if(defined($c)) {
-								$self->{_sublanguage} = $c->name;
+								$self->{_sublanguage} = $c;
 							}
 							$self->{_slanguage_code_alpha2} = $accepts;
 							if($self->{_sublanguage}) {
@@ -442,8 +442,7 @@ sub _find_language {
 							}
 							my $language_code2;
 							($language_name, $language_code2) = split(/=/, $from_cache);
-							my $lang = $self->_code2country($variety);
-							$language_name = $lang->name;
+							$language_name = $self->_code2countryname($variety);
 						} else {
 							my $db = Locale::Object::DB->new();
 							my @results = @{$db->lookup(
@@ -454,8 +453,7 @@ sub _find_language {
 							)};
 							if(defined($results[0])) {
 								eval {
-									my $lang = $self->_code2country($variety);
-									$language_name = $lang->name;
+									$language_name = $self->_code2countryname($variety);
 								}
 							}
 						}
@@ -948,7 +946,7 @@ sub _code2language
 	return $self->{_cache}->set("code2language/$code", Locale::Language::code2language($code), '1 month');
 }
 
-# Wrapper to Locale::Object::Country returning the entry in our hash
+# Wrapper to Locale::Object::Country allowing for persistance to be added
 sub _code2country
 {
 	my ($self, $code) = @_;
@@ -962,6 +960,38 @@ sub _code2country
 		}
 	}
 	return Locale::Object::Country->new(code_alpha2 => $code);
+}
+
+# Wrapper to Locale::Object::Country->name which makes use of the cache
+sub _code2countryname
+{
+	my ($self, $code) = @_;
+
+	return unless($code);
+	if($self->{_logger}) {
+		$self->{_logger}->trace("_code2countryname $code");
+	}
+	unless($self->{_cache}) {
+		my $country = $self->_code2country($code);
+		if(defined($country)) {
+			return $country->name;
+		}
+		return;
+	}
+	my $from_cache = $self->{_cache}->get("code2countryname/$code");
+	if($from_cache) {
+		if($self->{_logger}) {
+			$self->{_logger}->trace("_code2countryname found in cache $from_cache");
+		}
+		return $from_cache;
+	}
+	if($self->{_logger}) {
+		$self->{_logger}->trace('_code2countryname not in cache, storing');
+	}
+	my $country = $self->_code2country($code);
+	if(defined($country)) {
+		return $self->{_cache}->set("code2countryname/$code", $country->name, '1 month');
+	}
 }
 
 =head1 AUTHOR
