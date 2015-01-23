@@ -1050,7 +1050,7 @@ L<http://search.cpan.org/dist/CGI-Lingua/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010-2014 Nigel Horne.
+Copyright 2010-2015 Nigel Horne.
 
 This program is released under the following licence: GPL
 
