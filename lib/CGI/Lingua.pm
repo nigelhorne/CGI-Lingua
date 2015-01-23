@@ -343,7 +343,7 @@ sub _find_language {
 
 					my $l;
 					if($http_accept_language =~ /..-(..)$/) {
-						$l = Locale::Object::Country->new(code_alpha2 => $1);
+						$l = $self->_code2country($1);
 					} elsif($http_accept_language =~ /..-([a-z]{2,3})$/i) {
 						$l = Locale::Object::Country->new(code_alpha3 => $1);
 					}
@@ -391,9 +391,9 @@ sub _find_language {
 								});
 								$variety = 'gb';
 							}
-							my $c = Locale::Object::Country->new(code_alpha2 => $variety);
+							my $c = $self->_code2countryname($variety);
 							if(defined($c)) {
-								$self->{_sublanguage} = $c->name;
+								$self->{_sublanguage} = $c;
 							}
 							$self->{_slanguage_code_alpha2} = $accepts;
 							if($self->{_sublanguage}) {
@@ -444,8 +444,7 @@ sub _find_language {
 							}
 							my $language_code2;
 							($language_name, $language_code2) = split(/=/, $from_cache);
-							my $lang = Locale::Object::Country->new(code_alpha2 => $variety);
-							$language_name = $lang->name;
+							$language_name = $self->_code2countryname($variety);
 						} else {
 							my $db = Locale::Object::DB->new();
 							my @results = @{$db->lookup(
@@ -456,8 +455,7 @@ sub _find_language {
 							)};
 							if(defined($results[0])) {
 								eval {
-									my $lang = Locale::Object::Country->new(code_alpha2 => $variety);
-									$language_name = $lang->name;
+									$language_name = $self->_code2countryname($variety);
 								}
 							}
 						}
@@ -536,7 +534,7 @@ sub _find_language {
 			}
 			($language_name, $language_code2) = split(/=/, $from_cache);
 		} else {
-			my $l = Locale::Object::Country->new(code_alpha2 => uc($country));
+			my $l = $self->_code2country(uc($country));
 			if($l) {
 				$l = ($l->languages_official)[0];
 				if(defined($l)) {
@@ -725,7 +723,7 @@ sub country {
 		$self->{_logger}->debug("have_ipcountry $self->{_have_ipcountry}");
 	}
 
-	if($self->{_have_ipcountry} == 1) {
+	if($self->{_have_ipcountry}) {
 		$self->{_country} = $self->{_ipcountry}->inet_atocc($ip);
 		if($self->{_country}) {
 			$self->{_country} = lc($self->{_country});
@@ -867,7 +865,7 @@ sub locale {
 			$candidate =~ s/\s$//g;
 			if($candidate =~ /^[a-zA-Z]{2}-([a-zA-Z]{2})$/) {
 				local $SIG{__WARN__} = undef;
-				my $c = Locale::Object::Country->new(code_alpha2 => $1);
+				my $c = $self->_code2country($1);
 				if($c) {
 					$self->{_locale} = $c;
 					return $c;
@@ -881,7 +879,7 @@ sub locale {
 			my $browser = HTTP::BrowserDetect->new($agent);
 
 			if($browser && $browser->country()) {
-				my $c = Locale::Object::Country->new(code_alpha2 => $browser->country());
+				my $c = $self->_code2country($browser->country());
 				if($c) {
 					$self->{_locale} = $c;
 					return $c;
@@ -899,7 +897,7 @@ sub locale {
 		my $c;
 		eval {
 			local $SIG{__WARN__} = sub { die $_[0] };
-			$c = Locale::Object::Country->new(code_alpha2 => $country);
+			$c = $self->_code2country($country);
 		};
 		unless($@) {
 			if($c) {
@@ -912,7 +910,7 @@ sub locale {
 	# Try mod_geoip
 	if(defined($ENV{'GEOIP_COUNTRY_CODE'})) {
 		$country = $ENV{'GEOIP_COUNTRY_CODE'};
-		my $c = Locale::Object::Country->new(code_alpha2 => $country);
+		my $c = $self->_code2country($country);
 		if($c) {
 			$self->{_locale} = $c;
 			return $c;
@@ -928,7 +926,11 @@ sub _code2language
 
 	return unless($code);
 	if($self->{_logger}) {
-		$self->{_logger}->trace("_code2language $code");
+		if(defined($self->{_country})) {
+			$self->{_logger}->trace("_code2language $code, country " . $self->{_country});
+		} else {
+			$self->{_logger}->trace("_code2language $code");
+		}
 	}
 	unless($self->{_cache}) {
 		return Locale::Language::code2language($code);
@@ -944,6 +946,54 @@ sub _code2language
 		$self->{_logger}->trace('_code2language not in cache, storing');
 	}
 	return $self->{_cache}->set("code2language/$code", Locale::Language::code2language($code), '1 month');
+}
+
+# Wrapper to Locale::Object::Country allowing for persistance to be added
+sub _code2country
+{
+	my ($self, $code) = @_;
+
+	return unless($code);
+	if($self->{_logger}) {
+		if($self->{_country}) {
+			$self->{_logger}->trace("_code2country $code, country " . $self->{_country});
+		} else {
+			$self->{_logger}->trace("_code2country $code");
+		}
+	}
+	return Locale::Object::Country->new(code_alpha2 => $code);
+}
+
+# Wrapper to Locale::Object::Country->name which makes use of the cache
+sub _code2countryname
+{
+	my ($self, $code) = @_;
+
+	return unless($code);
+	if($self->{_logger}) {
+		$self->{_logger}->trace("_code2countryname $code");
+	}
+	unless($self->{_cache}) {
+		my $country = $self->_code2country($code);
+		if(defined($country)) {
+			return $country->name;
+		}
+		return;
+	}
+	my $from_cache = $self->{_cache}->get("code2countryname/$code");
+	if($from_cache) {
+		if($self->{_logger}) {
+			$self->{_logger}->trace("_code2countryname found in cache $from_cache");
+		}
+		return $from_cache;
+	}
+	if($self->{_logger}) {
+		$self->{_logger}->trace('_code2countryname not in cache, storing');
+	}
+	my $country = $self->_code2country($code);
+	if(defined($country)) {
+		return $self->{_cache}->set("code2countryname/$code", $country->name, '1 month');
+	}
 }
 
 =head1 AUTHOR

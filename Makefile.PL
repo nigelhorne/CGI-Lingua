@@ -77,10 +77,13 @@ WriteMakefile(
       ? ('LICENSE'=> 'GPL')
       : ()),
     PL_FILES            => {},
-    PREREQ_PM => {
-        'Test::Most' => 0,
-	'Test::Requires' => 0,
+    BUILD_REQUIRES => {
+	'Test::Most' => 0,
 	'Test::NoWarnings' => 0,
+	'Test::Requires' => 0,
+	# 'Test::Kwalitee' => 0,
+    },
+    PREREQ_PM => {
 	'Locale::Object::Country' => 0,
 	'I18N::AcceptLanguage' => 0,
 	'Locale::Language' => 0,
@@ -94,7 +97,6 @@ WriteMakefile(
 	'HTTP::BrowserDetect' => 0,
 	'Net::Subnet' => 0,
 	'Class::Autouse' => 0,
-	# 'Test::Kwalitee' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'CGI-Lingua-* t/online.enabled' },

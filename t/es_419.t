@@ -30,6 +30,10 @@ ES_419: {
 	SKIP: {
 		skip 'Tests require Internet access', 5 unless(-e 't/online.enabled');
 		ok(defined($l->country()));
+		# Sometimes fails - find out what's going on
+		if($l->country() ne 'ar') {
+			diag($l->country());
+		}
 		ok($l->country() eq 'ar');
 		ok($l->language_code_alpha2() eq 'es');
 		ok($l->language() eq 'Spanish');

@@ -38,5 +38,6 @@ t/snippets.t
 t/spelling.t
 t/strict.t
 t/sub-lang.t
+t/used.t
 t/usgb.t
 t/vars.t
