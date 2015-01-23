@@ -1,5 +1,7 @@
 package CGI::Lingua;
 
+# TODO: Investigate Geo::IPfree
+
 use warnings;
 use strict;
 use Class::Autouse qw{Carp Locale::Language Locale::Object::Country Locale::Object::DB I18N::AcceptLanguage I18N::LangTags::Detect};
