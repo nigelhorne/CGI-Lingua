@@ -5,7 +5,7 @@ use strict;
 use Class::Autouse qw{Carp Locale::Language Locale::Object::Country Locale::Object::DB I18N::AcceptLanguage I18N::LangTags::Detect};
 
 use vars qw($VERSION);
-our $VERSION = '0.51';
+our $VERSION = '0.52';
 
 =head1 NAME
 
@@ -13,7 +13,7 @@ CGI::Lingua - Create a multilingual web page
 
 =head1 VERSION
 
-Version 0.51
+Version 0.52
 
 =cut
 
@@ -377,8 +377,7 @@ sub _find_language {
 							if($self->{_logger}) {
 								$self->{_logger}->debug("$accepts is in cache as $from_cache");
 							}
-							my ($language_name, $language_code2) = split(/=/, $from_cache);
-							$self->{_rlanguage} = $self->{_slanguage} = $language_name;
+							$self->{_rlanguage} = (split(/=/, $from_cache))[0];
 						} else {
 							$self->{_slanguage} = $self->_code2language($accepts);
 						}
@@ -647,9 +646,9 @@ sub _get_closest {
 
 Returns the two character country code of the remote end in lower case.
 
-If L<IP::Country> or L<Geo::IP> is installed, CGI::Lingua will make
-use of that, otherwise it will do a Whois lookup.
-If you do not have either installed I recommend you make use of the
+If L<IP::Country>, L<Geo::IPfree> or L<Geo::IP> is installed,
+CGI::Lingua will make use of that, otherwise it will do a Whois lookup.
+If you do not have any of those installed I recommend you make use of the
 caching capability of CGI::Lingua.
 
 =cut

@@ -1,10 +1,12 @@
 Changes
 ignore.txt
 lib/CGI/Lingua.pm
+LICENSE
 Makefile.PL
 MANIFEST
 META.yml			Module meta-data (added by MakeMaker)
 README
+README.md
 t/00-load.t
 t/01-new.t
 t/boilerplate.t
@@ -34,10 +36,12 @@ t/prereq.t
 t/rt69509.t
 t/rt77332.t
 t/rt79214.t
+t/rt86809.t
 t/snippets.t
 t/spelling.t
 t/strict.t
 t/sub-lang.t
+t/unused.t
 t/used.t
 t/usgb.t
 t/vars.t
