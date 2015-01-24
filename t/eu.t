@@ -32,6 +32,7 @@ EU: {
 	# GeoIP correctly identifies this IP as being in Kenya, so
 	# force lookup on Whois
 	$l->{_have_geoip} = 0;
+	$l->{_have_geoipfree} = 0;
 	$l->{_have_ipcountry} = 0;
 
 	SKIP: {
@@ -53,6 +54,7 @@ EU: {
 	ok(defined $l);
 	ok($l->isa('CGI::Lingua'));
 	$l->{_have_geoip} = 0;
+	$l->{_have_geoipfree} = 0;
 	$l->{_have_ipcountry} = 0;
 
 	SKIP: {

@@ -25,9 +25,16 @@ if($ENV{RELEASE_TESTING}) {
 		# It also shouldn't need to do anything with the Internet,
 		# so we can do all tests
 		$online_tests = 1;
+	} elsif(eval { require Geo::IPfree; }) {
+		my $v = Geo::IPfree->VERSION;
+		print "You have Geo::IPfree version $v installed, so CGI::Lingua can work fast\n";
+		# It also shouldn't need to do anything with the Internet,
+		# so we can do all tests
+		$online_tests = 1;
 	} else {
 		unless(defined($online_tests)) {
 			my $s = IO::Socket::INET->new(
+				# PeerAddr => 'www.ripe.net:43',
 				PeerAddr => 'www.google.com:80',
 				Timeout => 5
 			);
@@ -36,7 +43,8 @@ if($ENV{RELEASE_TESTING}) {
 
 You appear to be directly connected to the Internet.  I have some tests
 that try to query Whois servers.
-These tests will be slow, consider installing IP::Country or Geo::IP
+These tests will be slow, consider installing IP::Country, Geo::IPfree or
+Geo::IP
 
 EOF
 				close($s);
@@ -54,6 +62,7 @@ EOF
 				}
 			} else {
 				print "On-line tests disabled because I couldn't detect an Internet connexion\n";
+				print "Consider installing IP::Country, Geo::IPfree or Geo::IP\n";
 				$online_tests = 0;
 			}
 		}

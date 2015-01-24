@@ -1,6 +1,7 @@
 Revision history for CGI-Lingua
 
 0.52
+	Use Geo::IPfree if that is available
 	Various small performance improvements
 	country: now returns "Unknown" if set to 'eu'
 

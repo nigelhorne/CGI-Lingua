@@ -1,7 +1,5 @@
 package CGI::Lingua;
 
-# TODO: Investigate Geo::IPfree
-
 use warnings;
 use strict;
 use Class::Autouse qw{Carp Locale::Language Locale::Object::Country Locale::Object::DB I18N::AcceptLanguage I18N::LangTags::Detect};
@@ -128,6 +126,7 @@ sub new {
 		_logger => $params{logger},
 		_have_ipcountry => -1,	# -1 = don't know
 		_have_geoip => -1,	# -1 = don't know
+		_have_geoipfree => -1,	# -1 = don't know
 	}, $class;
 }
 
@@ -747,6 +746,20 @@ sub country {
 		}
 		if($self->{_have_geoip} == 1) {
 			$self->{_country} = $self->{_geoip}->country_code_by_addr($ip);
+		}
+		unless(defined($self->{_country})) {
+			if($self->{_have_geoipfree} == -1) {
+				if(eval { require Geo::IPfree; }) {
+					Geo::IPfree::IP->import();
+					$self->{_have_geoipfree} = 1;
+					$self->{_geoipfree} = Geo::IPfree->new();
+				} else {
+					$self->{_have_geoipfree} = 0;
+				}
+			}
+			if($self->{_have_geoipfree} == 1) {
+				$self->{_country} = lc(($self->{_geoipfree}->LookUp($ip))[0]);
+			}
 		}
 	}
 	if($self->{_country} && ($self->{_country} eq 'eu')) {
