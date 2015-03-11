@@ -1,3 +1,5 @@
+#!/usr/bin/env perl
+
 use strict;
 use warnings;
 use ExtUtils::MakeMaker;
@@ -7,13 +9,13 @@ use IO::Socket::INET;
 my $online_tests;
 
 if($ENV{RELEASE_TESTING}) {
-	$online_tests = 1;
+	$online_tests = are_online();
 } elsif($ENV{AUTOMATED_TESTING}) {
 	$online_tests = 0;
 } else {
 	Getopt::Long::GetOptions('online-tests!' => \$online_tests);
 
-	if(eval { require IP::Country; }) {
+	unless(eval { require IP::Country; }) {
 		my $v = IP::Country->VERSION;
 		print "You have IP::Country version $v installed, so CGI::Lingua can work fast\n";
 		# It also shouldn't need to do anything with the Internet,
@@ -31,41 +33,8 @@ if($ENV{RELEASE_TESTING}) {
 		# It also shouldn't need to do anything with the Internet,
 		# so we can do all tests
 		$online_tests = 1;
-	} else {
-		unless(defined($online_tests)) {
-			my $s = IO::Socket::INET->new(
-				# PeerAddr => 'www.ripe.net:43',
-				PeerAddr => 'www.google.com:80',
-				Timeout => 5
-			);
-			if($s) {
-				print <<EOF;
-
-You appear to be directly connected to the Internet.  I have some tests
-that try to query Whois servers.
-These tests will be slow, consider installing IP::Country, Geo::IPfree or
-Geo::IP
-
-EOF
-				close($s);
-
-				# Timeout inspired by Mail::IMAPClient
-				eval {
-					local $SIG{ALRM} = sub { die "alarm\n" };
-					alarm(60);
-					$online_tests = prompt('Do you want to enable these tests?', 'y') =~ /^y/i ? 1 : 0;
-					alarm(0);
-				};
-				if($@) {
-					print "\n";
-					$online_tests = 0;
-				}
-			} else {
-				print "On-line tests disabled because I couldn't detect an Internet connexion\n";
-				print "Consider installing IP::Country, Geo::IPfree or Geo::IP\n";
-				$online_tests = 0;
-			}
-		}
+	} elsif(!defined($online_tests)) {
+		$online_tests = are_online();
 	}
 }
 
@@ -121,3 +90,42 @@ WriteMakefile(
     },
     MIN_PERL_VERSION	=> '5.6.2'	# Probably would work, but never tested on earlier versions than this
 );
+
+sub are_online
+{
+	my $s = IO::Socket::INET->new(
+		# PeerAddr => 'www.ripe.net:43',
+		PeerAddr => 'whois.apnic.net:43',
+		# PeerAddr => 'www.google.com:80',
+		Timeout => 5
+	);
+	if($s) {
+		print <<EOF;
+
+You appear to be directly connected to the Internet.  I have some tests
+that try to query Whois servers.
+These tests will be slow, consider installing IP::Country, Geo::IPfree or
+Geo::IP
+
+EOF
+		close($s);
+
+		# Timeout inspired by Mail::IMAPClient
+		my $rc;
+		eval {
+			local $SIG{ALRM} = sub { die "alarm\n" };
+			alarm(60);
+			$rc = prompt('Do you want to enable these tests?', 'y') =~ /^y/i ? 1 : 0;
+			alarm(0);
+		};
+		if($@) {
+			print "\n";
+			return 0;
+		}
+		return $rc;
+	} else {
+		print "On-line tests disabled because I couldn't detect an Internet connexion\n";
+		print "Consider installing IP::Country, Geo::IPfree or Geo::IP\n";
+		return 0;
+	}
+}
