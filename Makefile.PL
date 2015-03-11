@@ -15,7 +15,7 @@ if($ENV{RELEASE_TESTING}) {
 } else {
 	Getopt::Long::GetOptions('online-tests!' => \$online_tests);
 
-	unless(eval { require IP::Country; }) {
+	if(eval { require IP::Country; }) {
 		my $v = IP::Country->VERSION;
 		print "You have IP::Country version $v installed, so CGI::Lingua can work fast\n";
 		# It also shouldn't need to do anything with the Internet,
