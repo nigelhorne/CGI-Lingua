@@ -973,9 +973,14 @@ sub _code2country
 			$self->{_logger}->trace("_code2country $code");
 		}
 	}
-	eval {
-		return Locale::Object::Country->new(code_alpha2 => $code);
-	} 
+	local $SIG{__WARN__} = sub {
+		if($_[0] !~ /No result found in country table/) {
+			warn $_[0];
+		}
+	};
+	my $rc = Locale::Object::Country->new(code_alpha2 => $code);
+	local $SIG{__WARN__} = 'DEFAULT';
+	return $rc;
 }
 
 # Wrapper to Locale::Object::Country->name which makes use of the cache

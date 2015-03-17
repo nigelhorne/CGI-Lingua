@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 10;
+use Test::More tests => 9;
 
 # Test records where Locale::Object::Country->new() fails
 
@@ -34,11 +34,16 @@ ZZ: {
 		skip 'Tests require Internet access', 6 unless(-e 't/online.enabled');
 		diag('Ignore "is not known" message');
 		ok(defined($l->country()));
-		# ok($l->country() eq 'Unknown');
-		ok($l->language_code_alpha2() eq 'en');
-		ok($l->language() eq 'English');
-		ok(defined($l->requested_language()));
-		ok($l->requested_language() eq 'English');
+		if($l->country() eq 'zz') {
+			# Depends on your set-up
+			ok(!defined($l->language_code_alpha2()));
+			ok($l->language() eq 'Unknown');
+			ok($l->requested_language() eq 'Unknown');
+		} else {
+			ok($l->language_code_alpha2() eq 'en');
+			ok($l->language() eq 'English');
+			ok($l->requested_language() eq 'English');
+		}
 	}
 	ok(!defined($l->sublanguage()));
 	# diag($l->locale());
