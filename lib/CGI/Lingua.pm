@@ -973,7 +973,9 @@ sub _code2country
 			$self->{_logger}->trace("_code2country $code");
 		}
 	}
-	return Locale::Object::Country->new(code_alpha2 => $code);
+	eval {
+		return Locale::Object::Country->new(code_alpha2 => $code);
+	} 
 }
 
 # Wrapper to Locale::Object::Country->name which makes use of the cache
