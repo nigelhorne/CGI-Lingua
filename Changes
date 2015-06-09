@@ -3,6 +3,7 @@ Revision history for CGI-Lingua
 0.53
 	Catch warning sent from Locale::Country::Object->new()
 	Created t/zz.t
+	Cache the entire object
 
 0.52	Sat Jan 24 10:07:39 EST 2015
 	Use Geo::IPfree if that is available

@@ -31,8 +31,7 @@ USGB: {
 		$cache = undef;
 	} else {
 		diag("Using CHI $CHI::VERSION");
-		my $hash = {};
-		$cache = CHI->new(driver => 'Memory', datastore => $hash);
+		$cache = CHI->new(driver => 'Memory', global => 1);
 	}
 
 	$ENV{'HTTP_ACCEPT_LANGUAGE'} = 'en-GB,en-US;q=0.8,en;q=0.6';

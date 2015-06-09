@@ -2,7 +2,7 @@ package CGI::Lingua;
 
 use warnings;
 use strict;
-use Class::Autouse qw{Carp Locale::Language Locale::Object::Country Locale::Object::DB I18N::AcceptLanguage I18N::LangTags::Detect};
+use Class::Autouse qw{Carp Locale::Language Locale::Object::Country Locale::Object::DB I18N::AcceptLanguage I18N::LangTags::Detect Storable};
 
 use vars qw($VERSION);
 our $VERSION = '0.52';
@@ -111,9 +111,26 @@ sub new {
 		Carp::croak('You must give a list of supported languages');
 	}
 
+	my $cache = $params{cache};
+	my $logger = $params{logger};
+	if($cache && $ENV{'REMOTE_ADDR'} && $ENV{'HTTP_ACCEPT_LANGUAGE'}) {
+		my $key = "$ENV{REMOTE_ADDR}/$ENV{HTTP_ACCEPT_LANGUAGE}/";
+		$key .= join('/', $params{supported});
+		if($logger) {
+			$logger->debug("Looking in cache for $key");
+		}
+		my $rc = $cache->get($key);
+		if($rc) {
+			if($logger) {
+				$logger->debug('Found - thawing');
+			}
+			return Storable::thaw($rc);
+		}
+	}
+
 	return bless {
 		_supported => $params{supported}, # List of languages (two letters) that the application
-		_cache => $params{cache},	# CHI
+		_cache => $cache,	# CHI
 		# _rlanguage => undef,	# Requested language
 		# _slanguage => undef,	# Language that the website should display
 		# _sublanguage => undef,	# E.g. United States for en-US if you want American English
@@ -123,11 +140,54 @@ sub new {
 		# _locale => undef,	# Locale::Object::Country
 		_syslog => $params{syslog},
 		_dont_use_ip => $params{dont_use_ip} || 0,
-		_logger => $params{logger},
+		_logger => $logger,
 		_have_ipcountry => -1,	# -1 = don't know
 		_have_geoip => -1,	# -1 = don't know
 		_have_geoipfree => -1,	# -1 = don't know
 	}, $class;
+}
+
+sub DESTROY {
+	if(defined($^V) && ($^V ge 'v5.14.0')) {
+		return if ${^GLOBAL_PHASE} eq 'DESTRUCT';	# >= 5.14.0 only
+	}
+	unless($ENV{'REMOTE_ADDR'} && $ENV{'HTTP_ACCEPT_LANGUAGE'}) {
+		return;
+	}
+	my $self = shift;
+	return unless(ref($self));
+
+	my $cache = $self->{_cache};
+	return unless($cache);
+
+	my $logger = $self->{_logger};
+
+	my $key = "$ENV{REMOTE_ADDR}/$ENV{HTTP_ACCEPT_LANGUAGE}";
+	$key .= join('/', $self->{_supported});
+	if($logger) {
+		$logger->trace("Storing self in cache as $key");
+	}
+	return if($cache->get($key));
+
+	my $copy = bless {}, ref($self);
+	$copy->{_slanguage} = $self->{_slanguage};
+	$copy->{_slanguage_code_alpha2} = $self->{_slanguage_code_alpha2};
+	$copy->{_country} = $self->{_country};
+	$copy->{_rlanguage} = $self->{_rlanguage};
+	$copy->{_syslog} = $self->{_syslog};
+	$copy->{_dont_use_ip} = $self->{_dont_use_ip};
+	$copy->{_logger} = $self->{_logger};
+	$copy->{_have_ipcountry} = $self->{_have_ipcountry};
+	$copy->{_have_geoip} = $self->{_have_geoip};
+	$copy->{_have_geoipfree} = $self->{_have_geoipfree};
+
+	# All of these crash, presumably something recursive is going on
+	# my $copy = Clone::clone($self);
+	# my $storable = Storable::nfreeze(Storable::dclone($self));
+	# my $storable = Storable::dclone($self);
+
+	my $storable = Storable::nfreeze($copy);
+	$cache->set($key, $storable, '1 month');
 }
 
 # Emit a warning message somewhere
