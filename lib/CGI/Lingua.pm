@@ -128,6 +128,8 @@ sub new {
 			$rc->{_logger} = $logger;
 			$rc->{_syslog} = $params{syslog};
 			$rc->{_cache} = $cache;
+
+			return $rc;
 		}
 	}
 
@@ -172,23 +174,23 @@ sub DESTROY {
 		$logger->trace("Storing self in cache as $key");
 	}
 
-	my $copy = bless {}, ref($self);
-	$copy->{_slanguage} = $self->{_slanguage};
-	$copy->{_slanguage_code_alpha2} = $self->{_slanguage_code_alpha2};
-	$copy->{_country} = $self->{_country};
-	$copy->{_rlanguage} = $self->{_rlanguage};
-	$copy->{_dont_use_ip} = $self->{_dont_use_ip};
-	$copy->{_have_ipcountry} = $self->{_have_ipcountry};
-	$copy->{_have_geoip} = $self->{_have_geoip};
-	$copy->{_have_geoipfree} = $self->{_have_geoipfree};
+	my $copy = bless {
+		_slanguage => $self->{_slanguage},
+		_slanguage_code_alpha2 => $self->{_slanguage_code_alpha2},
+		_country => $self->{_country},
+		_rlanguage => $self->{_rlanguage},
+		_dont_use_ip => $self->{_dont_use_ip},
+		_have_ipcountry => $self->{_have_ipcountry},
+		_have_geoip => $self->{_have_geoip},
+		_have_geoipfree => $self->{_have_geoipfree}
+	}, ref($self);
 
 	# All of these crash, presumably something recursive is going on
 	# my $copy = Clone::clone($self);
 	# my $storable = Storable::nfreeze(Storable::dclone($self));
 	# my $storable = Storable::dclone($self);
 
-	my $storable = Storable::nfreeze($copy);
-	$cache->set($key, $storable, '1 month');
+	$cache->set($key, Storable::nfreeze($copy), '1 month');
 }
 
 # Emit a warning message somewhere
