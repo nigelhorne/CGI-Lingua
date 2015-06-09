@@ -176,7 +176,7 @@ sub DESTROY {
 	$copy->{_rlanguage} = $self->{_rlanguage};
 	$copy->{_syslog} = $self->{_syslog};
 	$copy->{_dont_use_ip} = $self->{_dont_use_ip};
-	$copy->{_logger} = $self->{_logger};
+	$copy->{_logger} = $logger;
 	$copy->{_have_ipcountry} = $self->{_have_ipcountry};
 	$copy->{_have_geoip} = $self->{_have_geoip};
 	$copy->{_have_geoipfree} = $self->{_have_geoipfree};
