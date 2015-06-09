@@ -124,7 +124,10 @@ sub new {
 			if($logger) {
 				$logger->debug('Found - thawing');
 			}
-			return Storable::thaw($rc);
+			$rc = Storable::thaw($rc);
+			$rc->{_logger} = $logger;
+			$rc->{_syslog} = $params{syslog};
+			$rc->{_cache} = $cache;
 		}
 	}
 
@@ -174,9 +177,7 @@ sub DESTROY {
 	$copy->{_slanguage_code_alpha2} = $self->{_slanguage_code_alpha2};
 	$copy->{_country} = $self->{_country};
 	$copy->{_rlanguage} = $self->{_rlanguage};
-	$copy->{_syslog} = $self->{_syslog};
 	$copy->{_dont_use_ip} = $self->{_dont_use_ip};
-	$copy->{_logger} = $logger;
 	$copy->{_have_ipcountry} = $self->{_have_ipcountry};
 	$copy->{_have_geoip} = $self->{_have_geoip};
 	$copy->{_have_geoipfree} = $self->{_have_geoipfree};
