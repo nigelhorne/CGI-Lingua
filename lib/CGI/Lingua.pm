@@ -115,7 +115,7 @@ sub new {
 	my $logger = $params{logger};
 	if($cache && $ENV{'REMOTE_ADDR'} && $ENV{'HTTP_ACCEPT_LANGUAGE'}) {
 		my $key = "$ENV{REMOTE_ADDR}/$ENV{HTTP_ACCEPT_LANGUAGE}/";
-		$key .= join('/', $params{supported});
+		$key .= join('/', @{$params{supported}});
 		if($logger) {
 			$logger->debug("Looking in cache for $key");
 		}
@@ -163,7 +163,7 @@ sub DESTROY {
 	my $logger = $self->{_logger};
 
 	my $key = "$ENV{REMOTE_ADDR}/$ENV{HTTP_ACCEPT_LANGUAGE}";
-	$key .= join('/', $self->{_supported});
+	$key .= join('/', @{$self->{_supported}});
 	if($logger) {
 		$logger->trace("Storing self in cache as $key");
 	}
