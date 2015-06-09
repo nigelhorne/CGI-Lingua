@@ -167,10 +167,10 @@ sub DESTROY {
 
 	my $key = "$ENV{REMOTE_ADDR}/$ENV{HTTP_ACCEPT_LANGUAGE}/";
 	$key .= join('/', @{$self->{_supported}});
+	return if($cache->get($key));
 	if($logger) {
 		$logger->trace("Storing self in cache as $key");
 	}
-	return if($cache->get($key));
 
 	my $copy = bless {}, ref($self);
 	$copy->{_slanguage} = $self->{_slanguage};
