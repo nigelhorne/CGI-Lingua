@@ -113,8 +113,11 @@ sub new {
 
 	my $cache = $params{cache};
 	my $logger = $params{logger};
-	if($cache && $ENV{'REMOTE_ADDR'} && $ENV{'HTTP_ACCEPT_LANGUAGE'}) {
-		my $key = "$ENV{REMOTE_ADDR}/$ENV{HTTP_ACCEPT_LANGUAGE}/";
+	if($cache && $ENV{'REMOTE_ADDR'}) {
+		my $key = "$ENV{REMOTE_ADDR}/";
+		if($ENV{'HTTP_ACCEPT_LANGUAGE'}) {
+			$key .= "/$ENV{HTTP_ACCEPT_LANGUAGE}";
+		}
 		$key .= join('/', @{$params{supported}});
 		if($logger) {
 			$logger->debug("Looking in cache for $key");
@@ -156,7 +159,7 @@ sub DESTROY {
 	if(defined($^V) && ($^V ge 'v5.14.0')) {
 		return if ${^GLOBAL_PHASE} eq 'DESTRUCT';	# >= 5.14.0 only
 	}
-	unless($ENV{'REMOTE_ADDR'} && $ENV{'HTTP_ACCEPT_LANGUAGE'}) {
+	unless($ENV{'REMOTE_ADDR'}) {
 		return;
 	}
 	my $self = shift;
@@ -167,7 +170,10 @@ sub DESTROY {
 
 	my $logger = $self->{_logger};
 
-	my $key = "$ENV{REMOTE_ADDR}/$ENV{HTTP_ACCEPT_LANGUAGE}/";
+	my $key = "$ENV{REMOTE_ADDR}/";
+	if($ENV{'HTTP_ACCEPT_LANGUAGE'}) {
+		$key .= "/$ENV{HTTP_ACCEPT_LANGUAGE}";
+	}
 	$key .= join('/', @{$self->{_supported}});
 	return if($cache->get($key));
 	if($logger) {
