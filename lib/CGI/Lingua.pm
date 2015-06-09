@@ -131,6 +131,7 @@ sub new {
 			$rc->{_logger} = $logger;
 			$rc->{_syslog} = $params{syslog};
 			$rc->{_cache} = $cache;
+			$rc->{_supported} = $params{supported};
 
 			return $rc;
 		}
