@@ -116,7 +116,7 @@ sub new {
 	if($cache && $ENV{'REMOTE_ADDR'}) {
 		my $key = "$ENV{REMOTE_ADDR}/";
 		if($ENV{'HTTP_ACCEPT_LANGUAGE'}) {
-			$key .= "/$ENV{HTTP_ACCEPT_LANGUAGE}";
+			$key .= "$ENV{HTTP_ACCEPT_LANGUAGE}/";
 		}
 		$key .= join('/', @{$params{supported}});
 		if($logger) {
@@ -173,7 +173,7 @@ sub DESTROY {
 
 	my $key = "$ENV{REMOTE_ADDR}/";
 	if($ENV{'HTTP_ACCEPT_LANGUAGE'}) {
-		$key .= "/$ENV{HTTP_ACCEPT_LANGUAGE}";
+		$key .= "$ENV{HTTP_ACCEPT_LANGUAGE}/";
 	}
 	$key .= join('/', @{$self->{_supported}});
 	return if($cache->get($key));
