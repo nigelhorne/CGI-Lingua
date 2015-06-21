@@ -1,6 +1,6 @@
 Revision history for CGI-Lingua
 
-0.53
+0.53	Sun Jun 21 08:42:25 EDT 2015
 	Catch warning sent from Locale::Country::Object->new()
 	Created t/zz.t
 	Cache the entire object
