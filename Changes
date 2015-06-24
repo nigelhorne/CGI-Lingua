@@ -1,5 +1,8 @@
 Revision history for CGI-Lingua
 
+0.54
+	Handle connections over a LAN better
+
 0.53	Sun Jun 21 08:42:25 EDT 2015
 	Catch warning sent from Locale::Country::Object->new()
 	Created t/zz.t

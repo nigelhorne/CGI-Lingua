@@ -7,7 +7,7 @@ use Test::More;
 unless(-e 't/online.enabled') {
 	plan skip_all => 'On-line tests disabled';
 } else {
-	plan tests => 47;
+	plan tests => 49;
 
 	use_ok('CGI::Lingua');
 	require Test::NoWarnings;
@@ -120,6 +120,14 @@ unless(-e 't/online.enabled') {
 	$locale = $l->locale();
 	isa_ok($locale, 'Locale::Object::Country');
 	ok(uc($l->locale()->code_alpha2()) eq 'CA');
+
+	# LAN address
+	$ENV{'REMOTE_ADDR'} = '192.168.1.2';
+
+	$l = new_ok('CGI::Lingua' => [
+		supported => [ 'en-gb' ]
+	]);
+	ok(!defined($l->locale()));
 
 	# Find nothing
 	delete $ENV{'REMOTE_ADDR'};

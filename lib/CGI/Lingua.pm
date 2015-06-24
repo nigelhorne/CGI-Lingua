@@ -777,6 +777,12 @@ sub country {
 			return;
 		}
 	}
+	if(is_private_ipv4($ip)) {
+		if($self->{_logger}) {
+			$self->{_logger}->trace("Can't determine country from LAN connection $ip");
+		}
+		return;
+	}
 
 	if($self->{_have_ipcountry} == -1) {
 		if(eval { require IP::Country; }) {
@@ -886,7 +892,7 @@ sub country {
 			# Hong Kong is no longer a country, but Whois thinks
 			# it is - try "whois 218.213.130.87"
 			$self->{_country} = 'cn';
-		} elsif($self->country eq 'eu') {
+		} elsif($self->{_country} eq 'eu') {
 			require Net::Subnet;
 
 			# RT-86809, Baidu claims it's in EU not CN
