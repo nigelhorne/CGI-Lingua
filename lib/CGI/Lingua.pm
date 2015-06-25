@@ -809,12 +809,16 @@ sub country {
 	}
 	unless(defined($self->{_country})) {
 		if($self->{_have_geoip} == -1) {
-			if(eval { require Geo::IP; }) {
-				Geo::IP->import();
-				$self->{_have_geoip} = 1;
-				# GEOIP_STANDARD = 0, can't use that because you'll
-				# get a syntax error
-				$self->{_geoip} = Geo::IP->new(0);
+			if(($^O eq 'MSWin32') || (-r '/usr/local/share/GeoIP/GeoIP.dat')) {
+				if(eval { require Geo::IP; }) {
+					Geo::IP->import();
+					$self->{_have_geoip} = 1;
+					# GEOIP_STANDARD = 0, can't use that because you'll
+					# get a syntax error
+					$self->{_geoip} = Geo::IP->new(0);
+				} else {
+					$self->{_have_geoip} = 0;
+				}
 			} else {
 				$self->{_have_geoip} = 0;
 			}

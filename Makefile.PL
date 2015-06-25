@@ -23,10 +23,15 @@ if($ENV{RELEASE_TESTING}) {
 		$online_tests = 1;
 	} elsif(eval { require Geo::IP; }) {
 		my $v = Geo::IP->VERSION;
-		print "You have Geo::IP version $v installed, so CGI::Lingua can work fast\n";
-		# It also shouldn't need to do anything with the Internet,
-		# so we can do all tests
-		$online_tests = 1;
+		if(($^O ne 'MSWin32') && (! -r '/usr/local/share/GeoIP/GeoIP.dat')) {
+			print "Can't find your GeoIP.dat file for Geo::IP\n";
+			$online_tests = are_online();
+		} else {
+			print "You have Geo::IP version $v installed, so CGI::Lingua can work fast\n";
+			# It also shouldn't need to do anything with the Internet,
+			# so we can do all tests
+			$online_tests = 1;
+		}
 	} elsif(eval { require Geo::IPfree; }) {
 		my $v = Geo::IPfree->VERSION;
 		print "You have Geo::IPfree version $v installed, so CGI::Lingua can work fast\n";
