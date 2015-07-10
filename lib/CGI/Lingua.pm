@@ -726,6 +726,10 @@ caching capability of CGI::Lingua.
 sub country {
 	my $self = shift;
 
+	if($self->{_logger}) {
+		$self->{_logger}->trace('Entered country');
+	}
+
 	# FIXME: If previous calls to country() return undef, we'll
 	# waste time going through again and no doubt returning undef
 	# again.
@@ -753,9 +757,9 @@ sub country {
 		$self->{_country} = $self->{_cache}->get($ip);
 		if($self->{_logger}) {
 			if(defined($self->{_country})) {
-				$self->{_logger}->trace("Get $ip from cache = $self->{_country}");
+				$self->{_logger}->debug("Get $ip from cache = $self->{_country}");
 			} else {
-				$self->{_logger}->trace("$ip isn't in the cache");
+				$self->{_logger}->debug("$ip isn't in the cache");
 			}
 		}
 		if(defined($self->{_country})) {
