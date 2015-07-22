@@ -31,7 +31,7 @@ ZZ: {
 	ok($l->isa('CGI::Lingua'));
 
 	SKIP: {
-		skip 'Tests require Internet access', 6 unless(-e 't/online.enabled');
+		skip 'Tests require Internet access', 4 unless(-e 't/online.enabled');
 		diag('Ignore "is not known" message');
 		ok(defined($l->country()));
 		if($l->country() eq 'zz') {
