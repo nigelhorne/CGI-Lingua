@@ -67,6 +67,7 @@ WriteMakefile(
 	# 'Test::Kwalitee' => 0,
     },
     PREREQ_PM => {
+	'DBD::SQLite' => 0,	# Locale::Object doesn't declare this prerequisite
 	'Locale::Object::Country' => 0,
 	'I18N::AcceptLanguage' => 0,
 	'Locale::Language' => 0,
