@@ -1,6 +1,14 @@
+os:
+  - linux
+  - osx
 language: perl
 perl:
   - "5.20"
   - "5.18"
   - "5.16"
   - "5.14"
+before_install:
+  # Needed for Locale::Object
+  - cpanm --installdeps --notest DBD::SQLite
+  - cpanm --notest --verbose DBD::SQLite Locale::Object::Country
+  - cpanm --installdeps --notest --verbose --no-interactive .
