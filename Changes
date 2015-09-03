@@ -1,5 +1,9 @@
 Revision history for CGI-Lingua
 
+0.55
+	Sometimes requested_language would return Unknown even though it could
+		have been figured out.
+
 0.54	Sun Aug 16 20:14:59 EDT 2015
 	Handle connections over a LAN better
 	Ensure that Geo:IP has the file it will use

@@ -570,8 +570,13 @@ sub _find_language {
 				return;
 			}
 		}
-		unless($self->{_rlanguage}) {
-			$self->{_rlanguage} = 'Unknown';
+		if(((!$self->{_rlanguage}) || ($self->{_rlanguage} eq 'Unknown')) &&
+		   ((length($http_accept_language) == 2) || ($http_accept_language =~ /^..-..$/))) {
+			$self->{_rlanguage} = $self->_code2language($http_accept_language);
+
+			unless($self->{_rlanguage}) {
+				$self->{_rlanguage} = 'Unknown';
+			}
 		}
 		$self->{_slanguage} = 'Unknown';
 	}
