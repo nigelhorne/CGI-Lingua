@@ -755,22 +755,7 @@ sub country {
 
 	my $ip = $ENV{'REMOTE_ADDR'};
 
-	unless($ip) {
-		return();
-	}
-	if($self->{_cache}) {
-		$self->{_country} = $self->{_cache}->get($ip);
-		if($self->{_logger}) {
-			if(defined($self->{_country})) {
-				$self->{_logger}->debug("Get $ip from cache = $self->{_country}");
-			} else {
-				$self->{_logger}->debug("$ip isn't in the cache");
-			}
-		}
-		if(defined($self->{_country})) {
-			return $self->{_country};
-		}
-	}
+	return unless(defined($ip));
 
 	require Data::Validate::IP;
 	Data::Validate::IP->import();
@@ -791,6 +776,20 @@ sub country {
 			$self->{_logger}->trace("Can't determine country from LAN connection $ip");
 		}
 		return;
+	}
+
+	if($self->{_cache}) {
+		$self->{_country} = $self->{_cache}->get($ip);
+		if($self->{_logger}) {
+			if(defined($self->{_country})) {
+				$self->{_logger}->debug("Get $ip from cache = $self->{_country}");
+			} else {
+				$self->{_logger}->debug("$ip isn't in the cache");
+			}
+		}
+		if(defined($self->{_country})) {
+			return $self->{_country};
+		}
 	}
 
 	if($self->{_have_ipcountry} == -1) {
