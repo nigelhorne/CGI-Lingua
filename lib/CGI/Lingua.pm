@@ -5,7 +5,7 @@ use strict;
 use Class::Autouse qw{Carp Locale::Language Locale::Object::Country Locale::Object::DB I18N::AcceptLanguage I18N::LangTags::Detect Storable};
 
 use vars qw($VERSION);
-our $VERSION = '0.54';
+our $VERSION = '0.55';
 
 =head1 NAME
 
@@ -13,7 +13,7 @@ CGI::Lingua - Create a multilingual web page
 
 =head1 VERSION
 
-Version 0.54
+Version 0.55
 
 =cut
 
