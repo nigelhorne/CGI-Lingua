@@ -156,6 +156,7 @@ sub new {
 	}, $class;
 }
 
+# Some of the information takes a long time to work out, so cache what we can
 sub DESTROY {
 	if(defined($^V) && ($^V ge 'v5.14.0')) {
 		return if ${^GLOBAL_PHASE} eq 'DESTRUCT';	# >= 5.14.0 only
@@ -169,14 +170,15 @@ sub DESTROY {
 	my $cache = $self->{_cache};
 	return unless($cache);
 
-	my $logger = $self->{_logger};
-
 	my $key = "$ENV{REMOTE_ADDR}/";
 	if($ENV{'HTTP_ACCEPT_LANGUAGE'}) {
 		$key .= "$ENV{HTTP_ACCEPT_LANGUAGE}/";
 	}
 	$key .= join('/', @{$self->{_supported}});
 	return if($cache->get($key));
+
+	my $logger = $self->{_logger};
+
 	if($logger) {
 		$logger->trace("Storing self in cache as $key");
 	}
