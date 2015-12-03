@@ -7,7 +7,7 @@ use Test::More;
 unless(-e 't/online.enabled') {
 	plan skip_all => 'On-line tests disabled';
 } else {
-	plan tests => 117;
+	plan tests => 130;
 
 	use_ok('CGI::Lingua');
 	require Test::NoWarnings;
@@ -233,6 +233,30 @@ unless(-e 't/online.enabled') {
 	ok($l->language_code_alpha2() eq 'fr');
 	ok(defined($l->sublanguage_code_alpha2()));
 	ok($l->sublanguage_code_alpha2() eq 'fr');
+	ok($l->requested_language() eq 'French (France)');
+
+	# Everything says that we should deliver French, but it's not supported
+	$ENV{'REMOTE_ADDR'} = '193.56.58.16';
+	$l = new_ok('CGI::Lingua' => [
+		supported => ['en', 'nl', 'de', 'id', 'il', 'ja', 'ko', 'pt', 'ru', 'es', 'tr']
+	]);
+	diag($l->requested_language());
+	ok($l->language() eq 'Unknown');
+	ok(!defined($l->sublanguage()));
+	ok(!defined($l->language_code_alpha2()));
+	ok(!defined($l->sublanguage_code_alpha2()));
+	ok($l->requested_language() eq 'French');
+
+	# Support only the Swiss version of French, but French French is requested, so give French with no
+	#	version
+	$l = new_ok('CGI::Lingua' => [
+		supported => ['en', 'nl', 'fr-ch', 'de', 'id', 'il', 'ja', 'ko', 'pt', 'ru', 'es', 'tr']
+	]);
+	ok($l->language() eq 'French');
+	ok(!defined($l->sublanguage()));
+	ok(defined($l->language_code_alpha2()));
+	ok($l->language_code_alpha2() eq 'fr');
+	ok(!defined($l->sublanguage_code_alpha2()));
 	ok($l->requested_language() eq 'French (France)');
 
 	$ENV{'HTTP_ACCEPT_LANGUAGE'} = 'en-gb,en;q=0.5,x-ns1Gcc7A8xaNx1,x-ns294eMxcVGQb2';
