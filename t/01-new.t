@@ -69,7 +69,10 @@ LANGUAGES: {
 	ok(defined $l->requested_language());
 
         $ENV{'REMOTE_ADDR'} = '212.159.106.41';
-	$l = CGI::Lingua->new(supported => ['en', 'fr', 'en-gb', 'en-us']);
+	$l = CGI::Lingua->new({
+		supported => ['en', 'fr', 'en-gb', 'en-us'],
+		logger => MyLogger->new()
+	});
 	ok(defined $l);
 	ok($l->isa('CGI::Lingua'));
 	SKIP: {
@@ -81,5 +84,33 @@ LANGUAGES: {
 		ok(defined $l->requested_language());
 		ok($l->requested_language() =~ /English/);
 		ok($l->country() eq 'gb');
+	}
+}
+
+package MyLogger;
+
+sub new {
+	my ($proto, %args) = @_;
+
+	my $class = ref($proto) || $proto;
+
+	return bless { }, $class;
+}
+
+sub trace {
+	my $self = shift;
+	my $message = shift;
+
+	if($ENV{'TEST_VERBOSE'}) {
+		::diag($message);
+	}
+}
+
+sub debug {
+	my $self = shift;
+	my $message = shift;
+
+	if($ENV{'TEST_VERBOSE'}) {
+		::diag($message);
 	}
 }
