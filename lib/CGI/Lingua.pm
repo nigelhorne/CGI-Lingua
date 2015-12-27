@@ -308,6 +308,9 @@ language_code_alpha2() returns undef.
 sub language_code_alpha2 {
 	my $self = shift;
 
+	if($self->{_logger}) {
+		$self->{_logger}->trace('Entered language_code_alpha2');
+	}
 	unless($self->{_slanguage}) {
 		$self->_find_language();
 	}
@@ -365,6 +368,9 @@ sub requested_language {
 sub _find_language {
 	my $self = shift;
 
+	if($self->{_logger}) {
+		$self->{_logger}->trace('Entered _find_language');
+	}
 	$self->{_rlanguage} = 'Unknown';
 	$self->{_slanguage} = 'Unknown';
 
@@ -903,6 +909,7 @@ sub country {
 				}
 			}
 		}
+
 		if($self->{_country}) {
 			# 190.24.1.122 has carriage return in its WHOIS record
 			$self->{_country} =~ s/[\r\n]//g;

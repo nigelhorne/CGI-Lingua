@@ -7,7 +7,7 @@ use Test::More;
 unless(-e 't/online.enabled') {
 	plan skip_all => 'On-line tests disabled';
 } else {
-	plan tests => 130;
+	plan tests => 131;
 
 	use_ok('CGI::Lingua');
 	require Test::NoWarnings;
@@ -85,10 +85,12 @@ unless(-e 't/online.enabled') {
 	$ENV{'REMOTE_ADDR'} = '212.159.106.41';
 	$l = CGI::Lingua->new(
 		supported => ['en', 'fr', 'en-gb', 'en-us'],
-		syslog => 1
+		syslog => 1,
+		logger => MyLogger->new()
 	);
 	ok(defined $l);
 	ok($l->isa('CGI::Lingua'));
+	ok(defined($l->language_code_alpha2()));
 	ok($l->language_code_alpha2() eq 'en');
 	ok(!defined($l->sublanguage_code_alpha2()));
 	if($l->language() ne 'English') {
@@ -153,6 +155,9 @@ unless(-e 't/online.enabled') {
 	ok(!defined($l->language_code_alpha2()));
 	ok(!defined($l->sublanguage_code_alpha2()));
 	ok($l->country() eq 'no');
+	if($l->country() ne 'no') {
+		diag('Expected no got "' . $l->country() . '"');
+	}
 
 	delete($ENV{'HTTP_ACCEPT_LANGUAGE'});
 	$ENV{'REMOTE_ADDR'} = 'a.b.c.d';
@@ -240,7 +245,6 @@ unless(-e 't/online.enabled') {
 	$l = new_ok('CGI::Lingua' => [
 		supported => ['en', 'nl', 'de', 'id', 'il', 'ja', 'ko', 'pt', 'ru', 'es', 'tr']
 	]);
-	diag($l->requested_language());
 	ok($l->language() eq 'Unknown');
 	ok(!defined($l->sublanguage()));
 	ok(!defined($l->language_code_alpha2()));
@@ -279,4 +283,32 @@ unless(-e 't/online.enabled') {
 	]);
 	ok($l->language() eq 'English');
 	ok(!defined($l->sublanguage()));
+}
+
+package MyLogger;
+
+sub new {
+	my ($proto, %args) = @_;
+
+	my $class = ref($proto) || $proto;
+
+	return bless { }, $class;
+}
+
+sub trace {
+	my $self = shift;
+	my $message = shift;
+
+	if($ENV{'TEST_VERBOSE'}) {
+		::diag($message);
+	}
+}
+
+sub debug {
+	my $self = shift;
+	my $message = shift;
+
+	if($ENV{'TEST_VERBOSE'}) {
+		::diag($message);
+	}
 }
