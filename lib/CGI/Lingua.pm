@@ -741,6 +741,9 @@ sub country {
 	# waste time going through again and no doubt returning undef
 	# again.
 	if($self->{_country}) {
+		if($self->{_logger}) {
+			$self->{_logger}->trace('quick return: ' . $self->{_country});
+		}
 		return $self->{_country};
 	}
 
@@ -855,6 +858,9 @@ sub country {
 		delete($self->{_country});
 	}
 	unless($self->{_country}) {
+		if($self->{_logger}) {
+			$self->{_logger}->debug("Look up $ip on Whois");
+		}
 		require Net::Whois::IP;
 		Net::Whois::IP->import();
 
@@ -879,6 +885,10 @@ sub country {
 		}
 
 		unless($self->{_country}) {
+			if($self->{_logger}) {
+				$self->{_logger}->debug("Look up $ip on IANA");
+			}
+
 			require Net::Whois::IANA;
 			Net::Whois::IANA->import();
 
@@ -888,6 +898,9 @@ sub country {
 			};
 			unless ($@) {
 				$self->{_country} = $iana->country();
+				if($self->{_logger}) {
+					$self->{_logger}->debug("IANA reports $ip as " . $self->{_country});
+				}
 			}
 		}
 		if($self->{_country}) {
@@ -1121,8 +1134,8 @@ automatically be notified of progress on your bug as I make changes.
 
 =head1 SEE ALSO
 
-Locale::Country::Object
-HTTP::BrowserDetect
+L<Locale::Country::Object>
+L<HTTP::BrowserDetect>
 
 =head1 SUPPORT
 

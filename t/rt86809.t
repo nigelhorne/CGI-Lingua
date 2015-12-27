@@ -1,5 +1,7 @@
 #!perl -Tw
 
+# Sometimes IANA reports 185.10.104.194 as being in NL rather than in Hong Kong
+
 use strict;
 use warnings;
 use Test::More;
@@ -29,12 +31,46 @@ unless(-e 't/online.enabled') {
 
         $ENV{'REMOTE_ADDR'} = '185.10.104.194';
 
-	my $l = CGI::Lingua->new(supported => ['en', 'fr', 'en-gb', 'en-us']);
+	my $l = CGI::Lingua->new({
+		supported => ['en', 'fr', 'en-gb', 'en-us'],
+		logger => MyLogger->new()
+	});
 	ok(defined $l);
 	ok($l->isa('CGI::Lingua'));
-	ok(defined $l->requested_language());
-	ok($l->requested_language() eq 'Chinese');
-	ok(defined $l->language());
-	ok($l->language() eq 'Unknown');
-	ok($l->country() eq 'cn');
+	ok(defined($l->requested_language()));
+	SKIP: {
+		skip 'FIXME: find another China IP address', 4 if(defined($l->country()) && ($l->country() eq 'nl'));
+		ok($l->requested_language() eq 'Chinese');
+		ok(defined $l->language());
+		ok($l->language() eq 'Unknown');
+		ok($l->country() eq 'cn');
+	}
+}
+
+package MyLogger;
+
+sub new {
+	my ($proto, %args) = @_;
+
+	my $class = ref($proto) || $proto;
+
+	return bless { }, $class;
+}
+
+sub trace {
+	my $self = shift;
+	my $message = shift;
+
+	if($ENV{'TEST_VERBOSE'}) {
+		::diag($message);
+	}
+}
+
+sub debug {
+	my $self = shift;
+	my $message = shift;
+
+	if($ENV{'TEST_VERBOSE'}) {
+		::diag($message);
+	}
 }
