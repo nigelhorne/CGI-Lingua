@@ -1114,15 +1114,17 @@ Nigel Horne, C<< <njh at bandsman.co.uk> >>
 If HTTP_ACCEPT_LANGUAGE is 3 characters, e.g., es-419,
 sublanguage() returns undef.
 
-Please report any bugs or feature requests to C<bug-cgi-lingua at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=CGI-Lingua>.  I will be notified, and then you'll
+Please report any bugs or feature requests to C<bug-cgi-lingua at rt.cpan.org>,
+or through the web interface at
+L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=CGI-Lingua>.
+I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
 
 
 =head1 SEE ALSO
 
-Locale::Country::Object
-HTTP::BrowserDetect
+L<Locale::Country::Object>
+L<HTTP::BrowserDetect>
 
 =head1 SUPPORT
 
