@@ -88,6 +88,15 @@ sub new {
 	return bless { }, $class;
 }
 
+sub warn {
+	my $self = shift;
+	my $message = shift;
+
+	if($ENV{'TEST_VERBOSE'}) {
+		::diag($message);
+	}
+}
+
 sub trace {
 	my $self = shift;
 	my $message = shift;
