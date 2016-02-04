@@ -6,7 +6,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 21;
+use Test::More tests => 11;
 
 # Check comments in Whois records
 
@@ -51,29 +51,6 @@ EU: {
 		ok(defined($l->requested_language()));
 		ok($l->requested_language() eq 'English');
 	}
-	ok(!defined($l->sublanguage()));
-	# diag($l->locale());
-
-	$ENV{'HTTP_ACCEPT_LANGUAGE'} = 'en-gb';
-	$ENV{'REMOTE_ADDR'} = '217.156.134.120';
-	$l = $l->new(supported => [ 'en' ]);
-	isa_ok($l, 'CGI::Lingua');
-	ok(defined $l);
-	ok($l->isa('CGI::Lingua'));
-	$l->{_have_geoip} = 0;
-	$l->{_have_geoipfree} = 0;
-	$l->{_have_ipcountry} = 0;
-
-	SKIP: {
-		skip 'Tests require Internet access', 4 unless(-e 't/online.enabled');
-		skip 'FIXME: find another EU IP address', 4 if(defined($l->country()) && ($l->country() eq 'nl'));
-		ok(defined($l->country()));
-		ok($l->country() eq 'Unknown');
-		ok($l->language_code_alpha2() eq 'en');
-		ok($l->language() eq 'English');
-	}
-	ok(defined($l->requested_language()));
-	ok($l->requested_language() eq 'English (United Kingdom)');
 	ok(!defined($l->sublanguage()));
 	# diag($l->locale());
 }

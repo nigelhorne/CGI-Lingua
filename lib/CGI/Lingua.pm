@@ -865,6 +865,19 @@ sub country {
 	}
 	unless($self->{_country}) {
 		if($self->{_logger}) {
+			$self->{_logger}->debug("Look up $ip on geoplugin");
+		}
+
+		if(eval { require LWP::Simple; require JSON::Parse } ) {
+			LWP::Simple->import();
+			JSON::Parse->import();
+
+			my $data = JSON::Parse::parse_json(LWP::Simple::get("http://www.geoplugin.net/json.gp?ip=$ip"));
+			$self->{_country} = $data->{'geoplugin_countryCode'};
+		}
+	}
+	unless($self->{_country}) {
+		if($self->{_logger}) {
 			$self->{_logger}->debug("Look up $ip on Whois");
 		}
 		require Net::Whois::IP;
