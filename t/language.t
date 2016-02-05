@@ -7,7 +7,7 @@ use Test::More;
 unless(-e 't/online.enabled') {
 	plan skip_all => 'On-line tests disabled';
 } else {
-	plan tests => 131;
+	plan tests => 133;
 
 	use_ok('CGI::Lingua');
 	require Test::NoWarnings;
@@ -103,6 +103,7 @@ unless(-e 't/online.enabled') {
 	}
 	ok($l->requested_language() =~ /English/);
 	ok($l->country() eq 'gb');
+	ok($l->locale()->code_alpha2() eq 'gb');
 
 	delete($ENV{'REMOTE_ADDR'});
 	$ENV{'HTTP_ACCEPT_LANGUAGE'} = 'en';
@@ -158,6 +159,7 @@ unless(-e 't/online.enabled') {
 	if($l->country() ne 'no') {
 		diag('Expected no got "' . $l->country() . '"');
 	}
+	ok($l->locale()->code_alpha2() eq 'no');
 
 	delete($ENV{'HTTP_ACCEPT_LANGUAGE'});
 	$ENV{'REMOTE_ADDR'} = 'a.b.c.d';

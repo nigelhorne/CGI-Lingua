@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 49;
+use Test::More tests => 55;
 use Test::NoWarnings;
 
 BEGIN {
@@ -43,8 +43,9 @@ USGB: {
 	ok(defined $l);
 	ok($l->isa('CGI::Lingua'));
 	SKIP: {
-		skip 'Test requires Internet access', 1 unless(-e 't/online.enabled');
+		skip 'Test requires Internet access', 2 unless(-e 't/online.enabled');
 		ok($l->country() eq 'gb');
+		ok($l->locale()->code_alpha2() eq 'gb');
 	}
 	ok(defined($l->requested_language()));
 	ok($l->requested_language() eq 'English (United Kingdom)');
@@ -59,8 +60,9 @@ USGB: {
 	ok(defined $l);
 	ok($l->isa('CGI::Lingua'));
 	SKIP: {
-		skip 'Test requires Internet access', 1 unless(-e 't/online.enabled');
+		skip 'Test requires Internet access', 2 unless(-e 't/online.enabled');
 		ok($l->country() eq 'gb');
+		ok($l->locale()->code_alpha2() eq 'gb');
 	}
 	ok(defined($l->requested_language()));
 	ok($l->requested_language() eq 'English (United Kingdom)');
@@ -75,8 +77,9 @@ USGB: {
 	ok(defined $l);
 	ok($l->isa('CGI::Lingua'));
 	SKIP: {
-		skip 'Test requires Internet access', 1 unless(-e 't/online.enabled');
+		skip 'Test requires Internet access', 2 unless(-e 't/online.enabled');
 		ok($l->country() eq 'gb');
+		ok($l->locale()->code_alpha2() eq 'gb');
 	}
 	ok(defined($l->requested_language()));
 	ok($l->requested_language() eq 'English (United States)');
@@ -91,8 +94,9 @@ USGB: {
 	ok(defined $l);
 	ok($l->isa('CGI::Lingua'));
 	SKIP: {
-		skip 'Test requires Internet access', 1 unless(-e 't/online.enabled');
+		skip 'Test requires Internet access', 2 unless(-e 't/online.enabled');
 		ok($l->country() eq 'gb');
+		ok($l->locale()->code_alpha2() eq 'gb');
 	}
 	ok(defined($l->requested_language()));
 	ok($l->requested_language() eq 'English (United Kingdom)');
@@ -106,8 +110,9 @@ USGB: {
 	ok(defined $l);
 	isa_ok($l, 'CGI::Lingua');
 	SKIP: {
-		skip 'Test requires Internet access', 1 unless(-e 't/online.enabled');
+		skip 'Test requires Internet access', 2 unless(-e 't/online.enabled');
 		ok($l->country() eq 'gb');
+		ok($l->locale()->code_alpha2() eq 'gb');
 	}
 	ok(defined($l->requested_language()));
 	ok($l->requested_language() eq 'English');
@@ -124,8 +129,9 @@ USGB: {
 	ok(defined $l);
 	isa_ok($l, 'CGI::Lingua');
 	SKIP: {
-		skip 'Test requires Internet access', 1 unless(-e 't/online.enabled');
+		skip 'Test requires Internet access', 2 unless(-e 't/online.enabled');
 		ok($l->country() eq 'gb');
+		ok($l->locale()->code_alpha2() eq 'gb');
 	}
 	ok(defined($l->requested_language()));
 	ok($l->requested_language() eq 'English (United States)');
