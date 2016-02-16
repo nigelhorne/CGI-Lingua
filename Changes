@@ -3,6 +3,7 @@ Revision history for CGI-Lingua
 0.56:
 	Handle IANA misreporting the country of some of my test data
 	Use geoplugin as an alternative to Whois
+	Use LANG environment when not in CGI mode
 
 0.55	Mon Oct 12 17:06:36 EDT 2015
 	Sometimes requested_language would return Unknown even though it could

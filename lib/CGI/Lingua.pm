@@ -253,6 +253,8 @@ language() returns 'Unknown'.
     # sublanguage will also be undefined, which may seem strange, but it
     # ensures that sites behave sensibly.
 
+If the script is not being run in a CGI environment, perhaps to debug it, the
+locale is used via the LANG environment variable.
 =cut
 
 sub language {
@@ -400,6 +402,7 @@ sub _find_language {
 				$l = $1;
 			}
 		}
+
 		if($l) {
 			if($self->{_logger}) {
 				$self->{_logger}->debug("l: $l");
@@ -597,6 +600,19 @@ sub _find_language {
 	# or the requested language(s) isn't/aren't supported so use the IP
 	# address for an alternative
 	my $country = $self->country();
+
+	if(!defined($country)) {
+		if(defined($ENV{'LANG'})) {
+			# Running the script locally, presumably to debug, so set the language
+			# from the Locale
+			if($ENV{'LANG'} =~ /^(..)_(..)/) {
+				$country = $2;	# Best guess
+			} elsif($ENV{'LANG'} =~ /^(..)$/) {
+				$country = $1;	# Wrong, but maybe something will drop out
+			}
+		}
+	}
+
 	if(defined($country)) {
 		if($self->{_logger}) {
 			$self->{_logger}->debug("country: $country");
@@ -1194,7 +1210,7 @@ L<http://search.cpan.org/dist/CGI-Lingua/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010-2015 Nigel Horne.
+Copyright 2010-2016 Nigel Horne.
 
 This program is released under the following licence: GPL
 
