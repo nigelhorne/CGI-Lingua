@@ -126,7 +126,7 @@ EOF
 		};
 		if($@) {
 			print "\n";
-			return 0;
+			return 1;	# The default is 'y'
 		}
 		return $rc;
 	} else {
