@@ -1,5 +1,8 @@
 Revision history for CGI-Lingua
 
+0.57:
+	Added Coveralls integration
+
 0.56:
 	Handle IANA misreporting the country of some of my test data
 	Use geoplugin as an alternative to Whois
