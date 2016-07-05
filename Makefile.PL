@@ -102,7 +102,6 @@ sub are_online
 	my $s = IO::Socket::INET->new(
 		# PeerAddr => 'www.ripe.net:43',
 		PeerAddr => 'whois.apnic.net:43',
-		# PeerAddr => 'www.google.com:80',
 		Timeout => 5
 	);
 	if($s) {
