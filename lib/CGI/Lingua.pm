@@ -2,7 +2,8 @@ package CGI::Lingua;
 
 use warnings;
 use strict;
-use Class::Autouse qw{Carp Locale::Language Locale::Object::Country Locale::Object::DB I18N::AcceptLanguage I18N::LangTags::Detect Storable};
+use Storable; # RT117983
+use Class::Autouse qw{Carp Locale::Language Locale::Object::Country Locale::Object::DB I18N::AcceptLanguage I18N::LangTags::Detect};
 
 use vars qw($VERSION);
 our $VERSION = '0.55';
@@ -738,7 +739,6 @@ sub _get_closest {
 			last;
 		}
 	}
-	return;
 }
 
 =head2 country

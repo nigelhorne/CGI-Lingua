@@ -28,6 +28,7 @@ t/language.t
 t/locale.t
 t/logger.t
 t/manifest.t
+t/metrics.t
 t/noplan.t
 t/pod-cm.t
 t/pod.t

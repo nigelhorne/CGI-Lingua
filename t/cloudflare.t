@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 19;
+use Test::Most tests => 19;
 
 BEGIN {
 	require_ok('CGI::Lingua');
