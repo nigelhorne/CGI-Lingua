@@ -1,13 +1,11 @@
 Revision history for CGI-Lingua
 
-0.57:
-	Added Coveralls integration
-	Handle RT117983
-
-0.56:
+0.56:	Tue Sep 20 12:05:29 EDT 2016
 	Handle IANA misreporting the country of some of my test data
 	Use geoplugin as an alternative to Whois
 	Use LANG environment when not in CGI mode
+	Added Coveralls integration
+	Handle RT117983
 
 0.55	Mon Oct 12 17:06:36 EDT 2015
 	Sometimes requested_language would return Unknown even though it could
