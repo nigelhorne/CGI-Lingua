@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 46;
+use Test::Most tests => 52;
 use Test::NoWarnings;
 
 BEGIN {
@@ -75,6 +75,15 @@ LANGUAGES: {
 	ok(defined($l->requested_language()));
 	ok($l->requested_language() eq 'English (United Kingdom)');
 	ok($l->sublanguage() eq 'United Kingdom');
+	ok($l->code_alpha2() eq 'en');
+	ok(!defined($l->country()));
+
+	$l = new_ok('CGI::Lingua' => [
+		supported => ['en', 'en-gb', 'fr']
+	]);
+	ok($l->sublanguage() eq 'United Kingdom');	# Check sublanguage first
+	ok($l->requested_language() eq 'English (United Kingdom)');
+	ok($l->language() eq 'English');
 	ok($l->code_alpha2() eq 'en');
 	ok(!defined($l->country()));
 

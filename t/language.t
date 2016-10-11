@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::More;
+use Test::Most;
 
 unless(-e 't/online.enabled') {
 	plan skip_all => 'On-line tests disabled';
@@ -192,11 +192,11 @@ unless(-e 't/online.enabled') {
 	$l = new_ok('CGI::Lingua' => [
 		supported => [ 'en-gb', 'da', 'fr', 'nl', 'de', 'it', 'cy', 'pt', 'pl', 'ja' ]
 	]);
+	ok($l->sublanguage_code_alpha2() eq 'us');
 	ok($l->language() eq 'English');
 	ok($l->requested_language() eq 'English (United States)');
 	ok($l->sublanguage() eq 'United States');
 	ok($l->language_code_alpha2() eq 'en');
-	ok($l->sublanguage_code_alpha2() eq 'us');
 
 	$ENV{'HTTP_ACCEPT_LANGUAGE'} = 'en-ZZ,en;q=0.8';
 	$l = new_ok('CGI::Lingua' => [
