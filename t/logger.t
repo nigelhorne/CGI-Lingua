@@ -2,7 +2,9 @@
 
 use strict;
 use warnings;
-use Test::More;
+use Test::Most;
+
+eval 'use autodie qw(:all)';	# Test for open/close failures
 
 LOGGER: {
 	eval 'use Log::Log4perl';
@@ -15,15 +17,16 @@ LOGGER: {
 		if($@) {
 			plan skip_all => "Test::Log4perl required for checking logger";
 		} else {
-			plan tests => 4;
+			plan tests => 8;
 
 			use_ok('CGI::Lingua');
+
+			Log::Log4perl->easy_init({ level => $Log::Log4perl::DEBUG });
 
 			# Yes, I know the manual says it would be logged
 			# under CGI::Lingua, but it's acutally logged under
 			# CGI.Lingua
 			my $logger = Log::Log4perl->get_logger('CGI.Lingua');
-			my $tlogger = Test::Log4perl->get_logger('CGI.Lingua');
 
 			delete $ENV{'LANGUAGE'};
 			delete $ENV{'LC_ALL'};
@@ -40,20 +43,53 @@ LOGGER: {
 				logger => $logger,
 			]);
 
+			my $tlogger = Test::Log4perl->get_logger('CGI.Lingua');
+
 			Test::Log4perl->start();
 
-			my $lang;
-			eval {
-				$lang = $l->language();
-			};
-			if($@) {
-				ok($@ =~ /Can't determine values for en-zz/);
+			$tlogger->debug('HTTP_ACCEPT_LANGUAGE: en-zz');
+			$tlogger->debug('l: en');
+			$tlogger->debug('_slanguage: English');
 
+			ok($l->language() eq 'English');
+			ok(!defined($l->sublanguage_code_alpha2()));
+
+			# Test logger and cache together
+			my $cache;
+
+			eval {
+				require CHI;
+
+				CHI->import;
+			};
+
+			if($@) {
+				diag('CHI not installed');
 			} else {
-				# On some older perls this happens. Why?
-				ok($lang eq 'English');
+				diag("Using CHI $CHI::VERSION");
+				my $hash = {};
+				$cache = CHI->new(driver => 'Memory', datastore => $hash);
+				$tlogger->debug('Looking in cache for 74.92.149.57/en-us/en-us');
 			}
-			$tlogger->warn("Can't determine values for en-zz");
+
+			$ENV{'HTTP_ACCEPT_LANGUAGE'} = 'en-us';
+
+			$tlogger->debug('HTTP_ACCEPT_LANGUAGE: en-us');
+			$tlogger->debug('l: en-us');
+			$tlogger->debug('accepts: en-us');
+			$tlogger->debug('_rlanguage: English');
+			$tlogger->debug('Find the country code for us');
+			$tlogger->debug('variety name United States');
+			$tlogger->debug('Set us to English=en');
+
+			$l = new_ok('CGI::Lingua' => [
+				supported => [ 'en-us' ],
+				logger => $logger,
+				cache => $cache,
+			]);
+			ok($l->language() eq 'English');
+			ok($l->sublanguage_code_alpha2() eq 'us');
+
 			Test::Log4perl->end('Test logs all OK');
 		}
 	}
