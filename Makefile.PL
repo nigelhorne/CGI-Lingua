@@ -76,7 +76,7 @@ WriteMakefile(
 	'Net::Whois::IANA' => 0,
 	'Net::Whois::IP' => 0,
 	'Class::Load' => 0,
-	'CGI::Info' => 0,
+	'CGI::Info' => 0.60, # For AUTOLOAD
 	'Sys::Syslog' => 0,
 	'HTTP::BrowserDetect' => 0,
 	'Net::Subnet' => 0,

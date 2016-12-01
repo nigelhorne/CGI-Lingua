@@ -47,7 +47,7 @@ LOGGER: {
 
 			Test::Log4perl->start();
 
-			$tlogger->debug('HTTP_ACCEPT_LANGUAGE: en-zz');
+			$tlogger->debug('language wanted: en-zz');
 			$tlogger->debug('l: en');
 			$tlogger->debug('_slanguage: English');
 
@@ -74,7 +74,7 @@ LOGGER: {
 
 			$ENV{'HTTP_ACCEPT_LANGUAGE'} = 'en-us';
 
-			$tlogger->debug('HTTP_ACCEPT_LANGUAGE: en-us');
+			$tlogger->debug('language wanted: en-us');
 			$tlogger->debug('l: en-us');
 			$tlogger->debug('accepts: en-us');
 			$tlogger->debug('_rlanguage: English');
@@ -87,8 +87,8 @@ LOGGER: {
 				logger => $logger,
 				cache => $cache,
 			]);
-			ok($l->language() eq 'English');
-			ok($l->sublanguage_code_alpha2() eq 'us');
+			is($l->language(), 'English', 'Language is English');
+			is($l->sublanguage_code_alpha2(), 'us', 'Variety is American English');
 
 			Test::Log4perl->end('Test logs all OK');
 		}

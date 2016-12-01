@@ -85,6 +85,9 @@ and traces.
 This logger object is an object that understands warn() and trace()
 messages, such as a L<Log::Log4perl> object.
 
+Takes optional parameter info, an object which can be used to see if a CGI
+parameter is set, for example an L<CGI::Info> object.
+
 Since emitting warnings from a CGI class can result in messages being lost (you
 may forget to look in your server's log), or appearing to the client in
 amongst HTML causing invalid HTML, it is recommended either either syslog
@@ -116,8 +119,8 @@ sub new {
 	my $logger = $params{logger};
 	if($cache && $ENV{'REMOTE_ADDR'}) {
 		my $key = "$ENV{REMOTE_ADDR}/";
-		if($ENV{'HTTP_ACCEPT_LANGUAGE'}) {
-			$key .= "$ENV{HTTP_ACCEPT_LANGUAGE}/";
+		if(my $l = $class->_what_language()) {
+			$key .= "$l/";
 		}
 		$key .= join('/', @{$params{supported}});
 		if($logger) {
@@ -141,6 +144,7 @@ sub new {
 	return bless {
 		_supported => $params{supported}, # List of languages (two letters) that the application
 		_cache => $cache,	# CHI
+		_info => $params{info},
 		# _rlanguage => undef,	# Requested language
 		# _slanguage => undef,	# Language that the website should display
 		# _sublanguage => undef,	# E.g. United States for en-US if you want American English
@@ -172,8 +176,8 @@ sub DESTROY {
 	return unless($cache);
 
 	my $key = "$ENV{REMOTE_ADDR}/";
-	if($ENV{'HTTP_ACCEPT_LANGUAGE'}) {
-		$key .= "$ENV{HTTP_ACCEPT_LANGUAGE}/";
+	if(my $l = $self->_what_language()) {
+		$key .= "$l/";
 	}
 	$key .= join('/', @{$self->{_supported}});
 	return if($cache->get($key));
@@ -378,10 +382,10 @@ sub _find_language {
 	$self->{_slanguage} = 'Unknown';
 
 	# Use what the client has said
-	my $http_accept_language = $ENV{'HTTP_ACCEPT_LANGUAGE'};
-	if($http_accept_language) {
+	my $http_accept_language = $self->_what_language();
+	if(defined($http_accept_language)) {
 		if($self->{_logger}) {
-			$self->{_logger}->debug("HTTP_ACCEPT_LANGUAGE: $http_accept_language");
+			$self->{_logger}->debug("language wanted: $http_accept_language");
 		}
 
 		# Workaround for RT 74338
@@ -602,15 +606,11 @@ sub _find_language {
 	# address for an alternative
 	my $country = $self->country();
 
-	if(!defined($country)) {
-		if(defined($ENV{'LANG'})) {
-			# Running the script locally, presumably to debug, so set the language
-			# from the Locale
-			if($ENV{'LANG'} =~ /^(..)_(..)/) {
-				$country = $2;	# Best guess
-			} elsif($ENV{'LANG'} =~ /^(..)$/) {
-				$country = $1;	# Wrong, but maybe something will drop out
-			}
+	if((!defined($country)) && (my $c = $self->_what_language())) {
+		if($c =~ /^(..)_(..)/) {
+			$country = $2;	# Best guess
+		} elsif($c =~ /^(..)$/) {
+			$country = $1;	# Wrong, but maybe something will drop out
 		}
 	}
 
@@ -717,7 +717,6 @@ sub _find_language {
 			});
 		}
 	}
-	return;
 }
 
 # Try our very best to give the right country - if they ask for en-us and
@@ -738,6 +737,28 @@ sub _get_closest {
 			$self->{_slanguage_code_alpha2} = $alpha2;
 			last;
 		}
+	}
+}
+
+# What's the language being requested? Can be used in both a class and an object context
+sub _what_language {
+	my $self = shift;
+
+	if(ref($self) && (my $info = $self->{_info})) {
+		if(my $rc = $info->lang()) {
+			# E.g. cgi-bin/script.cgi?lang=de
+			return $rc;
+		}
+	}
+
+	if(defined($ENV{'LANG'})) {
+		# Running the script locally, presumably to debug, so set the language
+		# from the Locale
+		return $ENV{'LANG'};
+	}
+
+	if($ENV{'HTTP_ACCEPT_LANGUAGE'}) {
+		return $ENV{'HTTP_ACCEPT_LANGUAGE'};
 	}
 }
 
