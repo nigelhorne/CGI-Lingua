@@ -13,14 +13,14 @@ t/boilerplate.t
 t/changes.t
 t/cloudflare.t
 t/coverage.t
-t/critic.t
 t/cr.t
+t/critic.t
 t/cv.t
 t/dist.t
-t/gv.t
 t/en_029.t
 t/es_419.t
 t/eu.t
+t/gv.t
 t/hk.t
 t/hp-tablet.t
 t/kwalitee.t
@@ -30,6 +30,7 @@ t/logger.t
 t/manifest.t
 t/metrics.t
 t/noplan.t
+t/online.enabled
 t/pod-cm.t
 t/pod.t
 t/port.t

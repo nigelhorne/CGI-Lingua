@@ -1,10 +1,14 @@
-# NAME
+[![Linux Build Status](https://travis-ci.org/nigelhorne/CGI-Lingua.svg?branch=master)](https://travis-ci.org/nigelhorne/CGI-Lingua)
+[![Windows Build status](https://ci.appveyor.com/api/projects/status/aihulcqwr24so9ix/branch/master?svg=true)](https://ci.appveyor.com/project/nigelhorne/cgi-lingua/branch/master)
+[![Dependency Status](https://dependencyci.com/github/nigelhorne/CGI-Lingua/badge)](https://dependencyci.com/github/nigelhorne/CGI-Lingua)
 
-CGI::Lingua - Create a multilingual web page
+# CGI::Lingua
+
+Create a multilingual web page
 
 # VERSION
 
-Version 0.56
+Version 0.57
 
 # SYNOPSIS
 
@@ -72,6 +76,9 @@ Takes optional parameter logger, an object which is used for warnings
 and traces.
 This logger object is an object that understands warn() and trace()
 messages, such as a [Log::Log4perl](https://metacpan.org/pod/Log::Log4perl) object.
+
+Takes optional parameter info, an object which can be used to see if a CGI
+parameter is set, for example an [CGI::Info](https://metacpan.org/pod/CGI::Info) object.
 
 Since emitting warnings from a CGI class can result in messages being lost (you
 may forget to look in your server's log), or appearing to the client in
