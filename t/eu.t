@@ -6,15 +6,16 @@
 
 use strict;
 use warnings;
-use Test::More tests => 11;
+use Test::Most;
 
 # Check comments in Whois records
 
-BEGIN {
-	use_ok('CGI::Lingua');
-}
+unless(-e 't/online.enabled') {
+	plan skip_all => 'On-line tests disabled';
+} else {
+	plan tests => 11;
 
-EU: {
+	use_ok('CGI::Lingua');
 	diag('Ignore messages about the unknown country eu. Some whois records list the country as EU even though it is not a country');
 	# Stop I18N::LangTags::Detect from detecting something
 	delete $ENV{'LANGUAGE'};

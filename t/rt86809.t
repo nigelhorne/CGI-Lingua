@@ -4,9 +4,10 @@
 
 use strict;
 use warnings;
-use Test::More;
-use CGI::Lingua;
+use Test::Most;
 # use Test::NoWarnings;	# Win32::locale::Lexicon produces warnings
+
+eval 'use autodie qw(:all)';	# Test for open/close failures
 
 # Work around for systems with broken Module::Load
 # http://www.cpantesters.org/cpan/report/eae7b808-172d-11e0-a672-41e7f2486b6f
@@ -17,8 +18,9 @@ use Test::Requires {
 unless(-e 't/online.enabled') {
 	plan skip_all => 'On-line tests disabled';
 } else {
-	plan tests => 7;
+	plan tests => 8;
 
+	use_ok('CGI::Lingua');
 	# Stop I18N::LangTags::Detect from detecting something
 	delete $ENV{'LANGUAGE'};
 	delete $ENV{'LC_ALL'};

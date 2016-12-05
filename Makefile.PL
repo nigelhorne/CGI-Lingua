@@ -65,6 +65,8 @@ WriteMakefile(
 	'Test::NoWarnings' => 0,
 	'Test::Requires' => 0,
 	# 'Test::Kwalitee' => 0,
+	'autodie' => 0,
+	'IPC::System::Simple' => 0,
     },
     PREREQ_PM => {
 	'DBD::SQLite' => 0,	# Locale::Object doesn't declare this prerequisite

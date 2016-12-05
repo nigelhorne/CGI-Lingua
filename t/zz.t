@@ -2,15 +2,18 @@
 
 use strict;
 use warnings;
-use Test::More tests => 9;
+use Test::Most;
+
+eval 'use autodie qw(:all)';	# Test for open/close failures
 
 # Test records where Locale::Object::Country->new() fails
 
-BEGIN {
-	use_ok('CGI::Lingua');
-}
+unless(-e 't/online.enabled') {
+	plan skip_all => 'On-line tests disabled';
+} else {
+	plan tests => 9;
 
-ZZ: {
+	use_ok('CGI::Lingua');
 	# Stop I18N::LangTags::Detect from detecting something
 	delete $ENV{'LANGUAGE'};
 	delete $ENV{'LC_ALL'};
