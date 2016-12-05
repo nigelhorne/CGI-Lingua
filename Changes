@@ -1,5 +1,8 @@
 Revision history for CGI-Lingua
 
+0.58
+	Remember the requested language
+
 0.57:	Sat  3 Dec 09:20:33 EST 2016
 	Handle lang passed in as a CGI parameter to override the browser's settings
 

@@ -744,20 +744,31 @@ sub _get_closest {
 sub _what_language {
 	my $self = shift;
 
-	if(ref($self) && (my $info = $self->{_info})) {
-		if(my $rc = $info->lang()) {
-			# E.g. cgi-bin/script.cgi?lang=de
-			return $rc;
+	if(ref($self)) {
+		if($self->{_what_language}) {
+			return $self->{_what_language};	# Useful in case something changes the $info hash
+		}
+		if(my $info = $self->{_info}) {
+			if(my $rc = $info->lang()) {
+				# E.g. cgi-bin/script.cgi?lang=de
+				return $self->{_what_language} = $rc;
+			}
 		}
 	}
 
 	if(defined($ENV{'LANG'})) {
 		# Running the script locally, presumably to debug, so set the language
 		# from the Locale
+		if(ref($self)) {
+			return $self->{_what_language} = $ENV{'LANG'};
+		}
 		return $ENV{'LANG'};
 	}
 
 	if($ENV{'HTTP_ACCEPT_LANGUAGE'}) {
+		if(ref($self)) {
+			return $self->{_what_language} = $ENV{'HTTP_ACCEPT_LANGUAGE'};
+		}
 		return $ENV{'HTTP_ACCEPT_LANGUAGE'};
 	}
 }
