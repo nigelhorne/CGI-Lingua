@@ -191,12 +191,13 @@ sub DESTROY {
 	my $copy = bless {
 		_slanguage => $self->{_slanguage},
 		_slanguage_code_alpha2 => $self->{_slanguage_code_alpha2},
+		_sublanguage_code_alpha2 => $self->{_sublanguage_code_alpha2},
 		_country => $self->{_country},
 		_rlanguage => $self->{_rlanguage},
 		_dont_use_ip => $self->{_dont_use_ip},
 		_have_ipcountry => $self->{_have_ipcountry},
 		_have_geoip => $self->{_have_geoip},
-		_have_geoipfree => $self->{_have_geoipfree}
+		_have_geoipfree => $self->{_have_geoipfree},
 	}, ref($self);
 
 	# All of these crash, presumably something recursive is going on

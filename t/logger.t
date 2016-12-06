@@ -17,7 +17,7 @@ LOGGER: {
 		if($@) {
 			plan skip_all => "Test::Log4perl required for checking logger";
 		} else {
-			plan tests => 8;
+			plan tests => 11;
 
 			use_ok('CGI::Lingua');
 
@@ -90,6 +90,19 @@ LOGGER: {
 			is($l->language(), 'English', 'Language is English');
 			is($l->sublanguage_code_alpha2(), 'us', 'Variety is American English');
 
+			# Doing the same thing should read from the cache
+			$l = undef;	# Ensure it's stored in the cache before we look
+			$l = new_ok('CGI::Lingua' => [
+				supported => [ 'en-us' ],
+				logger => $logger,
+				cache => $cache,
+			]);
+
+			$tlogger->debug('Looking in cache for 74.92.149.57/en-us/en-us');
+			is($l->language(), 'English', 'Language is English');
+			is($l->sublanguage_code_alpha2(), 'us', 'Variety is American English');
+
+			$tlogger->debug('Found - thawing');
 			Test::Log4perl->end('Test logs all OK');
 		}
 	}
