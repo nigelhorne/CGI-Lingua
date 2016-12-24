@@ -9,7 +9,7 @@ Create a multilingual web page
 
 # VERSION
 
-Version 0.57
+Version 0.58
 
 # SYNOPSIS
 
