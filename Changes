@@ -1,6 +1,6 @@
 Revision history for CGI-Lingua
 
-0.58
+0.58	Fri Dec 23 21:08:52 EST 2016
 	Remember the requested language
 	Ensure _sublanguage_code_alpha2 is stored in cache
 
