@@ -99,6 +99,8 @@ requested languages are supported, CGI::Lingua->language() looks in the IP
 address for the language to use.  This may be not what you want, so use this
 option to disable the feature.
 
+The optional parameter debug is passed on to L<I18N::AcceptLanguage>.
+
 =cut
 
 sub new {
@@ -158,6 +160,7 @@ sub new {
 		_have_ipcountry => -1,	# -1 = don't know
 		_have_geoip => -1,	# -1 = don't know
 		_have_geoipfree => -1,	# -1 = don't know
+		_debug => $params{debug} || 0,
 	}, $class;
 }
 
@@ -395,7 +398,7 @@ sub _find_language {
 				warn $_[0];
 			}
 		};
-		my $i18n = I18N::AcceptLanguage->new();
+		my $i18n = I18N::AcceptLanguage->new(debug => $self->{_debug});
 		my $l = $i18n->accepts($http_accept_language, $self->{_supported});
 		local $SIG{__WARN__} = 'DEFAULT';
 		if((!$l) && ($http_accept_language =~ /(.+)-.+/)) {
@@ -1240,10 +1243,9 @@ L<http://search.cpan.org/dist/CGI-Lingua/>
 
 =head1 ACKNOWLEDGEMENTS
 
-
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010-2016 Nigel Horne.
+Copyright 2010-2017 Nigel Horne.
 
 This program is released under the following licence: GPL
 

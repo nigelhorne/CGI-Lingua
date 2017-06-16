@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use ExtUtils::MakeMaker;
+use ExtUtils::MakeMaker 6.64;	# 6.64 for TEST_REQUIRES
 use Getopt::Long;	# Technique inspired by IO::Lambda
 use IO::Socket::INET;
 
@@ -60,7 +60,7 @@ WriteMakefile(
       ? ('LICENSE'=> 'GPL')
       : ()),
     PL_FILES            => {},
-    BUILD_REQUIRES => {
+    TEST_REQUIRES => {
 	'Test::Most' => 0,
 	'Test::NoWarnings' => 0,
 	'Test::Requires' => 0,
