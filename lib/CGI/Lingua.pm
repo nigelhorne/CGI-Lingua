@@ -77,8 +77,10 @@ lookups.
 This cache object is an object that understands get() and set() messages,
 such as a L<CHI> object.
 
-Takes an optional boolean parameter syslog, to log messages to
+Takes an optional parameter syslog, to log messages to
 L<Sys::Syslog>.
+It can be a boolean to enable/disable logging to syslog, or a reference
+to a hash to be given to Sys::Syslog::setlogsock.
 
 Takes optional parameter logger, an object which is used for warnings
 and traces.
@@ -224,7 +226,10 @@ sub _warn {
 		require CGI::Info;
 
 		Sys::Syslog->import();
-		openlog(CGI::Info->new()->script_name(), 'cons,pid', 'user');
+		if(ref($self->{_syslog} eq 'HASH')) {
+			Sys::Syslog::setlogsock($self->{_syslog});
+		}
+		openlog(CGI::Info->new(syslog => $self->{_syslog})->script_name(), 'cons,pid', 'user');
 		syslog('warning', $warning);
 		closelog();
 	}
