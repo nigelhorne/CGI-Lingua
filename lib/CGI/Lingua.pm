@@ -381,6 +381,9 @@ sub requested_language {
 
 # The language cache is stored as country_2_letter -> $language_human_readable_name=$language_2_letter
 # The IP cache is stored as ip -> country_human_readable_name
+
+# Returns the human readable language, such as 'English'
+
 sub _find_language {
 	my $self = shift;
 
@@ -839,9 +842,15 @@ sub country {
 			return;
 		}
 	}
-	if(is_private_ipv4($ip)) {
+	if(is_private_ip($ip)) {
 		if($self->{_logger}) {
 			$self->{_logger}->trace("Can't determine country from LAN connection $ip");
+		}
+		return;
+	}
+	if(is_loopback_ip($ip)) {
+		if($self->{_logger}) {
+			$self->{_logger}->trace("Can't determine country from loopback connection $ip");
 		}
 		return;
 	}
