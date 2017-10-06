@@ -121,9 +121,14 @@ sub new {
 
 	my $cache = $params{cache};
 	my $logger = $params{logger};
+	my $info = $params{info};
+
 	if($cache && $ENV{'REMOTE_ADDR'}) {
 		my $key = "$ENV{REMOTE_ADDR}/";
-		if(my $l = $class->_what_language()) {
+		my $l;
+		if($info && ($l = $info->lang())) {
+			$key .= "$l/";
+		} elsif($l = $class->_what_language()) {
 			$key .= "$l/";
 		}
 		$key .= join('/', @{$params{supported}});
@@ -140,11 +145,12 @@ sub new {
 			$rc->{_syslog} = $params{syslog};
 			$rc->{_cache} = $cache;
 			$rc->{_supported} = $params{supported};
-			$rc->{_info} = $params{info};
+			$rc->{_info} = $info;
 
-			if(($rc->{_what_language} || $rc->{_rlanguage}) && $params{info} && $params{info}->lang()) {
+			if(($rc->{_what_language} || $rc->{_rlanguage}) && $info && $info->lang()) {
 				delete $rc->{_what_language};
 				delete $rc->{_rlanguage};
+				delete $rc->{_country};
 			}
 			return $rc;
 		}
@@ -153,7 +159,7 @@ sub new {
 	return bless {
 		_supported => $params{supported}, # List of languages (two letters) that the application
 		_cache => $cache,	# CHI
-		_info => $params{info},
+		_info => $info,
 		# _rlanguage => undef,	# Requested language
 		# _slanguage => undef,	# Language that the website should display
 		# _sublanguage => undef,	# E.g. United States for en-US if you want American English
@@ -334,6 +340,9 @@ sub language_code_alpha2 {
 	}
 	unless($self->{_slanguage}) {
 		$self->_find_language();
+	}
+	if($self->{_logger}) {
+		$self->{_logger}->trace('language_code_alpha2 returns ', $self->{_slanguage_code_alpha2});
 	}
 	return $self->{_slanguage_code_alpha2};
 }
