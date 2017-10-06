@@ -3,6 +3,8 @@ Revision history for CGI-Lingua
 0.59
 	Added debug option to the constructor
 	Added mechanism to speak to setlogsock - useful for Dreamhost customers
+	Don't allow cached country to overwrite requested language from
+		lang=?? argument
 
 0.58	Fri Dec 23 21:08:52 EST 2016
 	Remember the requested language

@@ -140,9 +140,11 @@ sub new {
 			$rc->{_syslog} = $params{syslog};
 			$rc->{_cache} = $cache;
 			$rc->{_supported} = $params{supported};
+			$rc->{_info} = $params{info};
 
-			if($rc->{_what_language} && $params{info} && $params{info}->lang()) {
+			if(($rc->{_what_language} || $rc->{_rlanguage}) && $params{info} && $params{info}->lang()) {
 				delete $rc->{_what_language};
+				delete $rc->{_rlanguage};
 			}
 			return $rc;
 		}
@@ -469,7 +471,7 @@ sub _find_language {
 					}
 					if($accepts =~ /\-/) {
 						delete $self->{_slanguage};
-					} else  {
+					} else {
 						my $from_cache;
 						if($self->{_cache}) {
 							$from_cache = $self->{_cache}->get($accepts);
@@ -478,7 +480,7 @@ sub _find_language {
 							if($self->{_logger}) {
 								$self->{_logger}->debug("$accepts is in cache as $from_cache");
 							}
-							$self->{_rlanguage} = (split(/=/, $from_cache))[0];
+							$self->{_slanguage} = (split(/=/, $from_cache))[0];
 						} else {
 							$self->{_slanguage} = $self->_code2language($accepts);
 						}
@@ -498,7 +500,7 @@ sub _find_language {
 							if($self->{_sublanguage}) {
 								$self->{_rlanguage} = "$self->{_slanguage} ($self->{_sublanguage})";
 								if($self->{_logger}) {
-									$self->{_logger}->debug("rlanguage: $self->{_rlanguage}");
+									$self->{_logger}->debug("_rlanguage: $self->{_rlanguage}");
 								}
 							}
 							$self->{_sublanguage_code_alpha2} = $variety;
@@ -661,7 +663,9 @@ sub _find_language {
 		}
 		my $ip = $ENV{'REMOTE_ADDR'};
 		if($language_name) {
-			$self->{_rlanguage} = $language_name;
+			if((!defined($self->{_rlanguage})) || ($self->{_rlanguage} eq 'Unknown')) {
+				$self->{_rlanguage} = $language_name;
+			}
 			unless((exists($self->{_slanguage})) && ($self->{_slanguage} ne 'Unknown')) {
 				# Check if the language is one that we support
 				# Don't bother with secondary language
@@ -760,7 +764,13 @@ sub _what_language {
 	my $self = shift;
 
 	if(ref($self)) {
+		if($self->{_logger}) {
+			$self->{_logger}->trace('Entered _what_language');
+		}
 		if($self->{_what_language}) {
+			if($self->{_logger}) {
+				$self->{_logger}->trace('_what_language: returning cached value: ', $self->{_what_language});
+			}
 			return $self->{_what_language};	# Useful in case something changes the $info hash
 		}
 		if(my $info = $self->{_info}) {
