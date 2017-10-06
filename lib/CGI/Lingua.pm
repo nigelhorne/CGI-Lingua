@@ -763,6 +763,9 @@ sub _what_language {
 		if(my $info = $self->{_info}) {
 			if(my $rc = $info->lang()) {
 				# E.g. cgi-bin/script.cgi?lang=de
+				if($self->{_logger}) {
+					$self->{_logger}->trace("_what_language set language to $rc from the lang argument");
+				}
 				return $self->{_what_language} = $rc;
 			}
 		}
