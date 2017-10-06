@@ -141,6 +141,9 @@ sub new {
 			$rc->{_cache} = $cache;
 			$rc->{_supported} = $params{supported};
 
+			if($rc->{_what_language} && $params{info} && $params{info}->lang()) {
+				delete $rc->{_what_language};
+			}
 			return $rc;
 		}
 	}
