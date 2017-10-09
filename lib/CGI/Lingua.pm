@@ -1022,6 +1022,7 @@ sub country {
 				$self->{_country} = $1;
 			}
 		}
+		# TODO - try freegeoip.net if whois has failed
 	}
 
 	if($self->{_country}) {
