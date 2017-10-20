@@ -75,7 +75,7 @@ WriteMakefile(
 	'I18N::AcceptLanguage' => 0,
 	'Locale::Language' => 0,
 	'I18N::LangTags::Detect' => 1.04,
-	'Data::Validate::IP' => 0,
+	'Data::Validate::IP' => 0.25,	# For is_private_ip
 	'Net::Whois::IANA' => 0,
 	'Net::Whois::IP' => 0,
 	'Class::Load' => 0,

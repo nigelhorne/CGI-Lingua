@@ -2,6 +2,7 @@
 [![Windows Build status](https://ci.appveyor.com/api/projects/status/aihulcqwr24so9ix/branch/master?svg=true)](https://ci.appveyor.com/project/nigelhorne/cgi-lingua/branch/master)
 [![Dependency Status](https://dependencyci.com/github/nigelhorne/CGI-Lingua/badge)](https://dependencyci.com/github/nigelhorne/CGI-Lingua)
 [![Coverage Status](https://coveralls.io/repos/github/nigelhorne/CGI-Lingua/badge.svg?branch=master)](https://coveralls.io/github/nigelhorne/CGI-Lingua?branch=master)
+[![CPAN](https://img.shields.io/cpan/v/CGI-Lingua.svg)](http://search.cpan.org/~nhorne/CGI-Lingua/)
 
 # CGI::Lingua
 
