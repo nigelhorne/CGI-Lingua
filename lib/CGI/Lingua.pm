@@ -731,7 +731,7 @@ sub _find_language {
 			if(!defined($self->{_slanguage_code_alpha2})) {
 				if($self->{_logger}) {
 					$self->{_logger}->debug("Can't determine slanguage_code_alpha2");
-				};
+				}
 			} elsif(!defined($from_cache) && $self->{_cache} &&
 			   defined($self->{_slanguage_code_alpha2})) {
 				if($self->{_logger}) {
@@ -1002,7 +1002,7 @@ sub country {
 			require Net::Whois::IANA;
 			Net::Whois::IANA->import();
 
-			my $iana = new Net::Whois::IANA;
+			my $iana = Net::Whois::IANA->new();
 			eval {
 				$iana->whois_query(-ip => $ip);
 			};
