@@ -26,10 +26,12 @@ t/hk.t
 t/hp-tablet.t
 t/kwalitee.t
 t/language.t
+t/links.t
 t/locale.t
 t/logger.t
 t/manifest.t
 t/metrics.t
+t/no404s.t
 t/noplan.t
 t/pod-cm.t
 t/pod.t

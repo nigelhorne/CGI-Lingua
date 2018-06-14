@@ -1248,7 +1248,7 @@ automatically be notified of progress on your bug as I make changes.
 
 =head1 SEE ALSO
 
-L<Locale::Country::Object>
+L<Locale::Country>
 L<HTTP::BrowserDetect>
 
 =head1 SUPPORT
@@ -1285,10 +1285,9 @@ L<http://search.cpan.org/dist/CGI-Lingua/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010-2017 Nigel Horne.
+Copyright 2010-2018 Nigel Horne.
 
-This program is released under the following licence: GPL
-
+This program is released under the following licence: GPL2
 
 =cut
 
