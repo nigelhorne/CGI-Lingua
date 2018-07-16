@@ -566,7 +566,7 @@ sub _find_language {
 							if(defined($results[0])) {
 								eval {
 									$language_name = $self->_code2countryname($variety);
-								}
+								};
 							}
 						}
 						if($@ || !defined($language_name)) {
