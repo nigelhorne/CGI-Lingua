@@ -452,14 +452,14 @@ sub _find_language {
 					$self->{_slanguage_code_alpha2} = $l;
 					$self->{_rlanguage} = $self->{_slanguage};
 
-					my $l;
+					my $sl;
 					if($http_accept_language =~ /..-(..)$/) {
-						$l = $self->_code2country($1);
+						$sl = $self->_code2country($1);
 					} elsif($http_accept_language =~ /..-([a-z]{2,3})$/i) {
-						$l = Locale::Object::Country->new(code_alpha3 => $1);
+						$sl = Locale::Object::Country->new(code_alpha3 => $1);
 					}
-					if($l) {
-						$self->{_rlanguage} .= ' (' . $l->name . ')';
+					if($sl) {
+						$self->{_rlanguage} .= ' (' . $sl->name() . ')';
 						# The requested sublanguage
 						# isn't supported so don't
 						# define that
@@ -600,8 +600,7 @@ sub _find_language {
 				$self->{_rlanguage} = I18N::LangTags::Detect::detect();
 			}
 			if($self->{_rlanguage}) {
-				my $l = $self->_code2language($self->{_rlanguage});
-				if($l) {
+				if($l = $self->_code2language($self->{_rlanguage})) {
 					$self->{_rlanguage} = $l;
 				# } else {
 					# We have the language, but not the right
