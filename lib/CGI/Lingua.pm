@@ -962,8 +962,9 @@ sub country {
 			LWP::Simple->import();
 			JSON::Parse->import();
 
-			my $data = JSON::Parse::parse_json(LWP::Simple::get("http://www.geoplugin.net/json.gp?ip=$ip"));
-			$self->{_country} = $data->{'geoplugin_countryCode'};
+			if(my $data = LWP::Simple::get("http://www.geoplugin.net/json.gp?ip=$ip")) {
+				$self->{_country} = JSON::Parse::parse_json($data)->{'geoplugin_countryCode'};
+			}
 		}
 	}
 	unless($self->{_country}) {
