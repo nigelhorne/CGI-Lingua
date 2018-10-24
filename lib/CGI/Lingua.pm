@@ -97,7 +97,7 @@ or logger (or both) are set.
 If neither is given, L<Carp> will be used.
 
 Takes an optional parameter dont_use_ip.  By default, if none of the
-requested languages are supported, CGI::Lingua->language() looks in the IP
+requested languages is supported, CGI::Lingua->language() looks in the IP
 address for the language to use.  This may be not what you want, so use this
 option to disable the feature.
 
