@@ -135,8 +135,7 @@ sub new {
 		if($logger) {
 			$logger->debug("Looking in cache for $key");
 		}
-		my $rc = $cache->get($key);
-		if($rc) {
+		if(my $rc = $cache->get($key)) {
 			if($logger) {
 				$logger->debug('Found - thawing');
 			}
@@ -198,9 +197,7 @@ sub DESTROY {
 	$key .= join('/', @{$self->{_supported}});
 	return if($cache->get($key));
 
-	my $logger = $self->{_logger};
-
-	if($logger) {
+	if(my $logger = $self->{_logger}) {
 		$logger->trace("Storing self in cache as $key");
 	}
 
@@ -232,15 +229,19 @@ sub _warn {
 
 	return unless($warning);
 
-	if($self->{_syslog}) {
+	if(my $syslog = $self->{_syslog}) {
 		require Sys::Syslog;
 		require CGI::Info;
 
 		Sys::Syslog->import();
-		if(ref($self->{_syslog} eq 'HASH')) {
-			Sys::Syslog::setlogsock($self->{_syslog});
+		if(ref($syslog eq 'HASH')) {
+			Sys::Syslog::setlogsock($syslog);
 		}
-		openlog(CGI::Info->new(syslog => $self->{_syslog})->script_name(), 'cons,pid', 'user');
+		if(my $info = $self->{_info}) {
+			openlog($info->script_name(), 'cons,pid', 'user');
+		} else {
+			openlog(CGI::Info->new(syslog => $syslog)->script_name(), 'cons,pid', 'user');
+		}
 		syslog('warning', $warning);
 		closelog();
 	}
@@ -1265,10 +1266,6 @@ You can also look for information at:
 =item * RT: CPAN's request tracker
 
 L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=CGI-Lingua>
-
-=item * AnnoCPAN: Annotated CPAN documentation
-
-L<http://annocpan.org/dist/CGI-Lingua>
 
 =item * CPAN Ratings
 
