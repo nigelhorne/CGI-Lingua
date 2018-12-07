@@ -10,7 +10,7 @@ Create a multilingual web page
 
 # VERSION
 
-Version 0.58
+Version 0.59
 
 # SYNOPSIS
 
@@ -71,8 +71,10 @@ lookups.
 This cache object is an object that understands get() and set() messages,
 such as a [CHI](https://metacpan.org/pod/CHI) object.
 
-Takes an optional boolean parameter syslog, to log messages to
+Takes an optional parameter syslog, to log messages to
 [Sys::Syslog](https://metacpan.org/pod/Sys::Syslog).
+It can be a boolean to enable/disable logging to syslog, or a reference
+to a hash to be given to Sys::Syslog::setlogsock.
 
 Takes optional parameter logger, an object which is used for warnings
 and traces.
@@ -89,9 +91,11 @@ or logger (or both) are set.
 If neither is given, [Carp](https://metacpan.org/pod/Carp) will be used.
 
 Takes an optional parameter dont\_use\_ip.  By default, if none of the
-requested languages are supported, CGI::Lingua->language() looks in the IP
+requested languages is supported, CGI::Lingua->language() looks in the IP
 address for the language to use.  This may be not what you want, so use this
 option to disable the feature.
+
+The optional parameter debug is passed on to [I18N::AcceptLanguage](https://metacpan.org/pod/I18N::AcceptLanguage).
 
 ## language
 
@@ -196,7 +200,7 @@ automatically be notified of progress on your bug as I make changes.
 
 # SEE ALSO
 
-[Locale::Country::Object](https://metacpan.org/pod/Locale::Country::Object)
+[Locale::Country](https://metacpan.org/pod/Locale::Country)
 [HTTP::BrowserDetect](https://metacpan.org/pod/HTTP::BrowserDetect)
 
 # SUPPORT
@@ -211,10 +215,6 @@ You can also look for information at:
 
     [http://rt.cpan.org/NoAuth/Bugs.html?Dist=CGI-Lingua](http://rt.cpan.org/NoAuth/Bugs.html?Dist=CGI-Lingua)
 
-- AnnoCPAN: Annotated CPAN documentation
-
-    [http://annocpan.org/dist/CGI-Lingua](http://annocpan.org/dist/CGI-Lingua)
-
 - CPAN Ratings
 
     [http://cpanratings.perl.org/d/CGI-Lingua](http://cpanratings.perl.org/d/CGI-Lingua)
@@ -227,6 +227,6 @@ You can also look for information at:
 
 # LICENSE AND COPYRIGHT
 
-Copyright 2010-2016 Nigel Horne.
+Copyright 2010-2018 Nigel Horne.
 
-This program is released under the following licence: GPL
+This program is released under the following licence: GPL2
