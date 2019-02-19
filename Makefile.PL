@@ -80,6 +80,7 @@ WriteMakefile(
 	'Locale::Codes' => 3.59,	# Silence noisy warn messages in perl 5.28
 	'Net::Whois::IANA' => 0,
 	'Net::Whois::IP' => 0,
+	'NetAddr::IP' => 0,
 	'Class::Load' => 0,
 	'CGI::Info' => 0.60, # For AUTOLOAD
 	'Sys::Syslog' => 0,
