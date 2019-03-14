@@ -111,6 +111,10 @@ sub are_online
 		Timeout => 5
 	);
 	if($s) {
+		if($ENV{'AUTOMATED_TESTING'}) {
+			close($s);
+			return 1;
+		}
 		print <<EOF;
 
 You appear to be directly connected to the Internet.  I have some tests
