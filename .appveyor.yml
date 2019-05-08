@@ -8,6 +8,7 @@ image:
 environment:
   PERL5LIB: /home/appveyor/perl5/lib/perl5
   AUTOMATED_TESTING: 1
+  TEST_VERBOSE: 1
 
 platform: x64
 
@@ -23,19 +24,20 @@ install:
   # - cmd: cd C:\projects\%APPVEYOR_PROJECT_NAME%
   - sh: sudo apt-get update -q
   - sh: sudo apt-get install -y build-essential git libssl-dev
-  - sh: sudo apt-get install -y perl
+  - sh: sudo apt-get install -y perl libdbd-sqlite3-perl
   - sh: export PATH=/home/appveyor/perl5/bin:$PATH
   - perl -V
   - cmd: mkdir %APPVEYOR_BUILD_FOLDER%\tmp
   - cmd: set TMPDIR=%APPVEYOR_BUILD_FOLDER%\tmp
-  - cpan App::cpanminus
-  - cmd: cpanm -q --showdeps --with-develop --with-suggests . | findstr /v "^perl\>" | cpanm -n
+  - cmd: cpan App::cpanminus
+  - sh: sudo apt-get install -y cpanminus
   - cpanm -v --installdeps .
+  - cmd: cpanm -q --showdeps --with-develop --with-suggests . | findstr /v "^perl\>" | cpanm -n
   - cmd: 'echo End install at: & time /t'
 
 build_script:
   - perl Makefile.PL
 
 test_script:
-  - cmd: gmake test
-  - sh: make test
+  - cmd: gmake test TEST_VERBOSE=1
+  - sh: TEST_VERBOSE=1 make test
