@@ -1,5 +1,8 @@
 Revision history for CGI-Lingua
 
+0.60
+	Fix testing on some platforms
+
 0.59	Fri Dec  7 13:59:32 EST 2018
 	Added debug option to the constructor
 	Added mechanism to speak to setlogsock - useful for Dreamhost customers
