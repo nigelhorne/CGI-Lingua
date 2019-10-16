@@ -24,7 +24,7 @@ if($ENV{RELEASE_TESTING}) {
 	} elsif(eval { require Geo::IP; }) {
 		my $v = Geo::IP->VERSION;
 		if(($^O ne 'MSWin32') && (! -r '/usr/local/share/GeoIP/GeoIP.dat')) {
-			print "Can't find your GeoIP.dat file for Geo::IP\n";
+			print "Warning: Can't find your GeoIP.dat file for Geo::IP, disabling that module\n";
 			$online_tests = are_online();
 		} else {
 			print "You have Geo::IP version $v installed, so CGI::Lingua can work fast\n";
