@@ -115,14 +115,24 @@ sub are_online
 			close($s);
 			return 1;
 		}
-		print <<EOF;
+		if(-r '/usr/local/share/GeoIP/GeoIP.dat') {
+			print <<EOF;
 
 You appear to be directly connected to the Internet.  I have some tests
 that try to query Whois servers.
 These tests will be slow, consider installing IP::Country, Geo::IPfree or
-Geo::IP
+Geo::IP.
 
 EOF
+		} else {
+			print <<EOF;
+
+You appear to be directly connected to the Internet.  I have some tests
+that try to query Whois servers.
+These tests will be slow, consider installing either IP::Country or Geo::IPfree.
+
+EOF
+		}
 		close($s);
 
 		# Timeout inspired by Mail::IMAPClient
