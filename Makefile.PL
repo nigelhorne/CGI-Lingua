@@ -73,6 +73,7 @@ WriteMakefile(
     PREREQ_PM => {
 	'DBD::SQLite' => 0,	# Locale::Object doesn't declare this prerequisite
 	'Locale::Object::Country' => 0.78,	# Fix for RT#79214
+	'Locale::Object' => 0.80,	# Fix for RT#131347
 	'I18N::AcceptLanguage' => 0,
 	'Locale::Language' => 0,
 	'I18N::LangTags::Detect' => 1.04,
