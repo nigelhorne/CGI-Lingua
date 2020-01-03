@@ -26,13 +26,13 @@ RT79214: {
 	my $l = new_ok('CGI::Lingua' => [
 		supported => [ 'en-gb', 'nl', 'da', 'fr', 'de', 'pl' ]
 	]);
-	ok(defined $l);
+	ok(defined($l));
 	ok($l->isa('CGI::Lingua'));
 	SKIP: {
 		skip 'Test requires Internet access', 4 unless(-e 't/online.enabled');
-		ok($l->country() eq 'pr');
+		is($l->country(), 'pr');	# RT#131347
 		ok(defined($l->requested_language()));
-		ok($l->language() eq 'Unknown');
+		is($l->language(), 'Unknown');
 
 		TODO: {
 			local $TODO = 'https://rt.cpan.org/Public/Bug/Display.html?id=79214';
