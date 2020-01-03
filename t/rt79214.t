@@ -30,7 +30,7 @@ RT79214: {
 	ok($l->isa('CGI::Lingua'));
 	SKIP: {
 		skip 'Test requires Internet access', 4 unless(-e 't/online.enabled');
-		is($l->country(), 'pr');	# RT#131347
+		is($l->country(), 'pr');	# srezic@cpan.org: RT#131347
 		ok(defined($l->requested_language()));
 		is($l->language(), 'Unknown');
 
