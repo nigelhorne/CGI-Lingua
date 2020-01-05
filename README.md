@@ -4,7 +4,7 @@ CGI::Lingua - Create a multilingual web page
 
 # VERSION
 
-Version 0.59
+Version 0.60
 
 # SYNOPSIS
 
