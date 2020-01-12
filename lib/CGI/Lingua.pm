@@ -578,7 +578,7 @@ sub _find_language {
 						} else {
 							$self->{_sublanguage} = $language_name;
 							if($self->{_logger}) {
-								$self->{_logger}->debug('variety name ' . $self->{_sublanguage});
+								$self->{_logger}->debug('variety name ', $self->{_sublanguage});
 							}
 							if($self->{_cache} && !defined($from_cache)) {
 								if($self->{_logger}) {
@@ -833,7 +833,7 @@ sub country {
 	# again.
 	if($self->{_country}) {
 		if($self->{_logger}) {
-			$self->{_logger}->trace('quick return: ' . $self->{_country});
+			$self->{_logger}->trace('quick return: ', $self->{_country});
 		}
 		return $self->{_country};
 	}
@@ -1018,7 +1018,7 @@ sub country {
 			unless ($@) {
 				$self->{_country} = $iana->country();
 				if($self->{_logger}) {
-					$self->{_logger}->debug("IANA reports $ip as " . $self->{_country});
+					$self->{_logger}->debug("IANA reports $ip as ", $self->{_country});
 				}
 			}
 		}
@@ -1163,7 +1163,7 @@ sub _code2language
 	return unless($code);
 	if($self->{_logger}) {
 		if(defined($self->{_country})) {
-			$self->{_logger}->trace("_code2language $code, country " . $self->{_country});
+			$self->{_logger}->trace("_code2language $code, country ", $self->{_country});
 		} else {
 			$self->{_logger}->trace("_code2language $code");
 		}
@@ -1192,7 +1192,7 @@ sub _code2country
 	return unless($code);
 	if($self->{_logger}) {
 		if($self->{_country}) {
-			$self->{_logger}->trace("_code2country $code, country " . $self->{_country});
+			$self->{_logger}->trace("_code2country $code, country ", $self->{_country});
 		} else {
 			$self->{_logger}->trace("_code2country $code");
 		}
