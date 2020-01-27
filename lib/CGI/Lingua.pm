@@ -1312,7 +1312,6 @@ L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=CGI-Lingua>.
 I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
 
-
 =head1 SEE ALSO
 
 L<Locale::Country>
