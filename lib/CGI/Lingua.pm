@@ -1155,6 +1155,64 @@ sub locale {
 	return ();	# returns undef
 }
 
+=head2 timezone
+
+Returns the timezone of the web client.
+
+If L<Geo::IP> is installed,
+CGI::Lingua will make use of that, otherwise it will use ip-api.com
+
+=cut
+
+sub timezone {
+	my $self = shift;
+
+	if($self->{_logger}) {
+		$self->{_logger}->trace('Entered timezone');
+	}
+	if($self->{_timezone}) {
+		if($self->{_logger}) {
+			$self->{_logger}->trace('quick return: ', $self->{_timezone});
+		}
+		return $self->{_timezone};
+	}
+
+	if($self->{_have_geoip} == -1) {
+		if(($^O eq 'MSWin32') || (-r '/usr/local/share/GeoIP/GeoIP.dat')) {
+			if(eval { require Geo::IP; }) {
+				Geo::IP->import();
+				$self->{_have_geoip} = 1;
+				# GEOIP_STANDARD = 0, can't use that because you'll
+				# get a syntax error
+				$self->{_geoip} = Geo::IP->new(0);
+			} else {
+				$self->{_have_geoip} = 0;
+			}
+		} else {
+			$self->{_have_geoip} = 0;
+		}
+	}
+	my $ip = $ENV{'REMOTE_ADDR'};
+	if($self->{_have_geoip} == 1) {
+		$self->{_timezone} = $self->{_geoip}->time_zone($ip);
+	}
+	if((!$self->{_timezone}) &&
+	   (eval { require LWP::Simple; require JSON::Parse } )) {
+		if($self->{_logger}) {
+			$self->{_logger}->debug("Look up $ip on ip-api.com");
+		}
+
+		LWP::Simple->import();
+		JSON::Parse->import();
+
+		if(my $data = LWP::Simple::get("http://ip-api.com/json/$ip")) {
+			$self->{_timezone} = JSON::Parse::parse_json($data)->{'timezone'};
+		}
+	}
+
+	return $self->{_timezone};
+}
+
 # Wrapper to Locale::Language::code2language which makes use of the cache
 sub _code2language
 {
