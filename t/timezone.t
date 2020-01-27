@@ -46,5 +46,4 @@ unless(-e 't/online.enabled') {
 	ok(defined($l));
 	ok($l->isa('CGI::Lingua'));
 	is($l->timezone(), 'America/New_York', 'America/New_York');
-
 }
