@@ -8,7 +8,8 @@ use MyLogger;
 
 unless(-e 't/online.enabled') {
 	plan skip_all => 'On-line tests disabled';
-} else {
+} elsif((eval { require Geo::IP; }) ||
+	(eval { require LWP::Simple; require JSON::Parse } )) {
 	plan tests => 8;
 
 	use_ok('CGI::Lingua');
@@ -46,4 +47,6 @@ unless(-e 't/online.enabled') {
 	ok(defined($l));
 	ok($l->isa('CGI::Lingua'));
 	is($l->timezone(), 'America/New_York', 'America/New_York');
+} else {
+	plan skip_all => 'Need either Geo::IP or JSON::Parse to test t/timezone.t'
 }
