@@ -1164,7 +1164,7 @@ CGI::Lingua will make use of that, otherwise it will use ip-api.com
 
 =cut
 
-sub timezone {
+sub time_zone {
 	my $self = shift;
 
 	if($self->{_logger}) {

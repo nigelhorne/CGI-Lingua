@@ -2,6 +2,7 @@ Revision history for CGI-Lingua
 
 0.62
 	Look into RT#131607
+	Change timezone to time_zone to be compatible with DateTime
 
 0.61	Mon 27 Jan 15:43:18 EST 2020
 	Added timezone()

@@ -36,7 +36,7 @@ unless(-e 't/online.enabled') {
 	);
 	ok(defined($l));
 	ok($l->isa('CGI::Lingua'));
-	is($l->timezone(), 'Europe/London', 'Europe/London');
+	is($l->time_zone(), 'Europe/London', 'Europe/London');
 
 	$ENV{'REMOTE_ADDR'} = '72.83.250.144';
 
@@ -46,7 +46,7 @@ unless(-e 't/online.enabled') {
 	);
 	ok(defined($l));
 	ok($l->isa('CGI::Lingua'));
-	is($l->timezone(), 'America/New_York', 'America/New_York');
+	is($l->time_zone(), 'America/New_York', 'America/New_York');
 } else {
-	plan skip_all => 'Need either Geo::IP or JSON::Parse to test t/timezone.t'
+	plan skip_all => 'Need either Geo::IP or JSON::Parse to test t/time_zone.t'
 }
