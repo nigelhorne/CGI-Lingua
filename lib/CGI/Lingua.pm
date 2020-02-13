@@ -1155,7 +1155,7 @@ sub locale {
 	return ();	# returns undef
 }
 
-=head2 timezone
+=head2 time_zone
 
 Returns the timezone of the web client.
 
@@ -1168,7 +1168,7 @@ sub time_zone {
 	my $self = shift;
 
 	if($self->{_logger}) {
-		$self->{_logger}->trace('Entered timezone');
+		$self->{_logger}->trace('Entered time_zone');
 	}
 	if($self->{_timezone}) {
 		if($self->{_logger}) {
