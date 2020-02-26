@@ -2,21 +2,22 @@
 
 use strict;
 use warnings;
-use Test::Most;
+use Test::More;
+use Test::Without::Module qw(LWP::Simple);
+
 use lib 't/lib';
 use MyLogger;
+
+# See https://rt.cpan.org/Public/Bug/Display.html?id=79214
+
 
 unless(-e 't/online.enabled') {
 	plan skip_all => 'On-line tests disabled';
 } elsif((eval { require Geo::IP; }) ||
-	((eval { require LWP::Simple }) &&
-	 (eval { require JSON::Parse } ))) {
-	plan tests => 8;
+	(eval { require JSON::Parse } )) {
+	plan tests => 4;
 
 	use_ok('CGI::Lingua');
-	
-	require Test::NoWarnings;
-	Test::NoWarnings->import();
 
 	# Stop I18N::LangTags::Detect from detecting something
 	delete $ENV{'LANGUAGE'};
@@ -37,17 +38,11 @@ unless(-e 't/online.enabled') {
 	);
 	ok(defined($l));
 	ok($l->isa('CGI::Lingua'));
-	is($l->time_zone(), 'Europe/London', 'Europe/London');
-
-	$ENV{'REMOTE_ADDR'} = '72.83.250.144';
-
-	$l = CGI::Lingua->new(
-		supported => ['en'],
-		logger => MyLogger->new()
-	);
-	ok(defined($l));
-	ok($l->isa('CGI::Lingua'));
-	is($l->time_zone(), 'America/New_York', 'America/New_York');
+	eval {
+		my $t = $l->time_zone();
+		die "Shouldn't succeed";
+	};
+	like($@, qr/^You must have LWP::Simple/, 'Need connection to ip-api.com');
 } else {
-	plan skip_all => 'Need either Geo::IP, or JSON::Parse and LWP::Simple to test t/time_zone.t'
+	plan skip_all => 'Need either Geo::IP or JSON::Parse to test t/time_zone.t'
 }
