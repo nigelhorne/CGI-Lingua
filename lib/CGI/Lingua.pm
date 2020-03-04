@@ -1192,24 +1192,32 @@ sub time_zone {
 			$self->{_have_geoip} = 0;
 		}
 	}
-	my $ip = $ENV{'REMOTE_ADDR'};
-	if($self->{_have_geoip} == 1) {
-		$self->{_timezone} = $self->{_geoip}->time_zone($ip);
-	}
-	if((!$self->{_timezone}) && $ip) {
-		if(eval { require LWP::Simple; require JSON::Parse } ) {
-			if($self->{_logger}) {
-				$self->{_logger}->debug("Look up $ip on ip-api.com");
-			}
+	if(my $ip = $ENV{'REMOTE_ADDR'}) {
+		if($self->{_have_geoip} == 1) {
+			$self->{_timezone} = $self->{_geoip}->time_zone($ip);
+		}
+		if(!$self->{_timezone}) {
+			if(eval { require LWP::Simple; require JSON::Parse } ) {
+				if($self->{_logger}) {
+					$self->{_logger}->debug("Look up $ip on ip-api.com");
+				}
 
-			LWP::Simple->import();
-			JSON::Parse->import();
+				LWP::Simple->import();
+				JSON::Parse->import();
 
-			if(my $data = LWP::Simple::get("http://ip-api.com/json/$ip")) {
-				$self->{_timezone} = JSON::Parse::parse_json($data)->{'timezone'};
+				if(my $data = LWP::Simple::get("http://ip-api.com/json/$ip")) {
+					$self->{_timezone} = JSON::Parse::parse_json($data)->{'timezone'};
+				}
+			} else {
+				Carp::croak('You must have LWP::Simple installed to connect to ip-api.com');
 			}
-		} else {
-			Carp::croak('You must have LWP::Simple installed to connect to ip-api.com');
+		}
+	} else {
+		# Not a remote connection
+		if(open(my $fin, '<', '/etc/timezone')) {
+			my $tz = <$fin>;
+			chomp $tz;
+			$self->{_timezone} = $tz;
 		}
 	}
 
