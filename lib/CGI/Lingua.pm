@@ -1196,7 +1196,7 @@ sub time_zone {
 	if($self->{_have_geoip} == 1) {
 		$self->{_timezone} = $self->{_geoip}->time_zone($ip);
 	}
-	if(!$self->{_timezone}) {
+	if((!$self->{_timezone}) && $ip) {
 		if(eval { require LWP::Simple; require JSON::Parse } ) {
 			if($self->{_logger}) {
 				$self->{_logger}->debug("Look up $ip on ip-api.com");
