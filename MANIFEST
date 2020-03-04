@@ -50,7 +50,6 @@ t/spelling.t
 t/strict.t
 t/sub-lang.t
 t/time_zone.t
-t/timezone.t
 t/unused.t
 t/used.t
 t/usgb.t
