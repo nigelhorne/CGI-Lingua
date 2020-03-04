@@ -1,7 +1,7 @@
 Revision history for CGI-Lingua
 
 0.63
-	time_zone now supports local connections when /etc/timezone exists
+	time_zone now supports local connections
 
 0.62	Wed Mar  4 09:06:06 EST 2020
 	Fix into RT#131607, cause spotted by SREZIC@cpan.org

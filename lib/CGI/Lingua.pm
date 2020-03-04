@@ -1218,6 +1218,8 @@ sub time_zone {
 			my $tz = <$fin>;
 			chomp $tz;
 			$self->{_timezone} = $tz;
+		} else {
+			$self->{_timezone} = DateTime::TimeZone::Local->TimeZone()->name();
 		}
 	}
 
