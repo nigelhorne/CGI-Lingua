@@ -8,39 +8,39 @@ use IO::Socket::INET;
 
 my $online_tests;
 
-if($ENV{RELEASE_TESTING}) {
+if($ENV{AUTHOR_TESTING}) {
 	$online_tests = are_online();
-} elsif($ENV{AUTOMATED_TESTING} || $ENV{NO_NETWORK_TESTING}) {
-	$online_tests = 0;
 } else {
 	Getopt::Long::GetOptions('online-tests!' => \$online_tests);
+}
 
-	if(eval { require IP::Country; }) {
-		my $v = IP::Country->VERSION;
-		print "You have IP::Country version $v installed, so CGI::Lingua can work fast\n";
-		# It also shouldn't need to do anything with the Internet,
-		# so we can do all tests
-		$online_tests = 1;
-	} elsif(eval { require Geo::IP; }) {
-		my $v = Geo::IP->VERSION;
-		if(($^O ne 'MSWin32') && (! -r '/usr/local/share/GeoIP/GeoIP.dat')) {
-			print "Warning: Can't find your GeoIP.dat file for Geo::IP, disabling that module\n";
+if(eval { require IP::Country; }) {
+	my $v = IP::Country->VERSION;
+	print "You have IP::Country version $v installed, so CGI::Lingua can work fast\n";
+	# It also shouldn't need to do anything with the Internet,
+	# so we can do all tests
+	$online_tests = 1;
+} elsif(eval { require Geo::IP; }) {
+	my $v = Geo::IP->VERSION;
+	if(($^O ne 'MSWin32') && (! -r '/usr/local/share/GeoIP/GeoIP.dat')) {
+		print "Warning: Can't find your GeoIP.dat file for Geo::IP, disabling that module\n";
+		if(!defined($online_tests)) {
 			$online_tests = are_online();
-		} else {
-			print "You have Geo::IP version $v installed, so CGI::Lingua can work fast\n";
-			# It also shouldn't need to do anything with the Internet,
-			# so we can do all tests
-			$online_tests = 1;
 		}
-	} elsif(eval { require Geo::IPfree; }) {
-		my $v = Geo::IPfree->VERSION;
-		print "You have Geo::IPfree version $v installed, so CGI::Lingua can work fast\n";
+	} else {
+		print "You have Geo::IP version $v installed, so CGI::Lingua can work fast\n";
 		# It also shouldn't need to do anything with the Internet,
 		# so we can do all tests
 		$online_tests = 1;
-	} elsif(!defined($online_tests)) {
-		$online_tests = are_online();
 	}
+} elsif(eval { require Geo::IPfree; }) {
+	my $v = Geo::IPfree->VERSION;
+	print "You have Geo::IPfree version $v installed, so CGI::Lingua can work fast\n";
+	# It also shouldn't need to do anything with the Internet,
+	# so we can do all tests
+	$online_tests = 1;
+} elsif(!defined($online_tests)) {
+	$online_tests = are_online();
 }
 
 if($online_tests) {
@@ -107,13 +107,16 @@ WriteMakefile(
 
 sub are_online
 {
+	return 0 if($ENV{'AUTOMATED_TESTING'});
+	return 0 if($ENV{'NO_NETWORK_TESTING'});
+	return 0 if(!-t STDIN);
 	my $s = IO::Socket::INET->new(
 		# PeerAddr => 'www.ripe.net:43',
 		PeerAddr => 'whois.apnic.net:43',
 		Timeout => 5
 	);
 	if($s) {
-		if($ENV{'AUTOMATED_TESTING'}) {
+		if($ENV{'PERL_MM_USE_DEFAULT'}) {
 			close($s);
 			return 1;
 		}
