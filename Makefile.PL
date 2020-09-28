@@ -107,7 +107,6 @@ WriteMakefile(
 
 sub are_online
 {
-	return 0 if($ENV{'AUTOMATED_TESTING'});
 	return 0 if($ENV{'NO_NETWORK_TESTING'});
 	return 0 if(!-t STDIN);
 	my $s = IO::Socket::INET->new(
@@ -116,7 +115,7 @@ sub are_online
 		Timeout => 5
 	);
 	if($s) {
-		if($ENV{'PERL_MM_USE_DEFAULT'}) {
+		if($ENV{'PERL_MM_USE_DEFAULT'} || $ENV{'AUTOMATED_TESTING'}) {
 			close($s);
 			return 1;
 		}
