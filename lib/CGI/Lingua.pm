@@ -955,15 +955,15 @@ sub country {
 		delete($self->{_country});
 	}
 	if((!$self->{_country}) &&
-	   (eval { require LWP::Simple; require JSON::Parse } )) {
+	   (eval { require LWP::Simple::WithCache; require JSON::Parse } )) {
 		if($self->{_logger}) {
 			$self->{_logger}->debug("Look up $ip on geoplugin");
 		}
 
-		LWP::Simple->import();
+		LWP::Simple::WithCache->import();
 		JSON::Parse->import();
 
-		if(my $data = LWP::Simple::get("http://www.geoplugin.net/json.gp?ip=$ip")) {
+		if(my $data = LWP::Simple::WithCache::get("http://www.geoplugin.net/json.gp?ip=$ip")) {
 			$self->{_country} = JSON::Parse::parse_json($data)->{'geoplugin_countryCode'};
 		}
 	}
@@ -1197,19 +1197,19 @@ sub time_zone {
 			$self->{_timezone} = $self->{_geoip}->time_zone($ip);
 		}
 		if(!$self->{_timezone}) {
-			if(eval { require LWP::Simple; require JSON::Parse } ) {
+			if(eval { require LWP::Simple::WithCache; require JSON::Parse } ) {
 				if($self->{_logger}) {
 					$self->{_logger}->debug("Look up $ip on ip-api.com");
 				}
 
-				LWP::Simple->import();
+				LWP::Simple::WithCache->import();
 				JSON::Parse->import();
 
-				if(my $data = LWP::Simple::get("http://ip-api.com/json/$ip")) {
+				if(my $data = LWP::Simple::WithCache::get("http://ip-api.com/json/$ip")) {
 					$self->{_timezone} = JSON::Parse::parse_json($data)->{'timezone'};
 				}
 			} else {
-				Carp::croak('You must have LWP::Simple installed to connect to ip-api.com');
+				Carp::croak('You must have LWP::Simple::WithCache installed to connect to ip-api.com');
 			}
 		}
 	} else {
