@@ -1,10 +1,11 @@
 Changes
+eol.t
 ignore.txt
 lib/CGI/Lingua.pm
 LICENSE
 Makefile.PL
 MANIFEST
-META.yml			Module meta-data (added by MakeMaker)
+MANIFEST.SKIP
 README
 README.md
 t/00-compile.t
