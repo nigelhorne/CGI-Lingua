@@ -14,7 +14,7 @@ unless(-e 't/online.enabled') {
 	plan tests => 8;
 
 	use_ok('CGI::Lingua');
-	
+
 	require Test::NoWarnings;
 	Test::NoWarnings->import();
 
