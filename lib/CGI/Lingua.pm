@@ -1336,18 +1336,33 @@ You can find documentation for this module with the perldoc command.
 
     perldoc CGI::Lingua
 
-
 You can also look for information at:
 
 =over 4
 
+=item * MetaCPAN
+
+L<https://metacpan.org/release/CGI-Lingua>
+
 =item * RT: CPAN's request tracker
 
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=CGI-Lingua>
+L<https://rt.cpan.org/NoAuth/Bugs.html?Dist=CGI-Lingua>
+
+=item * CPANTS
+
+L<http://cpants.cpanauthors.org/dist/CGI-Lingua>
+
+=item * CPAN Testers' Matrix
+
+L<http://matrix.cpantesters.org/?dist=CGI-Lingua>
 
 =item * CPAN Ratings
 
 L<http://cpanratings.perl.org/d/CGI-Lingua>
+
+=item * CPAN Testers Dependencies
+
+L<http://deps.cpantesters.org/?module=CGI::Lingua>
 
 =item * Search CPAN
 
