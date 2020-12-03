@@ -1364,10 +1364,6 @@ L<http://cpanratings.perl.org/d/CGI-Lingua>
 
 L<http://deps.cpantesters.org/?module=CGI::Lingua>
 
-=item * Search CPAN
-
-L<http://search.cpan.org/dist/CGI-Lingua/>
-
 =back
 
 =head1 ACKNOWLEDGEMENTS

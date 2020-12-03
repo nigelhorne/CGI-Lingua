@@ -12,6 +12,14 @@ if($ENV{AUTHOR_TESTING}) {
 	$online_tests = are_online();
 } else {
 	Getopt::Long::GetOptions('online-tests!' => \$online_tests);
+
+	if(!defined($online_tests)) {
+		$online_tests = are_online();
+	}
+	if(!$online_tests) {
+		print "On-line tests have been disabled\n";
+		$online_tests = 0;
+	}
 }
 
 if(eval { require IP::Country; }) {
@@ -95,11 +103,17 @@ WriteMakefile(
     META_MERGE		=> {
     	'meta-spec' => { version => 2 },
     	resources => {
-    		repository => {
+		repository => {
 			type => 'git',
 			url => 'git://github.com/nigelhorne/CGI-Lingua.git',
 			web => 'https://github.com/nigelhorne/CGI-Lingua',
-    		},
+			repository => 'https://github.com/nigelhorne/CGI-Lingua',
+		}, bugtracker => {
+			# web => 'https://rt.cpan.org/Public/Dist/Display.html?Name=CGI-Lingua',
+			web => 'https://github.com/nigelhorne/CGI-Lingua/issues',
+			url => 'https://github.com/nigelhorne/CGI-Lingua/issues',
+			mailto => 'bug-CGI-Lingua@rt.cpan.org'
+		}
 	},
     },
     MIN_PERL_VERSION	=> '5.6.2'	# Probably would work, but never tested on earlier versions than this
@@ -109,6 +123,7 @@ sub are_online
 {
 	return 0 if($ENV{'NO_NETWORK_TESTING'});
 	return 0 if(!-t STDIN);
+
 	my $s = IO::Socket::INET->new(
 		# PeerAddr => 'www.ripe.net:43',
 		PeerAddr => 'whois.apnic.net:43',

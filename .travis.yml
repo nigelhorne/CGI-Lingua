@@ -11,13 +11,14 @@ arch:
   - s390x
   # - arm64	# Gets 404 error
 
-env:
-  - AUTOMATED_TESTING=1
-  - PERL_CPANM_OPT="--notest --force --skip-satisfied"
+# env:
+  # - AUTOMATED_TESTING=1
+  # - PERL_CPANM_OPT="--notest --force --skip-satisfied"
+env: AUTOMATED_TESTING=1 PERL_CPANM_OPT="--notest --force --skip-satisfied"
 
 perl:
   - "5.30"
-  # - "5.28" # Travis gets 404 errors trying to find some older perls
+  - "5.28" # Travis gets 404 errors trying to find some older perls
   - "5.26"
   - "5.24"
   # - "5.22"
@@ -33,11 +34,17 @@ perl:
 sudo: false
 
 before_install:
+  - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
+  - source ~/travis-perl-helpers/init --auto
+  - build-perl
+  - perl -V
+  - build-dist
+  - cd $BUILD_DIR
   - cpanm -fiqn Net::Whois::IP
   - cpanm -iqn --skip-satisfied Devel::Cover::Report::Coveralls Test::Script Test::Pod::Spelling::CommonMistakes Test::Portability::Files Log::Log4perl warnings::unused CHI DBD::SQLite DBI
 
 install:
-  - cpanm -v --installdeps --notest .
+  - cpanm -qin --skip-satisfied --installdeps --notest .
 
 script:
   perl Makefile.PL && make && cover -test -report coveralls
@@ -51,9 +58,11 @@ jobs:
         - cinst -y strawberryperl
         - export "PATH=/c/Strawberry/perl/site/bin:/c/Strawberry/perl/bin:/c/Strawberry/c/bin:$PATH"
       install:
-        - cpanm -fiqn Net::Whois::IP
         - cpanm --notest --installdeps .
       script:
         - perl Makefile.PL
         - gmake
         - gmake test
+
+after_failure:
+  - cat /home/travis/.cpanm/work/*/build.log
