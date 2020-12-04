@@ -77,9 +77,7 @@ WriteMakefile(
 	'IPC::System::Simple' => 0,
 	'Test::Compile' => 0,
 	'Test::Without::Module' => 0,
-	'WWW::RT::CPAN' => 0
-    },
-    PREREQ_PM => {
+    }, PREREQ_PM => {
 	'DBD::SQLite' => 0,	# Locale::Object doesn't declare this prerequisite
 	'Locale::Object::Country' => 0.78,	# Fix for RT#79214
 	'Locale::Object' => 0.80,	# Fix for RT#131347
