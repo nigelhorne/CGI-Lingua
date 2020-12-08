@@ -20,6 +20,7 @@ t/critic.t
 t/cv.t
 t/dist.t
 t/en_029.t
+t/eol.t
 t/es_419.t
 t/eu.t
 t/gv.t

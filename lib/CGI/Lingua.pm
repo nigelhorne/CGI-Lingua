@@ -234,7 +234,8 @@ sub _warn {
 		require CGI::Info;
 
 		Sys::Syslog->import();
-		if(ref($syslog eq 'HASH')) {
+		CGI::Info->import();
+		if(ref($syslog) eq 'HASH') {
 			Sys::Syslog::setlogsock($syslog);
 		}
 		if(my $info = $self->{_info}) {
