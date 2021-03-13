@@ -298,8 +298,6 @@ if(-e 't/online.enabled') {
 	ok(!defined($l->sublanguage()));
 
 	SKIP: {
-		eval { require IP::Country; };
-		skip 'IP::Country not installed', 2 if($@);
 		eval { require CHI; CHI->import(); };
 		skip 'CHI not installed', 8 if($@);
 
