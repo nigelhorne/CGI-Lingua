@@ -297,38 +297,37 @@ if(-e 't/online.enabled') {
 	ok($l->language() eq 'German');
 	ok(!defined($l->sublanguage()));
 
-	eval {
-		require CHI;
+	SKIP: {
+		eval {
+			require CHI;
 
-		CHI->import();
-	};
-	if($@) {
-		diag('CHI not installed');
+			CHI->import();
+		};
+		if($@) {
+			diag('CHI not installed');
+			skip('CHI not installed');
+		} else {
+			diag("Using CHI $CHI::VERSION");
 
-		subtest 'no_chi' => sub {
-			plan(skip_all => 'CHI not installed');
+			my $cache = CHI->new(driver => 'Memory', global => 1);
+
+			$l = new_ok('CGI::Lingua' => [
+				supported => [ 'en-zz', 'de' ],
+				cache => $cache,
+				info => new_ok('CGI::Info')
+			]);
+			ok($l->language() eq 'German');
+			ok(!defined($l->sublanguage()));
+
+			$l = undef;
+			$l = new_ok('CGI::Lingua' => [
+				supported => [ 'en-zz', 'de' ],
+				cache => $cache,
+				info => new_ok('CGI::Info')
+			]);
+			ok($l->language() eq 'German');
+			ok(!defined($l->sublanguage()));
 		}
-	} else {
-		diag("Using CHI $CHI::VERSION");
-
-		my $cache = CHI->new(driver => 'Memory', global => 1);
-
-		$l = new_ok('CGI::Lingua' => [
-			supported => [ 'en-zz', 'de' ],
-			cache => $cache,
-			info => new_ok('CGI::Info')
-		]);
-		ok($l->language() eq 'German');
-		ok(!defined($l->sublanguage()));
-
-		$l = undef;
-		$l = new_ok('CGI::Lingua' => [
-			supported => [ 'en-zz', 'de' ],
-			cache => $cache,
-			info => new_ok('CGI::Info')
-		]);
-		ok($l->language() eq 'German');
-		ok(!defined($l->sublanguage()));
 	}
 } else {
 	plan(skip_all => 'On-line tests disabled');
