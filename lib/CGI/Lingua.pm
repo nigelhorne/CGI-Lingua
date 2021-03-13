@@ -6,7 +6,7 @@ use Storable; # RT117983
 use Class::Autouse qw{Carp Locale::Language Locale::Object::Country Locale::Object::DB I18N::AcceptLanguage I18N::LangTags::Detect};
 
 use vars qw($VERSION);
-our $VERSION = '0.62';
+our $VERSION = '0.63';
 
 =head1 NAME
 
@@ -14,7 +14,7 @@ CGI::Lingua - Create a multilingual web page
 
 =head1 VERSION
 
-Version 0.62
+Version 0.63
 
 =cut
 
@@ -1336,7 +1336,6 @@ You can find documentation for this module with the perldoc command.
 
     perldoc CGI::Lingua
 
-
 You can also look for information at:
 
 =over 4
@@ -1359,7 +1358,7 @@ L<http://search.cpan.org/dist/CGI-Lingua/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010-2020 Nigel Horne.
+Copyright 2010-2021 Nigel Horne.
 
 This program is released under the following licence: GPL2
 
