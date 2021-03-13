@@ -304,6 +304,10 @@ if(-e 't/online.enabled') {
 	};
 	if($@) {
 		diag('CHI not installed');
+
+		subtest 'no_chi' => sub {
+			plan(skip_all => 'CHI not installed');
+		}
 	} else {
 		diag("Using CHI $CHI::VERSION");
 
