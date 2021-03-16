@@ -920,7 +920,7 @@ sub country {
 	}
 	unless(defined($self->{_country})) {
 		if($self->{_have_geoip} == -1) {
-			if(($^O eq 'MSWin32') || (-r '/usr/local/share/GeoIP/GeoIP.dat')) {
+			if(($^O eq 'MSWin32') || (-r '/usr/local/share/GeoIP/GeoIP.dat') || (-r '/usr/share/GeoIP/GeoIP.dat')) {
 				if(eval { require Geo::IP; }) {
 					Geo::IP->import();
 					$self->{_have_geoip} = 1;
