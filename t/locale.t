@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::More;
+use Test::Most;
 
 unless(-e 't/online.enabled') {
 	plan skip_all => 'On-line tests disabled';
