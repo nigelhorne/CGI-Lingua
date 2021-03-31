@@ -145,6 +145,9 @@ sub new {
 			$rc->{_cache} = $cache;
 			$rc->{_supported} = $params{supported};
 			$rc->{_info} = $info;
+			$rc->{_have_ipcountry} = -1;
+			$rc->{_have_geoip} = -1;
+			$rc->{_have_geoipfree} = -1;
 
 			if(($rc->{_what_language} || $rc->{_rlanguage}) && $info && $info->lang()) {
 				delete $rc->{_what_language};
