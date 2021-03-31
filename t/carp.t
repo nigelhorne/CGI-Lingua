@@ -2,7 +2,6 @@
 
 use strict;
 use warnings;
-use Test::Carp;
 use Test::Most tests => 3;
 
 BEGIN {
