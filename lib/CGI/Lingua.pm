@@ -1259,7 +1259,7 @@ sub _code2language
 	return $self->{_cache}->set("code2language/$code", Locale::Language::code2language($code), '1 month');
 }
 
-# Wrapper to Locale::Object::Country allowing for persistance to be added
+# Wrapper to Locale::Object::Country allowing for persistence to be added
 sub _code2country
 {
 	my ($self, $code) = @_;
