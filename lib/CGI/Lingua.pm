@@ -929,7 +929,11 @@ sub country {
 					$self->{_have_geoip} = 1;
 					# GEOIP_STANDARD = 0, can't use that because you'll
 					# get a syntax error
-					$self->{_geoip} = Geo::IP->new(0);
+					if(-r '/usr/share/GeoIP/GeoIP.dat') {
+						$self->{_geoip} = Geo::IP->open(0, '/usr/share/GeoIP/GeoIP.dat');
+					} else {
+						$self->{_geoip} = Geo::IP->new(0);
+					}
 				} else {
 					$self->{_have_geoip} = 0;
 				}
