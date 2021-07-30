@@ -923,23 +923,7 @@ sub country {
 	}
 	unless(defined($self->{_country})) {
 		if($self->{_have_geoip} == -1) {
-			if(($^O eq 'MSWin32') || (-r '/usr/local/share/GeoIP/GeoIP.dat') || (-r '/usr/share/GeoIP/GeoIP.dat')) {
-				if(eval { require Geo::IP; }) {
-					Geo::IP->import();
-					$self->{_have_geoip} = 1;
-					# GEOIP_STANDARD = 0, can't use that because you'll
-					# get a syntax error
-					if(-r '/usr/share/GeoIP/GeoIP.dat') {
-						$self->{_geoip} = Geo::IP->open(0, '/usr/share/GeoIP/GeoIP.dat');
-					} else {
-						$self->{_geoip} = Geo::IP->new(0);
-					}
-				} else {
-					$self->{_have_geoip} = 0;
-				}
-			} else {
-				$self->{_have_geoip} = 0;
-			}
+			$self->_load_geoip();
 		}
 		if($self->{_have_geoip} == 1) {
 			$self->{_country} = $self->{_geoip}->country_code_by_addr($ip);
@@ -1074,6 +1058,29 @@ sub country {
 	return $self->{_country};
 }
 
+sub _load_geoip
+{
+	my $self = shift;
+
+	if(($^O eq 'MSWin32') || (-r '/usr/local/share/GeoIP/GeoIP.dat') || (-r '/usr/share/GeoIP/GeoIP.dat')) {
+		if(eval { require Geo::IP; }) {
+			Geo::IP->import();
+			$self->{_have_geoip} = 1;
+			# GEOIP_STANDARD = 0, can't use that because you'll
+			# get a syntax error
+			if(-r '/usr/share/GeoIP/GeoIP.dat') {
+				$self->{_geoip} = Geo::IP->open('/usr/share/GeoIP/GeoIP.dat', 0);
+			} else {
+				$self->{_geoip} = Geo::IP->new(0);
+			}
+		} else {
+			$self->{_have_geoip} = 0;
+		}
+	} else {
+		$self->{_have_geoip} = 0;
+	}
+}
+
 =head2 locale
 
 HTTP doesn't have a way of transmitting a browser's localisation information
@@ -1186,19 +1193,7 @@ sub time_zone {
 	}
 
 	if($self->{_have_geoip} == -1) {
-		if(($^O eq 'MSWin32') || (-r '/usr/local/share/GeoIP/GeoIP.dat') || (-r '/usr/share/GeoIP/GeoIP.dat')) {
-			if(eval { require Geo::IP; }) {
-				Geo::IP->import();
-				$self->{_have_geoip} = 1;
-				# GEOIP_STANDARD = 0, can't use that because you'll
-				# get a syntax error
-				$self->{_geoip} = Geo::IP->new(0);
-			} else {
-				$self->{_have_geoip} = 0;
-			}
-		} else {
-			$self->{_have_geoip} = 0;
-		}
+		$self->_load_geoip();
 	}
 	if(my $ip = $ENV{'REMOTE_ADDR'}) {
 		if($self->{_have_geoip} == 1) {
