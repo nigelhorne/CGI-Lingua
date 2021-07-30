@@ -535,7 +535,7 @@ sub _find_language {
 				if($accepts) {
 					$http_accept_language =~ /(.{2})-(..)/;
 					$variety = lc($2);
-					# Ignore en-029 etc (Carribean English)
+					# Ignore en-029 etc (Caribbean English)
 					if(($variety =~ /[a-z]{2,3}/) && !defined($self->{_sublanguage})) {
 						$self->_get_closest($alpha2, $alpha2);
 						if($self->{_logger}) {
