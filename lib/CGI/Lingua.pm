@@ -1063,7 +1063,8 @@ sub _load_geoip
 	my $self = shift;
 
 	if(($^O eq 'MSWin32') || (-r '/usr/local/share/GeoIP/GeoIP.dat') || (-r '/usr/share/GeoIP/GeoIP.dat')) {
-		if(eval { require Geo::IP; }) {
+		eval "require Geo::IP";
+		unless($@) {
 			Geo::IP->import();
 			$self->{_have_geoip} = 1;
 			# GEOIP_STANDARD = 0, can't use that because you'll
