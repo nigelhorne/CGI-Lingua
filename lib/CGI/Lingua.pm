@@ -70,7 +70,7 @@ For a list of primary-codes refer to ISO-639 (e.g. 'en' for English).
 For a list of country-codes refer to ISO-3166 (e.g. 'gb' for United Kingdom).
 
     # We support English, French, British and American English, in that order
-    my $l = CGI::Lingua(supported => ['en', 'fr', 'en-gb', 'en-us']);
+    my $l = CGI::Lingua->new(supported => ['en', 'fr', 'en-gb', 'en-us']);
 
 Takes optional parameter cache, an object which is used to cache country
 lookups.
@@ -285,6 +285,7 @@ language() returns 'Unknown'.
 
 If the script is not being run in a CGI environment, perhaps to debug it, the
 locale is used via the LANG environment variable.
+
 =cut
 
 sub language {

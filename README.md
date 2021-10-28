@@ -58,7 +58,7 @@ For a list of primary-codes refer to ISO-639 (e.g. 'en' for English).
 For a list of country-codes refer to ISO-3166 (e.g. 'gb' for United Kingdom).
 
     # We support English, French, British and American English, in that order
-    my $l = CGI::Lingua(supported => ['en', 'fr', 'en-gb', 'en-us']);
+    my $l = CGI::Lingua->new(supported => ['en', 'fr', 'en-gb', 'en-us']);
 
 Takes optional parameter cache, an object which is used to cache country
 lookups.
@@ -212,17 +212,29 @@ You can find documentation for this module with the perldoc command.
 
 You can also look for information at:
 
+- MetaCPAN
+
+    [https://metacpan.org/release/CGI-Lingua](https://metacpan.org/release/CGI-Lingua)
+
 - RT: CPAN's request tracker
 
-    [http://rt.cpan.org/NoAuth/Bugs.html?Dist=CGI-Lingua](http://rt.cpan.org/NoAuth/Bugs.html?Dist=CGI-Lingua)
+    [https://rt.cpan.org/NoAuth/Bugs.html?Dist=CGI-Lingua](https://rt.cpan.org/NoAuth/Bugs.html?Dist=CGI-Lingua)
+
+- CPANTS
+
+    [http://cpants.cpanauthors.org/dist/CGI-Lingua](http://cpants.cpanauthors.org/dist/CGI-Lingua)
+
+- CPAN Testers' Matrix
+
+    [http://matrix.cpantesters.org/?dist=CGI-Lingua](http://matrix.cpantesters.org/?dist=CGI-Lingua)
 
 - CPAN Ratings
 
     [http://cpanratings.perl.org/d/CGI-Lingua](http://cpanratings.perl.org/d/CGI-Lingua)
 
-- Search CPAN
+- CPAN Testers Dependencies
 
-    [http://search.cpan.org/dist/CGI-Lingua/](http://search.cpan.org/dist/CGI-Lingua/)
+    [http://deps.cpantesters.org/?module=CGI::Lingua](http://deps.cpantesters.org/?module=CGI::Lingua)
 
 # ACKNOWLEDGEMENTS
 
