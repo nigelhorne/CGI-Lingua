@@ -931,7 +931,10 @@ sub country {
 		}
 		unless(defined($self->{_country})) {
 			if($self->{_have_geoipfree} == -1) {
-				if(eval { require Geo::IPfree; }) {
+				# Don't use 'eval { use ... ' as recommended by Perlcritic
+				# See https://www.cpantesters.org/cpan/report/6db47260-389e-11ec-bc66-57723b537541
+				eval 'require Geo::IPfree';
+				unless($@) {
 					Geo::IPfree::IP->import();
 					$self->{_have_geoipfree} = 1;
 					$self->{_geoipfree} = Geo::IPfree->new();
@@ -1064,6 +1067,8 @@ sub _load_geoip
 	my $self = shift;
 
 	if(($^O eq 'MSWin32') || (-r '/usr/local/share/GeoIP/GeoIP.dat') || (-r '/usr/share/GeoIP/GeoIP.dat')) {
+		# Don't use 'eval { use ... ' as recommended by Perlcritic
+		# See https://www.cpantesters.org/cpan/report/6db47260-389e-11ec-bc66-57723b537541
 		eval 'require Geo::IP';
 		unless($@) {
 			Geo::IP->import();
