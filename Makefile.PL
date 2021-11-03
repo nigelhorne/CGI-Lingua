@@ -22,13 +22,13 @@ if($ENV{AUTHOR_TESTING}) {
 	}
 }
 
-if(eval { require IP::Country; }) {
+if(eval 'require IP::Country') {
 	my $v = IP::Country->VERSION;
 	print "You have IP::Country version $v installed, so CGI::Lingua can work fast\n";
 	# It also shouldn't need to do anything with the Internet,
 	# so we can do all tests
 	$online_tests = 1;
-} elsif(eval { require Geo::IP; }) {
+} elsif(eval 'require Geo::IP') {
 	my $v = Geo::IP->VERSION;
 	if(($^O ne 'MSWin32') && (! -r '/usr/local/share/GeoIP/GeoIP.dat')) {
 		print "Warning: Can't find your GeoIP.dat file for Geo::IP, disabling that module\n";
@@ -41,7 +41,7 @@ if(eval { require IP::Country; }) {
 		# so we can do all tests
 		$online_tests = 1;
 	}
-} elsif(eval { require Geo::IPfree; }) {
+} elsif(eval 'require Geo::IPfree') {
 	my $v = Geo::IPfree->VERSION;
 	print "You have Geo::IPfree version $v installed, so CGI::Lingua can work fast\n";
 	# It also shouldn't need to do anything with the Internet,
