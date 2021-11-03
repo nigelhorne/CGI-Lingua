@@ -986,7 +986,7 @@ sub country {
 				if($self->{_country} eq 'EU') {
 					delete($self->{_country});
 				} elsif(($self->{_country} eq 'US') && ($whois->{'StateProv'} eq 'PR')) {
-					# RT#131347: Inspite of what Whois thinks, Puerto Rico isn't in the US
+					# RT#131347: Despite what Whois thinks, Puerto Rico isn't in the US
 					$self->{_country} = 'pr';
 				}
 			}
@@ -1064,7 +1064,7 @@ sub _load_geoip
 	my $self = shift;
 
 	if(($^O eq 'MSWin32') || (-r '/usr/local/share/GeoIP/GeoIP.dat') || (-r '/usr/share/GeoIP/GeoIP.dat')) {
-		eval "require Geo::IP";
+		eval 'require Geo::IP';
 		unless($@) {
 			Geo::IP->import();
 			$self->{_have_geoip} = 1;
