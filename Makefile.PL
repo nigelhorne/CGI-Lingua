@@ -51,9 +51,22 @@ if(eval 'require IP::Country') {
 	$online_tests = are_online();
 }
 
+my $test_requires = {
+	'Test::Carp' => 0,
+	'Test::Most' => 0,
+	'Test::NoWarnings' => 0,
+	'Test::Requires' => 0,
+	# 'Test::Kwalitee' => 0,
+	'autodie' => 0,
+	'IPC::System::Simple' => 0,
+	'Test::Compile' => 0,
+	'Test::Without::Module' => 0,
+};
+
 if($online_tests) {
 	open(my $enabled, '>', 't/online.enabled') || die "Can't touch t/online.enabled $!";
 	close($enabled) || die "Can't touch t/online.enabled $!";
+	$test_requires->{'LWP::Simple::WithCache'} = 0.04;
 } else {
 	unlink('t/online.enabled');
 }
@@ -68,17 +81,8 @@ WriteMakefile(
       ? ('LICENSE'=> 'GPL')
       : ()),
     PL_FILES            => {},
-    TEST_REQUIRES => {
-	'Test::Carp' => 0,
-	'Test::Most' => 0,
-	'Test::NoWarnings' => 0,
-	'Test::Requires' => 0,
-	# 'Test::Kwalitee' => 0,
-	'autodie' => 0,
-	'IPC::System::Simple' => 0,
-	'Test::Compile' => 0,
-	'Test::Without::Module' => 0,
-    }, PREREQ_PM => {
+    TEST_REQUIRES => $test_requires,
+    PREREQ_PM => {
 	'DBD::SQLite' => 0,	# Locale::Object doesn't declare this prerequisite
 	'Locale::Object::Country' => 0.78,	# Fix for RT#79214
 	'Locale::Object' => 0.80,	# Fix for RT#131347
