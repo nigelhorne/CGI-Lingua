@@ -4,7 +4,7 @@ CGI::Lingua - Create a multilingual web page
 
 # VERSION
 
-Version 0.63
+Version 0.64
 
 # SYNOPSIS
 
@@ -240,6 +240,6 @@ You can also look for information at:
 
 # LICENSE AND COPYRIGHT
 
-Copyright 2010-2021 Nigel Horne.
+Copyright 2010-2022 Nigel Horne.
 
 This program is released under the following licence: GPL2
