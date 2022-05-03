@@ -124,7 +124,7 @@ WriteMakefile(
 
 sub are_online
 {
-	return 0 if($ENV{'NO_NETWORK_TESTING'});
+	return 0 if($ENV{'NO_NETWORK_TESTING'} || $ENV{'TRAVIS_PERL_VERSION'});
 	return 0 if(!-t STDIN);
 
 	my $s = IO::Socket::INET->new(
