@@ -353,7 +353,6 @@ sub language_code_alpha2 {
 	return $self->{_slanguage_code_alpha2};
 }
 
-
 =head2 code_alpha2
 
 Synonym for language_code_alpha2, kept for historical reasons.
@@ -445,7 +444,7 @@ sub _find_language {
 				$self->{_logger}->debug("l: $l");
 			}
 
-			unless($l =~ /^..-..$/) {
+			if($l !~ /^..-..$/) {
 				$self->{_slanguage} = $self->_code2language($l);
 				if($self->{_slanguage}) {
 					if($self->{_logger}) {
@@ -472,9 +471,7 @@ sub _find_language {
 					}
 					return;
 				}
-			}
-			# TODO: Handle es-419 "Spanish (Latin America)"
-			if($l =~ /(.+)-(..)$/) {
+			} elsif($l =~ /(.+)-(..)$/) {	# TODO: Handle es-419 "Spanish (Latin America)"
 				my $alpha2 = $1;
 				my $variety = $2;
 				# my $accepts = $i18n->accepts($l, $self->{_supported});
@@ -600,6 +597,8 @@ sub _find_language {
 					}
 				}
 			}
+		} elsif(($http_accept_language =~ /;/) && (defined($self->{_logger}))) {
+			$self->{_logger}->warn(__PACKAGE__, ": lower priority supported language may be missed HTTP_ACCEPT_LANGUAGE=$http_accept_language");
 		}
 		if($self->{_slanguage} && ($self->{_slanguage} ne 'Unknown')) {
 			if($self->{_rlanguage} eq 'Unknown') {
@@ -1335,10 +1334,14 @@ L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=CGI-Lingua>.
 I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
 
+Uses L<I18N::Acceptlanguage> to find the highest priority accepted language.
+This means that if you support languages at a lower priority, it may be missed.
+
 =head1 SEE ALSO
 
-L<Locale::Country>
 L<HTTP::BrowserDetect>
+L<I18N::AcceptLangauge>
+L<Locale::Country>
 
 =head1 SUPPORT
 
