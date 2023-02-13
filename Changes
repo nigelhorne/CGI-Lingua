@@ -2,6 +2,7 @@ Revision history for CGI-Lingua
 
 0.65
 	Added bug notice for limitation imposed by I18N::Acceptlanguage
+	Smokers: don't test on-line stuff
 
 0.64	Tue Jan 25 10:08:06 EST 2022
 	Fix uninitialized value when loading from cache

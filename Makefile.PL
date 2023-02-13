@@ -125,6 +125,7 @@ WriteMakefile(
 sub are_online
 {
 	return 0 if($ENV{'NO_NETWORK_TESTING'} || $ENV{'TRAVIS_PERL_VERSION'});
+	return 0 if($ENV{'AUTOMATED_TESTING'});
 	return 0 if(!-t STDIN);
 
 	my $s = IO::Socket::INET->new(
@@ -133,11 +134,14 @@ sub are_online
 		Timeout => 5
 	);
 	if($s) {
-		if($ENV{'PERL_MM_USE_DEFAULT'} || $ENV{'AUTOMATED_TESTING'}) {
+		if($ENV{'PERL_MM_USE_DEFAULT'}) {
 			close($s);
 			return 1;
 		}
-		if(-r '/usr/local/share/GeoIP/GeoIP.dat') {
+
+		# FIXME: should test if any of the modules has been installed
+		if((-r '/usr/local/share/GeoIP/GeoIP.dat') ||
+		   (-r '/usr/share/GeoIP/GeoIP.dat')) {
 			print <<EOF;
 
 You appear to be directly connected to the Internet.  I have some tests
