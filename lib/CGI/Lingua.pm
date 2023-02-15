@@ -400,6 +400,9 @@ sub sublanguage_code_alpha2 {
 Gives a human readable rendition of what language the user asked for whether
 or not it is supported.
 
+Returns the sublanguage (if appropriate) in parentheses,
+e.g. "English (United Kingdom)"
+
 =cut
 
 sub requested_language {
