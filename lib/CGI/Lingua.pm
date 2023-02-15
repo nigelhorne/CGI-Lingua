@@ -106,10 +106,23 @@ The optional parameter debug is passed on to L<I18N::AcceptLanguage>.
 =cut
 
 sub new {
-	my $proto = shift;
+	my $class = $_[0];
 
-	my $class = ref($proto) || $proto;
+	shift;
+
 	my %params = (ref($_[0]) eq 'HASH') ? %{$_[0]} : @_;
+
+	if(!defined($class)) {
+		# Using CGI::Lingua->new(), not CGI::Lingua()
+		# carp(__PACKAGE__, ' use ->new() not ::new() to instantiate');
+		# return;
+
+		# FIXME: this only works when no arguments are given
+		$class = __PACKAGE__;
+	} elsif(ref($class)) {
+		# clone the given object
+		return bless { %{$class}, %params }, ref($class);
+	}
 
 	# TODO: check that the number of supported languages is > 0
 	# unless($params{supported} && ($#params{supported} > 0)) {
