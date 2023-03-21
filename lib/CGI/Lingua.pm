@@ -1248,6 +1248,9 @@ sub time_zone {
 		}
 	}
 
+	if($self->{_logger} && !defined($self->{_timezone})) {
+		$self->{_logger}->warn("Couldn't determine the timezone");
+	}
 	return $self->{_timezone};
 }
 
