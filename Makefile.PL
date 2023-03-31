@@ -163,7 +163,7 @@ EOF
 		# Timeout inspired by Mail::IMAPClient
 		my $rc;
 		eval {
-			local $SIG{ALRM} = sub { die "alarm\n" };
+			local $SIG{ALRM} = sub { die 'alarm' };
 			alarm(60);
 			$rc = prompt('Do you want to enable these tests?', 'y') =~ /^y/i ? 1 : 0;
 			alarm(0);
