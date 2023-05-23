@@ -1,6 +1,6 @@
 Revision history for CGI-Lingua
 
-0.65
+0.65	Tue May 23 10:34:07 EDT 2023
 	Added bug notice for limitation imposed by I18N::Acceptlanguage
 	Smokers: don't test on-line stuff
 	Calling new on an object now returns a clone rather than setting the defaults in the new object
