@@ -586,6 +586,8 @@ sub _find_language {
 								eval {
 									$language_name = $self->_code2countryname($variety);
 								};
+							} elsif($self->{_logger}) {
+								$self->{_logger}->debug("Can't find the country code for $variety in Locale::Object::DB");
 							}
 						}
 						if($@ || !defined($language_name)) {
@@ -596,7 +598,8 @@ sub _find_language {
 						} else {
 							$self->{_sublanguage} = $language_name;
 							if($self->{_logger}) {
-								$self->{_logger}->debug('variety name ', $self->{_sublanguage});
+								# Don't use ',' or else t/logger.t will fail
+								$self->{_logger}->debug('variety name ' . $self->{_sublanguage});
 							}
 							if($self->{_cache} && !defined($from_cache)) {
 								if($self->{_logger}) {
