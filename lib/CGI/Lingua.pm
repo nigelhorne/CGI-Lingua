@@ -1217,10 +1217,10 @@ sub time_zone {
 		return $self->{_timezone};
 	}
 
-	if($self->{_have_geoip} == -1) {
-		$self->_load_geoip();
-	}
 	if(my $ip = $ENV{'REMOTE_ADDR'}) {
+		if($self->{_have_geoip} == -1) {
+			$self->_load_geoip();
+		}
 		if($self->{_have_geoip} == 1) {
 			$self->{_timezone} = $self->{_geoip}->time_zone($ip);
 		}
@@ -1390,10 +1390,6 @@ L<http://cpants.cpanauthors.org/dist/CGI-Lingua>
 =item * CPAN Testers' Matrix
 
 L<http://matrix.cpantesters.org/?dist=CGI-Lingua>
-
-=item * CPAN Ratings
-
-L<http://cpanratings.perl.org/d/CGI-Lingua>
 
 =item * CPAN Testers Dependencies
 
