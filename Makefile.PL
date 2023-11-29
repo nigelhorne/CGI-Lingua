@@ -127,12 +127,11 @@ sub are_online
 	return 0 if($ENV{'AUTOMATED_TESTING'});
 	return 0 if(!-t STDIN);
 
-	my $s = IO::Socket::INET->new(
+	if(my $s = IO::Socket::INET->new(
 		# PeerAddr => 'www.ripe.net:43',
 		PeerAddr => 'whois.apnic.net:43',
 		Timeout => 5
-	);
-	if($s) {
+	)) {
 		if($ENV{'PERL_MM_USE_DEFAULT'}) {
 			close($s);
 			return 1;
