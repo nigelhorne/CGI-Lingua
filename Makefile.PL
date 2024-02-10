@@ -53,13 +53,14 @@ if(eval 'require IP::Country') {
 my $test_requires = {
 	'Test::Carp' => 0,
 	'Test::Most' => 0,
+	'Test::Needs' => 0,
 	'Test::NoWarnings' => 0,
 	'Test::Requires' => 0,
 	# 'Test::Kwalitee' => 0,
 	'autodie' => 0,
 	'IPC::System::Simple' => 0,
 	'Test::Compile' => 0,
-	'Test::Without::Module' => 0,
+	'Test::Without::Module' => 0
 };
 
 if($online_tests) {
