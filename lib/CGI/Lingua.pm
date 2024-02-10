@@ -1222,7 +1222,9 @@ sub time_zone {
 			$self->_load_geoip();
 		}
 		if($self->{_have_geoip} == 1) {
-			$self->{_timezone} = $self->{_geoip}->time_zone($ip);
+			eval {
+				$self->{_timezone} = $self->{_geoip}->time_zone($ip);
+			};
 		}
 		if(!$self->{_timezone}) {
 			if(eval { require LWP::Simple::WithCache; require JSON::Parse } ) {
