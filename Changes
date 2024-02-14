@@ -1,6 +1,6 @@
 Revision history for CGI-Lingua
 
-0.66
+0.66	Wed Feb 14 10:06:25 EST 2024
 	time_zone(): Don't load Geo::IP for local connections
 	time_zone(): Don't fail on "Usage" message from Geo::IP
 

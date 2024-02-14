@@ -58,4 +58,5 @@ t/unused.t
 t/used.t
 t/usgb.t
 t/vars.t
+t/version.t
 t/zz.t
