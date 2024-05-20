@@ -38,7 +38,7 @@ if(-e 't/online.enabled') {
 	$ENV{'HTTP_ACCEPT_LANGUAGE'} = '';
 	$ENV{'REMOTE_ADDR'} = '66.249.67.232';	# Google
 	$l = CGI::Lingua->new(supported => ['en', 'fr', 'en-gb', 'en-us']);
-	ok(defined $l);
+	ok(defined($l));
 	ok($l->isa('CGI::Lingua'));
 	ok($l->language() eq 'English');
 	ok($l->requested_language() eq 'English');
@@ -331,6 +331,15 @@ if(-e 't/online.enabled') {
 	]);
 	cmp_ok($l->language(), 'eq', 'French', 'Check order of preference is honoured');
 	is($l->sublanguage(), undef, 'No sublanguage has been requested');
+
+	$ENV{'HTTP_ACCEPT_LANGUAGE'} = 'de-DE,de;q=0.9';
+	$l = CGI::Lingua->new(
+		supported => ['en', 'fr', 'en-gb', 'en-us'],
+		syslog => 1,
+		logger => MyLogger->new()
+	);
+	diag($l->language());
+
 } else {
 	plan(skip_all => 'On-line tests disabled');
 }

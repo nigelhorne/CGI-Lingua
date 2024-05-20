@@ -18,12 +18,11 @@ sub new {
 	# ::diag($message);
 # }
 
-# sub warn {
-	# my $self = shift;
-	# my $message = shift;
-#
-	# ::diag($message);
-# }
+sub warn {
+	my $self = shift;
+
+	::diag(@_);
+}
 
 # sub info {
 	# my $self = shift;

@@ -290,9 +290,9 @@ language() returns 'Unknown'.
     # request
 
     # Site supports British English only
-    my $l = CGI::Lingua->new({supported => ['fr', 'en-gb']});
+    my $l = CGI::Lingua->new({ supported => ['fr', 'en-gb']} );
 
-    # If the browser requests 'en-us' , then language will be 'English' and
+    # If the browser requests 'en-us', then language will be 'English' and
     # sublanguage will also be undefined, which may seem strange, but it
     # ensures that sites behave sensibly.
 
@@ -825,11 +825,23 @@ sub _what_language {
 		return $ENV{'LANG'};
 	}
 
-	if($ENV{'HTTP_ACCEPT_LANGUAGE'}) {
-		if(ref($self)) {
-			return $self->{_what_language} = $ENV{'HTTP_ACCEPT_LANGUAGE'};
+	if(my $rc = $ENV{'HTTP_ACCEPT_LANGUAGE'}) {
+		if($rc =~ /,/) {
+			# If HTTP_ACCEPT_LANGUAGE=de-DE,de;q=0.9
+			#	return HTTP_ACCEPT_LANGUAGE=de-DE;q=0.9
+			my @langs = split(/,/, $rc);
+				::diag('>>>>>>>>>>>>', __LINE__, $rc);
+			if(($langs[0] =~ /-/) && ($langs[1] !~ /-/) && ($langs[0] eq substr($langs[1], 0, 2))) {
+				::diag('>>>>>>>>>>>>', __LINE__, $rc);
+				my $first = unshift @langs;
+				::diag(join(',', ($first, @langs)));
+				return join(',', ($first, @langs));
+			}
 		}
-		return $ENV{'HTTP_ACCEPT_LANGUAGE'};
+		if(ref($self)) {
+			return $self->{_what_language} = $rc;
+		}
+		return $rc;
 	}
 }
 
