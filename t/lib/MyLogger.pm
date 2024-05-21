@@ -18,11 +18,11 @@ sub new {
 	# ::diag($message);
 # }
 
-sub warn {
-	my $self = shift;
-
-	::diag(@_);
-}
+# sub warn {
+	# my $self = shift;
+# 
+	# ::diag(@_);
+# }
 
 # sub info {
 	# my $self = shift;
@@ -33,10 +33,9 @@ sub warn {
 
 sub trace {
 	my $self = shift;
-	my $message = shift;
 
 	if($ENV{'TEST_VERBOSE'}) {
-		::diag($message);
+		::diag(@_);
 	}
 }
 

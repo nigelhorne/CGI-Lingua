@@ -53,7 +53,7 @@ to use.
     use CGI::Lingua;
     # ...
     my $cache = CHI->new(driver => 'File', root_dir => '/tmp/cache', namespace => 'CGI::Lingua-countries');
-    my $l = CGI::Lingua->new({ supported => ['en', 'fr'], cache => $cache });
+    $l = CGI::Lingua->new({ supported => ['en', 'fr'], cache => $cache });
 
 =head1 SUBROUTINES/METHODS
 
@@ -617,7 +617,9 @@ sub _find_language {
 				}
 			}
 		} elsif(($http_accept_language =~ /;/) && (defined($self->{_logger}))) {
-			$self->{_logger}->warn(__PACKAGE__, ": lower priority supported language may be missed HTTP_ACCEPT_LANGUAGE=$http_accept_language");
+			# e.g. HTTP_ACCEPT_LANGUAGE=de-DE,de;q=0.9
+			# and we don't support DE at all
+			$self->{_logger}->warn(__PACKAGE__, ': ', __LINE__, ": lower priority supported language may be missed HTTP_ACCEPT_LANGUAGE=$http_accept_language");
 		}
 		if($self->{_slanguage} && ($self->{_slanguage} ne 'Unknown')) {
 			if($self->{_rlanguage} eq 'Unknown') {
@@ -826,18 +828,6 @@ sub _what_language {
 	}
 
 	if(my $rc = $ENV{'HTTP_ACCEPT_LANGUAGE'}) {
-		if($rc =~ /,/) {
-			# If HTTP_ACCEPT_LANGUAGE=de-DE,de;q=0.9
-			#	return HTTP_ACCEPT_LANGUAGE=de-DE;q=0.9
-			my @langs = split(/,/, $rc);
-				::diag('>>>>>>>>>>>>', __LINE__, $rc);
-			if(($langs[0] =~ /-/) && ($langs[1] !~ /-/) && ($langs[0] eq substr($langs[1], 0, 2))) {
-				::diag('>>>>>>>>>>>>', __LINE__, $rc);
-				my $first = unshift @langs;
-				::diag(join(',', ($first, @langs)));
-				return join(',', ($first, @langs));
-			}
-		}
 		if(ref($self)) {
 			return $self->{_what_language} = $rc;
 		}
