@@ -124,9 +124,7 @@ WriteMakefile(
 
 sub are_online
 {
-	return 0 if($ENV{'NO_NETWORK_TESTING'} || $ENV{'TRAVIS_PERL_VERSION'});
-	return 0 if($ENV{'AUTOMATED_TESTING'});
-	return 0 if(!-t STDIN);
+	return 0 if($ENV{'NO_NETWORK_TESTING'} || $ENV{'TRAVIS_PERL_VERSION'}) || $ENV{'AUTOMATED_TESTING'} || (!-t STDIN);
 
 	if(my $s = IO::Socket::INET->new(
 		# PeerAddr => 'www.ripe.net:43',
