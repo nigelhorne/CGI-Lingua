@@ -20,7 +20,7 @@ sub new {
 
 # sub warn {
 	# my $self = shift;
-# 
+#
 	# ::diag(@_);
 # }
 

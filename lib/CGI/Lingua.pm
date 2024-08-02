@@ -106,10 +106,8 @@ The optional parameter debug is passed on to L<I18N::AcceptLanguage>.
 =cut
 
 sub new {
-	my $class = $_[0];
-
-	shift;
-
+	my $proto = shift;
+	my $class = ref($proto) || $proto;
 	my %params = (ref($_[0]) eq 'HASH') ? %{$_[0]} : @_;
 
 	if(!defined($class)) {
@@ -172,6 +170,7 @@ sub new {
 	}
 
 	return bless {
+		%params,
 		_supported => $params{supported}, # List of languages (two letters) that the application
 		_cache => $cache,	# CHI
 		_info => $info,
