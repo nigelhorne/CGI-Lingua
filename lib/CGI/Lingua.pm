@@ -31,7 +31,7 @@ to use.
     my $l = CGI::Lingua->new(supported => ['en', 'fr', 'en-gb', 'en-us']);
     my $language = $l->language();
     if ($language eq 'English') {
-       print '<P>Hello</P>';
+	print '<P>Hello</P>';
     } elsif($language eq 'French') {
 	print '<P>Bonjour</P>';
     } else {	# $language eq 'Unknown'
