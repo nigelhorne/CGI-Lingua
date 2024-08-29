@@ -1275,8 +1275,7 @@ sub _code2language
 	unless($self->{_cache}) {
 		return Locale::Language::code2language($code);
 	}
-	my $from_cache = $self->{_cache}->get("code2language/$code");
-	if($from_cache) {
+	if(my $from_cache = $self->{_cache}->get("code2language/$code")) {
 		if($self->{_logger}) {
 			$self->{_logger}->trace("_code2language found in cache $from_cache");
 		}
@@ -1327,8 +1326,7 @@ sub _code2countryname
 		}
 		return;
 	}
-	my $from_cache = $self->{_cache}->get("code2countryname/$code");
-	if($from_cache) {
+	if(my $from_cache = $self->{_cache}->get("code2countryname/$code")) {
 		if($self->{_logger}) {
 			$self->{_logger}->trace("_code2countryname found in cache $from_cache");
 		}
@@ -1337,8 +1335,7 @@ sub _code2countryname
 	if($self->{_logger}) {
 		$self->{_logger}->trace('_code2countryname not in cache, storing');
 	}
-	my $country = $self->_code2country($code);
-	if(defined($country)) {
+	if(my $country = $self->_code2country($code)) {
 		return $self->{_cache}->set("code2countryname/$code", $country->name, '1 month');
 	}
 }
