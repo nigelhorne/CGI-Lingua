@@ -13,6 +13,7 @@ environment:
   AUTOMATED_TESTING: 1
   DEBIAN_FRONTEND: noninteractive
   PERL_MM_USE_DEFAULT: 1
+  NO_NETWORK_TESTING: 1
 
 platform: x64
 
