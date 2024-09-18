@@ -52,6 +52,7 @@ if(eval 'require IP::Country') {
 
 my $test_requires = {
 	'Test::Carp' => 0,
+	'Test::DescribeMe' => 0,
 	'Test::Most' => 0,
 	'Test::Needs' => 0,
 	'Test::NoWarnings' => 0,
@@ -124,7 +125,7 @@ WriteMakefile(
 
 sub are_online
 {
-	return 0 if($ENV{'NO_NETWORK_TESTING'} || $ENV{'CIRCLECI'} || $ENV{'TRAVIS_PERL_VERSION'}) || $ENV{'AUTOMATED_TESTING'} || $ENV{'NONINTERACTIVE_TESTING} || (!-t STDIN);
+	return 0 if($ENV{'NO_NETWORK_TESTING'} || $ENV{'CIRCLECI'} || $ENV{'TRAVIS_PERL_VERSION'} || $ENV{'AUTOMATED_TESTING'} || $ENV{'NONINTERACTIVE_TESTING'} || (!-t STDIN));
 
 	if(my $s = IO::Socket::INET->new(
 		# PeerAddr => 'www.ripe.net:43',

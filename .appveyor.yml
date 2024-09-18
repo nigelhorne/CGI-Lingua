@@ -15,6 +15,8 @@ environment:
   DEBIAN_FRONTEND: noninteractive
   PERL_MM_USE_DEFAULT: 1
   NO_NETWORK_TESTING: 1
+  AUTHOR_TESTING: 1
+  NONINTERACTIVE_TESTING: 1
 
 platform: x64
 
@@ -29,7 +31,7 @@ install:
   - cmd: path C:\strawberry\perl\bin;C:\strawberry\perl\site\bin;C:\strawberry\c\bin;%PATH%
   # - cmd: cd C:\projects\%APPVEYOR_PROJECT_NAME%
   # apt update is broken on Appveyor
-  # - sh: sudo apt update -q -y
+  - sh: sudo apt update -q -y
   - sh: sudo DEBIAN_FRONTEND=noninteractive apt-get install -q -y --force-yes build-essential git libssl-dev perl
   - sh: export PATH=/home/appveyor/perl5/bin:$PATH
   - perl -V
