@@ -773,21 +773,35 @@ sub _find_language {
 # Try our very best to give the right country - if they ask for en-us and
 # we only have en-gb then give it to them
 
-sub _get_closest {
+# Old code - more readable
+# sub _get_closest {
+	# my ($self, $language_string, $alpha2) = @_;
+# 
+	# foreach (@{$self->{_supported}}) {
+		# my $s;
+		# if(/^(.+)-.+/) {
+			# $s = $1;
+		# } else {
+			# $s = $_;
+		# }
+		# if($language_string eq $s) {
+			# $self->{_slanguage} = $self->{_rlanguage};
+			# $self->{_slanguage_code_alpha2} = $alpha2;
+			# last;
+		# }
+	# }
+# }
+
+sub _get_closest
+{
 	my ($self, $language_string, $alpha2) = @_;
 
-	foreach (@{$self->{_supported}}) {
-		my $s;
-		if(/^(.+)-.+/) {
-			$s = $1;
-		} else {
-			$s = $_;
-		}
-		if($language_string eq $s) {
-			$self->{_slanguage} = $self->{_rlanguage};
-			$self->{_slanguage_code_alpha2} = $alpha2;
-			last;
-		}
+	# Create a hash mapping base languages to their full language codes
+	my %base_languages = map { /^(.+)-/ ? ($1 => $_) : ($_ => $_) } @{$self->{_supported}};
+
+	if(exists($base_languages{$language_string})) {
+		$self->{_slanguage} = $self->{_rlanguage};
+		$self->{_slanguage_code_alpha2} = $alpha2;
 	}
 }
 

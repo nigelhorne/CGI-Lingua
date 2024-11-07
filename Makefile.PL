@@ -72,6 +72,15 @@ if($online_tests) {
 	unlink('t/online.enabled');
 }
 
+my $dist = {
+	COMPRESS => 'gzip -9f',
+	SUFFIX => 'gz'
+};
+
+if($^O eq 'darwin') {
+	$dist->{'TAR'} = 'gtar';
+}
+
 WriteMakefile(
     NAME                => 'CGI::Lingua',
     AUTHOR              => q{Nigel Horne <njh@bandsman.co.uk>},
@@ -101,8 +110,7 @@ WriteMakefile(
 	'HTTP::BrowserDetect' => 0,
 	'Net::Subnet' => 0,
 	'Class::Autouse' => 0,
-    },
-    dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
+    }, dist => $dist,
     clean               => { FILES => 'CGI-Lingua-* t/online.enabled' },
     META_MERGE		=> {
     	'meta-spec' => { version => 2 },
