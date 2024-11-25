@@ -2,6 +2,7 @@ Revision history for CGI-Lingua
 
 0.67
 	Use gtar to create a distribution on Macs
+	Use Test::DescribeMe to simplify tests
 
 0.66	Wed Feb 14 10:06:25 EST 2024
 	time_zone(): Don't load Geo::IP for local connections
