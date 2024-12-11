@@ -796,7 +796,7 @@ sub _find_language {
 # Old code - more readable
 # sub _get_closest {
 	# my ($self, $language_string, $alpha2) = @_;
-# 
+#
 	# foreach (@{$self->{_supported}}) {
 		# my $s;
 		# if(/^(.+)-.+/) {
