@@ -7,7 +7,7 @@ use lib 't/lib';
 use MyLogger;
 
 if(-e 't/online.enabled') {
-	plan(tests => 153);
+	plan(tests => 154);
 
 	use_ok('CGI::Lingua');
 	require_ok('Test::NoWarnings');
@@ -348,6 +348,35 @@ if(-e 't/online.enabled') {
 		logger => MyLogger->new()
 	}]);
 	cmp_ok($l->language(), 'eq', 'Japanese', 'Checking quality value');
+
+	# Cover edge case: malformed Accept-Language headers
+	subtest 'Malformed Accept-Language headers' => sub {
+		my $test_cases = {
+			'Empty language tag' => '";q=0.8,en;q=0.9"',
+			'Invalid quality values' => 'en-US;q=1.1,es;q=-0.2,fr;q=abc',
+			'Extra delimiters' => 'en,,es;q=0.8;;fr;q=0.5',
+			'Missing q value' => 'en;q=,es;q=0.8;q=0.5',
+			'Non-standard format' => 'lang=fr;q=0.8,language=en;q=0.7',
+			'Unexpected characters' => 'en-US;q=0.9,@es;q=0.8,#fr;q=0.5',
+			'Duplicated entries' => 'en-US,en-US;q=0.9,es;q=0.8',
+			'Overly long header' => 'en;q=0.9,' . ('fr;q=0.8,' x 1000),
+			'Mixed case and invalid' => 'EN-us;q=0.8,123;q=0.7,xx;q=0.6',
+			'Empty header' => '',
+		};
+
+		foreach my $case (keys %$test_cases) {
+			my $accept = $test_cases->{$case};
+			local $ENV{'HTTP_ACCEPT_LANGUAGE'} = $accept;
+			my $lingua = CGI::Lingua->new(
+				supported_languages => [qw(en es fr)],
+			);
+
+			my $result = eval { $lingua->preferred_language() };
+			ok(!$@, "No crash for case: $case");
+			ok(defined($result));
+			diag("Handled malformed header: $case ($accept)") if $@;
+		}
+	};
 } else {
 	plan(skip_all => 'On-line tests disabled');
 }

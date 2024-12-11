@@ -315,6 +315,19 @@ sub language {
 	return $self->{_slanguage};
 }
 
+=head2 preferred_language
+
+Same as language().
+
+=cut
+
+sub preferred_language
+{
+	my $self = shift;
+
+	$self->language(@_);
+}
+
 =head2 name
 
 Synonym for language, for compatibility with Local::Object::Language
