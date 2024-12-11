@@ -72,6 +72,8 @@ For a list of country-codes refer to ISO-3166 (e.g. 'gb' for United Kingdom).
     # We support English, French, British and American English, in that order
     my $l = CGI::Lingua->new(supported => ['en', 'fr', 'en-gb', 'en-us']);
 
+Supported_languages is the same as supported.
+
 Takes optional parameter cache, an object which is used to cache country
 lookups.
 This cache object is an object that understands get() and set() messages,
@@ -125,6 +127,7 @@ sub new {
 	# unless($params{supported} && ($#params{supported} > 0)) {
 		# croak('You must give a list of supported languages');
 	# }
+	$params{'supported'} ||= $params{'supported_languages'};
 	unless($params{supported}) {
 		Carp::croak('You must give a list of supported languages');
 	}
