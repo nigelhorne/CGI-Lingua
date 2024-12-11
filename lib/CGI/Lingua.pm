@@ -239,10 +239,12 @@ sub DESTROY {
 sub _warn {
 	my ($self, $params) = @_;
 
-	my $warning = $$params{'warning'};
-
+	# Validate input parameters
+	return unless($params && (ref($params) eq 'HASH'));
+	my $warning = $params->{'warning'};
 	return unless($warning);
 
+	# Handle syslog-based logging
 	if(my $syslog = $self->{_syslog}) {
 		require Sys::Syslog;
 		require CGI::Info;
@@ -261,9 +263,15 @@ sub _warn {
 		closelog();
 	}
 
-	if($self->{_logger}) {
-		$self->{_logger}->warn($warning);
-	} elsif(!defined($self->{_syslog})) {
+	# Handle logger-based logging
+	if(my $logger = $self->{_logger}) {
+		if(ref($logger) eq 'CODE') {
+			$logger->({ level => 'warn', message => [ $warning ] });
+		} else {
+			$logger->warn($warning);
+		}
+	} elsif(!defined $self->{_syslog}) {
+		# Fallback to Carp warnings
 		Carp::carp($warning);
 	}
 }
@@ -283,16 +291,12 @@ language() returns 'Unknown'.
     # Site supports English and British English
     my $l = CGI::Lingua->new(supported => ['en', 'fr', 'en-gb']);
 
-    # If the browser requests 'en-us' , then language will be 'English' and
-    # sublanguage will be undefined because we weren't able to satisfy the
-    # request
+If the browser requests 'en-us', then language will be 'English' and
+sublanguage will also be undefined, which may seem strange, but it
+ensures that sites behave sensibly.
 
     # Site supports British English only
     my $l = CGI::Lingua->new({ supported => ['fr', 'en-gb']} );
-
-    # If the browser requests 'en-us', then language will be 'English' and
-    # sublanguage will also be undefined, which may seem strange, but it
-    # ensures that sites behave sensibly.
 
 If the script is not being run in a CGI environment, perhaps to debug it, the
 locale is used via the LANG environment variable.
