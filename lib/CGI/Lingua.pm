@@ -66,8 +66,8 @@ that the website supports.
 Language codes are of the form primary-code [ - country-code ] e.g.
 'en', 'en-gb' for English and British English respectively.
 
-For a list of primary-codes refer to ISO-639 (e.g. 'en' for English).
-For a list of country-codes refer to ISO-3166 (e.g. 'gb' for United Kingdom).
+For a list of primary codes refer to ISO-639 (e.g. 'en' for English).
+For a list of country codes refer to ISO-3166 (e.g. 'gb' for United Kingdom).
 
     # We support English, French, British and American English, in that order
     my $l = CGI::Lingua->new(supported => ['en', 'fr', 'en-gb', 'en-us']);
@@ -90,18 +90,19 @@ This logger object is an object that understands warn() and trace()
 messages, such as a L<Log::Log4perl> object.
 
 Takes optional parameter info, an object which can be used to see if a CGI
-parameter is set, for example an L<CGI::Info> object.
+parameter is set, for example, an L<CGI::Info> object.
 
 Since emitting warnings from a CGI class can result in messages being lost (you
-may forget to look in your server's log), or appearing to the client in
-amongst HTML causing invalid HTML, it is recommended either either syslog
+may forget to look in your server's log), or appear to the client in
+amongst HTML causing invalid HTML, it is recommended either syslog
 or logger (or both) are set.
 If neither is given, L<Carp> will be used.
 
 Takes an optional parameter dont_use_ip.  By default, if none of the
 requested languages is supported, CGI::Lingua->language() looks in the IP
-address for the language to use.  This may be not what you want, so use this
-option to disable the feature.
+address for the language to use.
+This may not be what you want,
+so use this option to disable the feature.
 
 The optional parameter debug is passed on to L<I18N::AcceptLanguage>.
 
@@ -281,7 +282,7 @@ sub _warn {
 
 =head2 language
 
-Tells the CGI application what language to display its messages in.
+Tells the CGI application in what language to display its messages.
 The language is the natural name e.g. 'English' or 'Japanese'.
 
 Sublanguages are handled sensibly, so that if a client requests U.S. English
@@ -361,7 +362,7 @@ sub sublanguage {
 
 =head2 language_code_alpha2
 
-Gives the two character representation of the supported language, e.g. 'en'
+Gives the two-character representation of the supported language, e.g. 'en'
 when you've asked for en-gb.
 
 If none of the requested languages is included within the supported lists,
@@ -398,7 +399,7 @@ sub code_alpha2 {
 
 =head2 sublanguage_code_alpha2
 
-Gives the two character representation of the supported language, e.g. 'gb'
+Gives the two-character representation of the supported language, e.g. 'gb'
 when you've asked for en-gb, or undef.
 
 =cut
@@ -415,7 +416,7 @@ sub sublanguage_code_alpha2 {
 
 =head2 requested_language
 
-Gives a human readable rendition of what language the user asked for whether
+Gives a human-readable rendition of what language the user asked for whether
 or not it is supported.
 
 Returns the sublanguage (if appropriate) in parentheses,
@@ -435,7 +436,7 @@ sub requested_language {
 # The language cache is stored as country_2_letter -> $language_human_readable_name=$language_2_letter
 # The IP cache is stored as ip -> country_human_readable_name
 
-# Returns the human readable language, such as 'English'
+# Returns the human-readable language, such as 'English'
 
 sub _find_language {
 	my $self = shift;
@@ -670,7 +671,7 @@ sub _find_language {
 		return;
 	}
 
-	# The client hasn't said which to use, guess from their IP address,
+	# The client hasn't said which to use, so guess from their IP address,
 	# or the requested language(s) isn't/aren't supported so use the IP
 	# address for an alternative
 	my $country = $self->country();
@@ -742,7 +743,7 @@ sub _find_language {
 							$code = Locale::Language::language2code($http_accept_language);
 						}
 						unless($code) {
-							# If language is Norwegian (Nynorsk)
+							# If the language is Norwegian (Nynorsk)
 							# lookup Norwegian
 							if($self->{_rlanguage} =~ /(.+)\s\(.+/) {
 								if((!defined($http_accept_language)) || ($1 ne $self->{_rlanguage})) {
@@ -869,11 +870,11 @@ sub _what_language {
 
 =head2 country
 
-Returns the two character country code of the remote end in lower case.
+Returns the two-character country code of the remote end in lowercase.
 
 If L<IP::Country>, L<Geo::IPfree> or L<Geo::IP> is installed,
-CGI::Lingua will make use of that, otherwise it will do a Whois lookup.
-If you do not have any of those installed I recommend you make use of the
+CGI::Lingua will make use of that, otherwise, it will do a Whois lookup.
+If you do not have any of those installed I recommend you use the
 caching capability of CGI::Lingua.
 
 =cut
@@ -1146,7 +1147,7 @@ sub _load_geoip
 =head2 locale
 
 HTTP doesn't have a way of transmitting a browser's localisation information
-which would be useful for default currency, date formatting etc.
+which would be useful for default currency, date formatting, etc.
 
 This method attempts to detect the information, but it is a best guess
 and is not 100% reliable.  But it's better than nothing ;-)
