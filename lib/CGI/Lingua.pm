@@ -913,13 +913,13 @@ sub country {
 	require Data::Validate::IP;
 	Data::Validate::IP->import();
 
-	unless(is_ipv4($ip)) {
+	if(!is_ipv4($ip)) {
 		if($ip eq '::1') {
 			# special case that is easy to handle
 			$ip = '127.0.0.1';
-		} else {
+		} elsif(!is_ipv6($ip)) {
 			$self->_warn({
-				warning => "$ip isn't a valid IPv4 address\n"
+				warning => "$ip isn't a valid IP address\n"
 			});
 			return;
 		}
@@ -968,7 +968,8 @@ sub country {
 		$self->{_country} = $self->{_ipcountry}->inet_atocc($ip);
 		if($self->{_country}) {
 			$self->{_country} = lc($self->{_country});
-		} else {
+		} elsif(is_ipv4($ip)) {
+			# Although it doesn't say so, it looks like IP::Country is IPv4 only
 			$self->_warn({
 				warning => "$ip is not known by IP::Country"
 			});
@@ -995,7 +996,9 @@ sub country {
 				}
 			}
 			if($self->{_have_geoipfree} == 1) {
-				$self->{_country} = lc(($self->{_geoipfree}->LookUp($ip))[0]);
+				if(my $country = ($self->{_geoipfree}->LookUp($ip))[0]) {
+					$self->{_country} = lc($country);
+				}
 			}
 		}
 	}

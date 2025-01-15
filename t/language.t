@@ -168,7 +168,7 @@ if(-e 't/online.enabled') {
 	]);
 	local $SIG{__WARN__} = sub { die $_[0] };
 	eval { $l->language() };
-	ok($@ =~ /a\.b\.c\.d isn't a valid IPv4 address/);
+	like($@, qr/a\.b\.c\.d isn't a valid IP address/);
 	ok(defined($l->requested_language()));
 	ok($l->requested_language() eq 'Unknown');
 	ok(!defined($l->language_code_alpha2()));
