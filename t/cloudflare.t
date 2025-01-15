@@ -53,7 +53,7 @@ CLOUDFLARE: {
 	ok(defined($l->requested_language()));
 	ok($l->requested_language() eq 'English (United Kingdom)');
 
-	{
+	if(-e 't/online.enabled') {
 		local $ENV{'REMOTE_ADDR'} = '2a06:98c0:3600::103';
 		delete local $ENV{'HTTP_CF_IPCOUNTRY'};
 
@@ -63,5 +63,9 @@ CLOUDFLARE: {
 		ok(defined($l));
 		ok($l->isa('CGI::Lingua'));
 		ok($l->country() eq 'us');
+	} else {
+		SKIP: {
+			skip 'Test requires Internet access', 4 unless(-e 't/online.enabled');
+		}
 	}
 }
