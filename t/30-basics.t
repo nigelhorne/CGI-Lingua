@@ -3,7 +3,6 @@
 use strict;
 use warnings;
 
-use Test::MockModule;
 use Test::Most;
 use Test::Needs 'CHI', 'IP::Country', 'Test::LWP::UserAgent', 'Test::MockModule';
 use Test::Without::Module qw(Geo::IP);
