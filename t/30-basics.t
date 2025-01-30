@@ -4,9 +4,10 @@ use strict;
 use warnings;
 
 use CHI;
+use Test::LWP::UserAgent;	# For mocking HTTP requests
 use Test::MockModule;
 use Test::Most;
-use Test::LWP::UserAgent;	# For mocking HTTP requests
+use Test::Needs 'IP::Country';
 use Test::Without::Module qw(Geo::IP);
 
 BEGIN { use_ok('CGI::Lingua') }
