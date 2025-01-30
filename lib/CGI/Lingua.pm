@@ -20,6 +20,9 @@ Version 0.66
 
 =head1 SYNOPSIS
 
+CGI::Lingua is a powerful module for multilingual web applications
+offering extensive language/country detection strategies.
+
 No longer does your website need to be in English only.
 CGI::Lingua provides a simple basis to determine which language to display a
 website. The website tells CGI::Lingua which languages it supports. Based on
@@ -69,8 +72,22 @@ Language codes are of the form primary-code [ - country-code ] e.g.
 For a list of primary codes refer to ISO-639 (e.g. 'en' for English).
 For a list of country codes refer to ISO-3166 (e.g. 'gb' for United Kingdom).
 
+    # Sample web page
+    use CGI::Lingua;
+    use CHI;
+
+    my $cache = CHI->new(driver => 'File', root_dir => '/tmp/cache');
     # We support English, French, British and American English, in that order
-    my $l = CGI::Lingua->new(supported => ['en', 'fr', 'en-gb', 'en-us']);
+    my $lingua = CGI::Lingua->new(
+        supported => ['en', 'fr', 'en-gb', 'en-us'],
+        cache     => $cache,
+        logger    => Log::Log4perl->get_logger(),
+    );
+
+    print "Content-Type: text/plain\n\n";
+    print 'Language: ', $lingua->language(), "\n";
+    print 'Country: ', $lingua->country(), "\n";
+    print 'Time Zone: ', $lingua->time_zone(), "\n";
 
 Supported_languages is the same as supported.
 
@@ -1438,7 +1455,7 @@ L<http://deps.cpantesters.org/?module=CGI::Lingua>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010-2024 Nigel Horne.
+Copyright 2010-2025 Nigel Horne.
 
 This program is released under the following licence: GPL2
 
