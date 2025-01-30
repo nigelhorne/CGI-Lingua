@@ -7,7 +7,7 @@ use CHI;
 use Test::LWP::UserAgent;	# For mocking HTTP requests
 use Test::MockModule;
 use Test::Most;
-use Test::Needs 'IP::Country';
+use Test::Needs 'CHI', 'IP::Country', 'Test::LWP::UserAgent', 'Test::MockModule';
 use Test::Without::Module qw(Geo::IP);
 
 BEGIN { use_ok('CGI::Lingua') }
