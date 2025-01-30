@@ -496,9 +496,7 @@ sub _find_language {
 							$from_cache = $self->{_cache}->get($accepts);
 						}
 						if($from_cache) {
-							if($self->{_logger}) {
-								$self->{_logger}->debug("$accepts is in cache as $from_cache");
-							}
+							$self->_debug("$accepts is in cache as $from_cache");
 							$self->{_slanguage} = (split(/=/, $from_cache))[0];
 						} else {
 							$self->{_slanguage} = $self->_code2language($accepts);

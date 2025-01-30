@@ -216,8 +216,7 @@ subtest 'IPv6 Handling' => sub {
 };
 
 subtest 'Sublanguage Handling' => sub {
-	diag('FIXME: these are showing bugs I need to fix');
-	plan(skip_all => 'FIXME: these are showing bugs I need to fix');
+	diag('FIXME: there are bugs I need to fix');
 	# Mock environment setup
 	my $mock_env = {
 		REMOTE_ADDR => '123.45.67.89',
@@ -297,6 +296,8 @@ subtest 'Sublanguage Handling' => sub {
 	
 	
 	subtest 'Country-Specific Default' => sub {
+		diag('SKIP: Country-Specific Default');
+		plan(skip_all => 'FIXME: these are showing bugs I need to fix');
 		local %ENV = (%{$mock_env}, 
 			HTTP_ACCEPT_LANGUAGE => 'en',
 			REMOTE_ADDR => '8.8.8.8' # US IP
@@ -317,6 +318,8 @@ subtest 'Sublanguage Handling' => sub {
 	
 
 	subtest 'Deprecated Codes' => sub {
+		diag('SKIP: Deprecated Codes');
+		plan(skip_all => 'FIXME: these are showing bugs I need to fix');
 		local %ENV = (%{$mock_env}, HTTP_ACCEPT_LANGUAGE => 'en-uk');
 		
 		my $lingua = CGI::Lingua->new(
@@ -329,6 +332,8 @@ subtest 'Sublanguage Handling' => sub {
 	};
 
 	subtest 'Quality Values' => sub {
+		diag('SKIP: Quality Values');
+		plan(skip_all => 'FIXME: these are showing bugs I need to fix');
 		local %ENV = (%{$mock_env}, 
 			HTTP_ACCEPT_LANGUAGE => 'en-gb;q=0.7, en-us;q=0.9'
 		);
@@ -343,6 +348,8 @@ subtest 'Sublanguage Handling' => sub {
 	};
 
 	subtest 'Invalid Sublanguage' => sub {
+		diag('SKIP: Invalid Sublanguage');
+		plan(skip_all => 'FIXME: these are showing bugs I need to fix');
 		local %ENV = (%{$mock_env}, HTTP_ACCEPT_LANGUAGE => 'en-xx');
 		
 		my $lingua = CGI::Lingua->new(
@@ -364,7 +371,7 @@ subtest 'Sublanguage Handling' => sub {
 		);
 
 		# First call
-		is $lingua->language, 'French', 'Initial call';
+		is($lingua->language(), 'French', 'Initial call');
 		
 		# Second call with same params
 		my $lingua2 = CGI::Lingua->new(
@@ -372,7 +379,7 @@ subtest 'Sublanguage Handling' => sub {
 			cache => $cache,
 		);
 		
-		is $lingua2->language, 'French', 'Cached result';
+		is($lingua2->language(), 'French', 'Cached result');
 	};
 };
 
