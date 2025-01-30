@@ -2,12 +2,14 @@
 
 use strict;
 use warnings;
-use Test::Most;
-use Test::MockModule;
-use Test::LWP::UserAgent;	# For mocking HTTP requests
+
 use CHI;
-use CGI::Lingua;
+use Test::MockModule;
+use Test::Most;
+use Test::LWP::UserAgent;	# For mocking HTTP requests
 use Test::Without::Module qw(Geo::IP);
+
+BEGIN { use_ok('CGI::Lingua') }
 
 # Setup: Mock environment and dependencies
 my $mock_env = {
@@ -34,8 +36,8 @@ subtest 'Language Detection' => sub {
 		cache => $cache,
 	);
 
-	is $lingua->language(), 'English', 'Correct language from Accept-Language header';
-	is $lingua->code_alpha2(), 'en', 'Valid 2-letter language code';
+	is($lingua->language(), 'English', 'Correct language from Accept-Language header');
+	is($lingua->code_alpha2(), 'en', 'Valid 2-letter language code');
 };
 
 # Country detection via IP
