@@ -75,8 +75,11 @@ For a list of country codes refer to ISO-3166 (e.g. 'gb' for United Kingdom).
     # Sample web page
     use CGI::Lingua;
     use CHI;
+    use Log::Log4perl;
 
     my $cache = CHI->new(driver => 'File', root_dir => '/tmp/cache');
+    Log::Log4perl->easy_init({ level => $Log::Log4perl::DEBUG });
+
     # We support English, French, British and American English, in that order
     my $lingua = CGI::Lingua->new(
         supported => ['en', 'fr', 'en-gb', 'en-us'],

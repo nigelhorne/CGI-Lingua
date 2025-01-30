@@ -42,6 +42,7 @@ t/no404s.t
 t/noopentickets.t
 t/noplan.t
 t/pod-cm.t
+t/pod-snippets.t
 t/pod-spelling.t
 t/pod-synopsis.t
 t/pod.t
@@ -53,7 +54,6 @@ t/rt69509.t
 t/rt77332.t
 t/rt79214.t
 t/rt86809.t
-t/snippets.t
 t/strict.t
 t/sub-lang.t
 t/time_zone.t
