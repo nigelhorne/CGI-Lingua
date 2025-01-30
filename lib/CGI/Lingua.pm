@@ -167,11 +167,11 @@ sub new {
 		}
 		$key .= join('/', @{$params{supported}});
 		if($logger) {
-			$logger->debug("Looking in cache for $key");
+			# $self->debug("Looking in cache for $key");
 		}
 		if(my $rc = $cache->get($key)) {
 			if($logger) {
-				$logger->debug('Found - thawing');
+				# $logger->debug('Found - thawing');
 			}
 			$rc = Storable::thaw($rc);
 			$rc->{_logger} = $logger;
@@ -235,9 +235,7 @@ sub DESTROY {
 	$key .= join('/', @{$self->{_supported}});
 	return if($cache->get($key));
 
-	if(my $logger = $self->{_logger}) {
-		$logger->trace("Storing self in cache as $key");
-	}
+	$self->_debug("Storing self in cache as $key");
 
 	my $copy = bless {
 		_slanguage => $self->{_slanguage},
@@ -259,46 +257,6 @@ sub DESTROY {
 	$cache->set($key, Storable::nfreeze($copy), '1 month');
 }
 
-# Emit a warning message somewhere
-sub _warn {
-	my ($self, $params) = @_;
-
-	# Validate input parameters
-	return unless($params && (ref($params) eq 'HASH'));
-	my $warning = $params->{'warning'};
-	return unless($warning);
-
-	# Handle syslog-based logging
-	if(my $syslog = $self->{_syslog}) {
-		require Sys::Syslog;
-		require CGI::Info;
-
-		Sys::Syslog->import();
-		CGI::Info->import();
-		if(ref($syslog) eq 'HASH') {
-			Sys::Syslog::setlogsock($syslog);
-		}
-		if(my $info = $self->{_info}) {
-			openlog($info->script_name(), 'cons,pid', 'user');
-		} else {
-			openlog(CGI::Info->new(syslog => $syslog)->script_name(), 'cons,pid', 'user');
-		}
-		syslog('warning', $warning);
-		closelog();
-	}
-
-	# Handle logger-based logging
-	if(my $logger = $self->{_logger}) {
-		if(ref($logger) eq 'CODE') {
-			$logger->({ level => 'warn', message => [ $warning ] });
-		} else {
-			$logger->warn($warning);
-		}
-	} elsif(!defined $self->{_syslog}) {
-		# Fallback to Carp warnings
-		Carp::carp($warning);
-	}
-}
 
 =head2 language
 
@@ -461,18 +419,15 @@ sub requested_language {
 sub _find_language {
 	my $self = shift;
 
-	if($self->{_logger}) {
-		$self->{_logger}->trace('Entered _find_language');
-	}
+	$self->_trace('Entered _find_language');
+
 	$self->{_rlanguage} = 'Unknown';
 	$self->{_slanguage} = 'Unknown';
 
 	# Use what the client has said
 	my $http_accept_language = $self->_what_language();
 	if(defined($http_accept_language)) {
-		if($self->{_logger}) {
-			$self->{_logger}->debug("language wanted: $http_accept_language");
-		}
+		$self->_debug("language wanted: $http_accept_language");
 
 		# Workaround for RT 74338
 		local $SIG{__WARN__} = sub {
@@ -495,16 +450,13 @@ sub _find_language {
 		}
 
 		if($l) {
-			if($self->{_logger}) {
-				$self->{_logger}->debug("l: $l");
-			}
+			$self->_debug("l: $l");
 
 			if($l !~ /^..-..$/) {
 				$self->{_slanguage} = $self->_code2language($l);
 				if($self->{_slanguage}) {
-					if($self->{_logger}) {
-						$self->{_logger}->debug("_slanguage: $self->{_slanguage}");
-					}
+					$self->_debug("_slanguage: $self->{_slanguage}");
+
 					# We have the language, but not the right
 					# sublanguage, e.g. they want US English but we
 					# only support British English or English
@@ -851,13 +803,9 @@ sub _what_language {
 	my $self = shift;
 
 	if(ref($self)) {
-		if($self->{_logger}) {
-			$self->{_logger}->trace('Entered _what_language');
-		}
+		$self->_trace('Entered _what_language');
 		if($self->{_what_language}) {
-			if($self->{_logger}) {
-				$self->{_logger}->trace('_what_language: returning cached value: ', $self->{_what_language});
-			}
+			$self->_trace('_what_language: returning cached value: ', $self->{_what_language});
 			return $self->{_what_language};	# Useful in case something changes the $info hash
 		}
 		if(my $info = $self->{_info}) {
@@ -947,13 +895,13 @@ sub country {
 	}
 	if(is_private_ip($ip)) {
 		if($self->{_logger}) {
-			$self->{_logger}->trace("Can't determine country from LAN connection $ip");
+			$self->{_logger}->debug("Can't determine country from LAN connection $ip");
 		}
 		return;
 	}
 	if(is_loopback_ip($ip)) {
 		if($self->{_logger}) {
-			$self->{_logger}->trace("Can't determine country from loopback connection $ip");
+			$self->{_logger}->debug("Can't determine country from loopback connection $ip");
 		}
 		return;
 	}
@@ -1325,18 +1273,16 @@ sub _code2language
 	return unless($code);
 	if($self->{_logger}) {
 		if(defined($self->{_country})) {
-			$self->{_logger}->trace("_code2language $code, country ", $self->{_country});
+			$self->{_logger}->debug("_code2language $code, country ", $self->{_country});
 		} else {
-			$self->{_logger}->trace("_code2language $code");
+			$self->_debug("_code2language $code");
 		}
 	}
 	unless($self->{_cache}) {
 		return Locale::Language::code2language($code);
 	}
 	if(my $from_cache = $self->{_cache}->get("code2language/$code")) {
-		if($self->{_logger}) {
-			$self->{_logger}->trace("_code2language found in cache $from_cache");
-		}
+		$self->_trace("_code2language found in cache $from_cache");
 		return $from_cache;
 	}
 	if($self->{_logger}) {
@@ -1351,12 +1297,10 @@ sub _code2country
 	my ($self, $code) = @_;
 
 	return unless($code);
-	if($self->{_logger}) {
-		if($self->{_country}) {
-			$self->{_logger}->trace("_code2country $code, country ", $self->{_country});
-		} else {
-			$self->{_logger}->trace("_code2country $code");
-		}
+	if($self->{_country}) {
+		$self->_trace("_code2country $code, country ", $self->{_country});
+	} else {
+		$self->_trace("_code2country $code");
 	}
 	local $SIG{__WARN__} = sub {
 		if($_[0] !~ /No result found in country table/) {
@@ -1396,6 +1340,116 @@ sub _code2countryname
 	if(my $country = $self->_code2country($code)) {
 		return $self->{_cache}->set("code2countryname/$code", $country->name, '1 month');
 	}
+}
+
+# Helper routines for logger()
+sub _log {
+	my ($self, $level, @messages) = @_;
+
+	if(my $logger = $self->{'logger'}) {
+		if(ref($logger) eq 'CODE') {
+			$logger->({ level => $level, message => \@messages });
+		} else {
+			$logger->$level(@messages);
+		}
+	}
+}
+
+sub _debug {
+	my $self = shift;
+	$self->_log('debug', @_);
+}
+
+sub _info {
+	my $self = shift;
+	$self->_log('info', @_);
+}
+
+sub _trace {
+	my $self = shift;
+	$self->_log('trace', @_);
+}
+
+# Emit a warning message somewhere
+sub _warn {
+	my $self = shift;
+
+	my $params = $self->_get_params('warning', @_);
+
+	# Validate input parameters
+	return unless($params && (ref($params) eq 'HASH'));
+	my $warning = $params->{'warning'};
+	return unless($warning);
+
+	if($self eq __PACKAGE__) {
+		# Called from class method
+		Carp::carp($warning);
+		return;
+	}
+	# return if($self eq __PACKAGE__);  # Called from class method
+
+	# FIXME: add caller's function
+	push @{$self->{'warnings'}}, { warning => $warning };
+
+	# Handle syslog-based logging
+	if($self->{syslog}) {
+		require Sys::Syslog;
+
+		Sys::Syslog->import();
+		if(ref($self->{syslog} eq 'HASH')) {
+			Sys::Syslog::setlogsock($self->{syslog});
+		}
+		if(my $info = $self->{_info}) {
+			openlog($info->script_name(), 'cons,pid', 'user');
+		} else {
+			openlog(__PACKAGE__, 'cons,pid', 'user');
+		}
+		syslog('warning', $warning);
+		closelog();
+	}
+
+	# Handle logger-based logging
+	if(my $logger = $self->{logger}) {
+		$self->_log('warn', [ $warning ]);
+	} elsif(!defined($self->{syslog})) {
+		# Fallback to Carp warnings
+		Carp::carp($warning);
+	}
+}
+
+# Helper routine to parse the arguments given to a function.
+# Processes arguments passed to methods and ensures they are in a usable format,
+#	allowing the caller to call the function in anyway that they want
+#	e.g. foo('bar'), foo(arg => 'bar'), foo({ arg => 'bar' }) all mean the same
+#	when called _get_params('arg', @_);
+sub _get_params
+{
+	shift;  # Discard the first argument (typically $self)
+	my $default = shift;
+
+	# Directly return hash reference if the first parameter is a hash reference
+	return $_[0] if(ref $_[0] eq 'HASH');
+
+	my %rc;
+	my $num_args = scalar @_;
+
+	# Populate %rc based on the number and type of arguments
+	if(($num_args == 1) && (defined $default)) {
+		# %rc = ($default => shift);
+		return { $default => shift };
+	} elsif($num_args == 1) {
+		Carp::croak('Usage: ', __PACKAGE__, '->', (caller(1))[3], '()');
+	} elsif(($num_args == 0) && (defined($default))) {
+		Carp::croak('Usage: ', __PACKAGE__, '->', (caller(1))[3], "($default => \$val)");
+	} elsif(($num_args % 2) == 0) {
+		%rc = @_;
+	} elsif($num_args == 0) {
+		return;
+	} else {
+		Carp::croak('Usage: ', __PACKAGE__, '->', (caller(1))[3], '()');
+	}
+
+	return \%rc;
 }
 
 =head1 AUTHOR

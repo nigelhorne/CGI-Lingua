@@ -215,4 +215,165 @@ subtest 'IPv6 Handling' => sub {
 	};
 };
 
+subtest 'Sublanguage Handling' => sub {
+	diag('FIXME: these are showing bugs I need to fix');
+	plan(skip_all => 'FIXME: these are showing bugs I need to fix');
+	# Mock environment setup
+	my $mock_env = {
+		REMOTE_ADDR => '123.45.67.89',
+		HTTP_USER_AGENT => 'Mozilla/5.0'
+	};
+
+	# Mock country to avoid IP lookup
+	my $mock_ip_country = Test::MockModule->new('IP::Country::Fast');
+	$mock_ip_country->mock('inet_atocc', sub { 'US' });
+
+	subtest 'Exact Sublanguage Match' => sub {
+		local %ENV = (%{$mock_env}, HTTP_ACCEPT_LANGUAGE => 'en-gb, en;q=0.9');
+		
+		my $lingua = CGI::Lingua->new(
+			supported => ['en-gb', 'en-us', 'fr'],
+			cache => $cache,
+		);
+
+		is $lingua->language, 'English', 'Base language correct';
+		is $lingua->sublanguage, 'United Kingdom', 'Exact sublanguage match';
+		is $lingua->sublanguage_code_alpha2, 'gb', 'Correct sublanguage code';
+		like $lingua->requested_language, qr/English.*United Kingdom/,
+			'Shows full requested language';
+	};
+
+	subtest 'Base Language Fallback' => sub {
+		local %ENV = (%{$mock_env}, HTTP_ACCEPT_LANGUAGE => 'en-us');
+		
+		my $lingua = CGI::Lingua->new(
+			supported => ['en', 'fr'],
+			cache => $cache,
+		);
+
+		is $lingua->language, 'English', 'Falls back to base language';
+		ok !defined $lingua->sublanguage, 'No sublanguage defined';
+		is $lingua->language_code_alpha2, 'en', 'Base language code';
+		like $lingua->requested_language, qr/English.*United States/,
+			'Shows requested sublanguage';
+	};
+
+	subtest 'Closest Sublanguage Match' => sub {
+		local %ENV = (%{$mock_env}, HTTP_ACCEPT_LANGUAGE => 'en');
+		
+		my $lingua = CGI::Lingua->new(
+			supported => ['en-gb', 'en-ca'],
+			cache => $cache,
+		);
+
+		is $lingua->language, 'English', 'Base language maintained';
+		like $lingua->sublanguage, qr/(United Kingdom|Canada)/, 
+			'Selects first available sublanguage';
+	};
+
+	subtest 'Case Insensitivity' => sub {
+		local %ENV = (%{$mock_env}, HTTP_ACCEPT_LANGUAGE => 'EN-GB');
+		
+		my $lingua = CGI::Lingua->new(
+			supported => ['en-gb'],
+			cache => $cache,
+		);
+
+		is $lingua->sublanguage_code_alpha2, 'gb', 
+			'Handles uppercase language tags';
+	};
+
+	subtest 'Three-Part Language Tags' => sub {
+		local %ENV = (%{$mock_env}, HTTP_ACCEPT_LANGUAGE => 'es-419');
+		
+		my $lingua = CGI::Lingua->new(
+			supported => ['es', 'es-es'],
+			cache => $cache,
+		);
+
+		is $lingua->language, 'Spanish', 'Handles regional codes';
+		ok(!defined $lingua->sublanguage, 'No sublanguage for es-419');
+	};
+	
+	
+	subtest 'Country-Specific Default' => sub {
+		local %ENV = (%{$mock_env}, 
+			HTTP_ACCEPT_LANGUAGE => 'en',
+			REMOTE_ADDR => '8.8.8.8' # US IP
+		);
+		
+		$mock_ip_country->mock('inet_atocc', sub { 'US' });
+		
+		my $opts = {
+			supported => ['en', 'en-gb', 'en-us'],
+			cache => $cache
+		};
+		$opts->{'logger'} = sub { diag(@{$_[0]->{'message'}}) } if($ENV{'TEST_VERBOSE'});
+
+		my $lingua = CGI::Lingua->new($opts);
+
+		is($lingua->sublanguage_code_alpha2(), 'us', 'Auto-selects country-specific sublanguage');
+	};
+	
+
+	subtest 'Deprecated Codes' => sub {
+		local %ENV = (%{$mock_env}, HTTP_ACCEPT_LANGUAGE => 'en-uk');
+		
+		my $lingua = CGI::Lingua->new(
+			supported => ['en-gb'],
+			cache => $cache,
+		);
+
+		is $lingua->sublanguage_code_alpha2, 'gb', 
+			'Converts deprecated UK code to GB';
+	};
+
+	subtest 'Quality Values' => sub {
+		local %ENV = (%{$mock_env}, 
+			HTTP_ACCEPT_LANGUAGE => 'en-gb;q=0.7, en-us;q=0.9'
+		);
+		
+		my $lingua = CGI::Lingua->new(
+			supported => ['en-gb', 'en-us'],
+			cache => $cache,
+		);
+
+		is $lingua->sublanguage_code_alpha2, 'us', 
+			'Honors quality values in Accept-Language';
+	};
+
+	subtest 'Invalid Sublanguage' => sub {
+		local %ENV = (%{$mock_env}, HTTP_ACCEPT_LANGUAGE => 'en-xx');
+		
+		my $lingua = CGI::Lingua->new(
+			supported => ['en'],
+			cache => $cache,
+		);
+
+		is $lingua->language, 'English', 'Valid base language';
+		like $lingua->requested_language, qr/Unknown.*xx/,
+			'Shows unknown sublanguage';
+	};
+
+	subtest 'Cached Sublanguage' => sub {
+		local %ENV = (%{$mock_env}, HTTP_ACCEPT_LANGUAGE => 'fr-be');
+		
+		my $lingua = CGI::Lingua->new(
+			supported => ['fr', 'fr-ca'],
+			cache => $cache,
+		);
+
+		# First call
+		is $lingua->language, 'French', 'Initial call';
+		
+		# Second call with same params
+		my $lingua2 = CGI::Lingua->new(
+			supported => ['fr', 'fr-ca'],
+			cache => $cache,
+		);
+		
+		is $lingua2->language, 'French', 'Cached result';
+	};
+};
+
 done_testing();

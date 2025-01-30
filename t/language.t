@@ -2,7 +2,10 @@
 
 use strict;
 use warnings;
+
+use CGI::Info;
 use Test::Most;
+
 use lib 't/lib';
 use MyLogger;
 
