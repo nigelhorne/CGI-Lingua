@@ -5,6 +5,7 @@ Revision history for CGI-Lingua
 	Use Test::DescribeMe to simplify tests
 	Improved handling of IPv6
 	Added t/30-basics.t
+	Added coveralls
 
 0.66	Wed Feb 14 10:06:25 EST 2024
 	time_zone(): Don't load Geo::IP for local connections
