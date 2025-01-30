@@ -27,12 +27,12 @@ jobs:
           cpanm --quiet --notest --installdeps .
           cpanm --quiet --notest Module::Build Devel::Cover Devel::Cover::Report::Codecov
       - name: Build module
-        run: |
-          perl Makefile.PL
-          make
         env:
           AUTHOR_TESTING: 1
           AUTOMATED_TESTING: 1
+        run: |
+          perl Makefile.PL
+          make
       # - name: Download codecov
       #   run: |
       #     Replace `linux` below with the appropriate OS

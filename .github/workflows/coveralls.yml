@@ -24,7 +24,7 @@ jobs:
         run: |
           apt-get update
           apt-get -y upgrade
-          apt-get -y install libwww-perl liblwp-protocol-https-perl cpanminus libdevel-cover-perl libmodule-build-perl
+          apt-get -y install cpanminus libwww-perl liblwp-protocol-https-perl cpanminus libdevel-cover-perl libmodule-build-perl
       - name: Install Dependencies
         run: |
           cpanm --reinstall App::cpanminus
@@ -44,4 +44,5 @@ jobs:
           # ./codecov -t ${{ secrets.COVERALLS_TOKEN }} -f cover_db/codecov.json
         env:
           GITHUB_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
           AUTOMATED_TESTING: 1
