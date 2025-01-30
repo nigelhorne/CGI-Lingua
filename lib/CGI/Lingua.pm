@@ -1410,7 +1410,7 @@ sub _warn {
 
 	# Handle logger-based logging
 	if(my $logger = $self->{logger}) {
-		$self->_log('warn', [ $warning ]);
+		$self->_log('warn', $warning);
 	} elsif(!defined($self->{syslog})) {
 		# Fallback to Carp warnings
 		Carp::carp($warning);
