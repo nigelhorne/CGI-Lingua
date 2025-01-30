@@ -25,7 +25,7 @@ USGB: {
 	eval {
 		require CHI;
 
-		CHI->import;
+		CHI->import();
 	};
 	if($@) {
 		diag('CHI not installed');

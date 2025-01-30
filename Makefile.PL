@@ -58,6 +58,7 @@ if(eval 'require IP::Country') {
 }
 
 my $test_requires = {
+	'CHI' => 0,
 	'Test::Carp' => 0,
 	'Test::DescribeMe' => 0,
 	'Test::LWP::UserAgent' => 0,
