@@ -3,8 +3,6 @@
 use strict;
 use warnings;
 
-use CHI;
-use Test::LWP::UserAgent;	# For mocking HTTP requests
 use Test::MockModule;
 use Test::Most;
 use Test::Needs 'CHI', 'IP::Country', 'Test::LWP::UserAgent', 'Test::MockModule';

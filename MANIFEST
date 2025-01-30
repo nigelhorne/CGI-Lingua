@@ -37,6 +37,7 @@ t/locale.t
 t/logger.t
 t/manifest.t
 t/metrics.t
+t/modules-used.t
 t/no404s.t
 t/noopentickets.t
 t/noplan.t
@@ -57,7 +58,6 @@ t/strict.t
 t/sub-lang.t
 t/time_zone.t
 t/unused.t
-t/used.t
 t/usgb.t
 t/vars.t
 t/version.t
