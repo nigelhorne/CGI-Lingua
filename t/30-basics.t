@@ -368,9 +368,10 @@ subtest 'Sublanguage Handling' => sub {
 			cache => $cache,
 		);
 
-		is $lingua->language, 'English', 'Valid base language';
-		like $lingua->requested_language, qr/Unknown.*xx/,
-			'Shows unknown sublanguage';
+		cmp_ok($lingua->language(), 'eq', 'English', 'Valid base language');
+		like($lingua->requested_language(), qr/Unknown.*xx/, 'Shows unknown sublanguage');
+		diag($lingua->requested_language());
+		ok(!defined($lingua->sublanguage()));
 	};
 
 	subtest 'Cached Sublanguage' => sub {
