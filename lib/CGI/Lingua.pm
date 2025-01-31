@@ -429,10 +429,10 @@ sub _find_language {
 	if(defined($http_accept_language)) {
 		$self->_debug("language wanted: $http_accept_language");
 
- 		if($http_accept_language eq 'en-uk') {
- 			$self->_warn("Resetting country code to GB for $http_accept_language");
- 			$http_accept_language = 'en-gb';
- 		}
+		if($http_accept_language eq 'en-uk') {
+			$self->_debug("Resetting country code to GB for $http_accept_language");
+			$http_accept_language = 'en-gb';
+		}
 		# Workaround for RT 74338
 		local $SIG{__WARN__} = sub {
 			if($_[0] !~ /^Use of uninitialized value/) {
@@ -489,9 +489,8 @@ sub _find_language {
 				my $accepts = $l;
 
 				if($accepts) {
-					if($self->{_logger}) {
-						$self->{_logger}->debug("accepts: $accepts");
-					}
+					$self->_debug("accepts: $accepts");
+
 					if($accepts =~ /\-/) {
 						delete $self->{_slanguage};
 					} else {
@@ -536,18 +535,16 @@ sub _find_language {
 					}
 				}
 				$self->{_rlanguage} = $self->_code2language($alpha2);
-				if($self->{_logger}) {
-					$self->{_logger}->debug("_rlanguage: $self->{_rlanguage}");
-				}
+				$self->_debug("_rlanguage: $self->{_rlanguage}");
+
 				if($accepts) {
 					$http_accept_language =~ /(.{2})-(..)/;
 					$variety = lc($2);
 					# Ignore en-029 etc (Caribbean English)
 					if(($variety =~ /[a-z]{2,3}/) && !defined($self->{_sublanguage})) {
 						$self->_get_closest($alpha2, $alpha2);
-						if($self->{_logger}) {
-							$self->{_logger}->debug("Find the country code for $variety");
-						}
+						$self->_debug("Find the country code for $variety");
+
 						if($variety eq 'uk') {
 							# ???
 							$self->_warn({
@@ -561,9 +558,8 @@ sub _find_language {
 							$from_cache = $self->{_cache}->get($variety);
 						}
 						if(defined($from_cache)) {
-							if($self->{_logger}) {
-								$self->{_logger}->debug("$variety is in cache as $from_cache");
-							}
+							$self->_debug("$variety is in cache as $from_cache");
+
 							my $language_code2;
 							($language_name, $language_code2) = split(/=/, $from_cache);
 							$language_name = $self->_code2countryname($variety);
@@ -591,8 +587,7 @@ sub _find_language {
 						} else {
 							$self->{_sublanguage} = $language_name;
 							if($self->{_logger}) {
-								# Don't use ',' or else t/logger.t will fail
-								$self->{_logger}->debug('variety name ' . $self->{_sublanguage});
+								$self->_debug('variety name ', $self->{_sublanguage});
 							}
 							if($self->{_cache} && !defined($from_cache)) {
 								if($self->{_logger}) {
@@ -1320,9 +1315,7 @@ sub _code2countryname
 	my ($self, $code) = @_;
 
 	return unless($code);
-	if($self->{_logger}) {
-		$self->{_logger}->trace("_code2countryname $code");
-	}
+	$self->_trace("_code2countryname $code");
 	unless($self->{_cache}) {
 		my $country = $self->_code2country($code);
 		if(defined($country)) {
@@ -1331,13 +1324,11 @@ sub _code2countryname
 		return;
 	}
 	if(my $from_cache = $self->{_cache}->get("code2countryname/$code")) {
-		if($self->{_logger}) {
-			$self->{_logger}->trace("_code2countryname found in cache $from_cache");
-		}
+		$self->_trace("_code2countryname found in cache $from_cache");
 		return $from_cache;
 	}
 	if($self->{_logger}) {
-		$self->{_logger}->trace('_code2countryname not in cache, storing');
+		$self->_trace('_code2countryname not in cache, storing');
 	}
 	if(my $country = $self->_code2country($code)) {
 		return $self->{_cache}->set("code2countryname/$code", $country->name, '1 month');

@@ -323,8 +323,6 @@ subtest 'Sublanguage Handling' => sub {
 	
 
 	subtest 'Deprecated Codes' => sub {
-		diag('SKIP: Deprecated Codes');
-		# plan(skip_all => 'FIXME: these are showing bugs I need to fix');
 		local %ENV = (%{$mock_env}, HTTP_ACCEPT_LANGUAGE => 'en-uk');
 		
 		my $opts = {
@@ -332,10 +330,10 @@ subtest 'Sublanguage Handling' => sub {
 			cache => $cache
 		};
 
-		# if($ENV{'TEST_VERBOSE'}) {
+		if($ENV{'TEST_VERBOSE'}) {
 			$opts->{'debug'} = 1;
 			$opts->{'logger'} = sub { diag(@{$_[0]->{'message'}}) };
-		# }
+		}
 
 		my $lingua = CGI::Lingua->new($opts);
 
@@ -357,8 +355,7 @@ subtest 'Sublanguage Handling' => sub {
 			cache => $cache,
 		);
 
-		is $lingua->sublanguage_code_alpha2, 'us', 
-			'Honors quality values in Accept-Language';
+		cmp_ok($lingua->sublanguage_code_alpha2(), 'eq', 'us', 'Honors quality values in Accept-Language');
 	};
 
 	subtest 'Invalid Sublanguage' => sub {
