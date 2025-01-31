@@ -354,8 +354,7 @@ subtest 'Sublanguage Handling' => sub {
 			cache => $cache
 		};
 
-		# if($ENV{'TEST_VERBOSE'}) {
-		if(1) {
+		if($ENV{'TEST_VERBOSE'}) {
 			$opts->{'debug'} = 1;
 			$opts->{'logger'} = sub {
 				my $params = $_[0];
