@@ -429,6 +429,10 @@ sub _find_language {
 	if(defined($http_accept_language)) {
 		$self->_debug("language wanted: $http_accept_language");
 
+ 		if($http_accept_language eq 'en-uk') {
+ 			$self->_warn("Resetting country code to GB for $http_accept_language");
+ 			$http_accept_language = 'en-gb';
+ 		}
 		# Workaround for RT 74338
 		local $SIG{__WARN__} = sub {
 			if($_[0] !~ /^Use of uninitialized value/) {

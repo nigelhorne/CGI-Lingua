@@ -36,7 +36,7 @@ USGB: {
 		ok($l->locale()->code_alpha2() eq 'gb');
 	}
 	ok(defined($l->requested_language()));
-	ok($l->requested_language() eq 'English (United Kingdom)');
+	cmp_ok($l->requested_language(), 'eq', 'English (United Kingdom)');
 	ok($l->language() eq 'English');
 	ok($l->sublanguage() eq 'United Kingdom');
 
