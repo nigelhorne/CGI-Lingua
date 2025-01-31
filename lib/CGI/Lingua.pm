@@ -351,15 +351,11 @@ language_code_alpha2() returns undef.
 sub language_code_alpha2 {
 	my $self = shift;
 
-	if($self->{_logger}) {
-		$self->{_logger}->trace('Entered language_code_alpha2');
-	}
+	$self->_trace('Entered language_code_alpha2');
 	unless($self->{_slanguage}) {
 		$self->_find_language();
 	}
-	if($self->{_logger}) {
-		$self->{_logger}->trace('language_code_alpha2 returns ', $self->{_slanguage_code_alpha2});
-	}
+	$self->_trace('language_code_alpha2 returns ', $self->{_slanguage_code_alpha2});
 	return $self->{_slanguage_code_alpha2};
 }
 
@@ -429,7 +425,7 @@ sub _find_language
 	# Use what the client has said
 	my $http_accept_language = $self->_what_language();
 	if(defined($http_accept_language)) {
-		$self->_debug("language wanted: $http_accept_language");
+		$self->_debug("language wanted: $http_accept_language, languages supported: ", join(', ', @{$self->{_supported}}));
 
 		if($http_accept_language eq 'en-uk') {
 			$self->_debug("Resetting country code to GB for $http_accept_language");
@@ -441,9 +437,17 @@ sub _find_language
 				warn $_[0];
 			}
 		};
-		my $i18n = I18N::AcceptLanguage->new(debug => $self->{_debug});
+		my $i18n = I18N::AcceptLanguage->new(debug => $self->{_debug}, strict => 1);
 		my $l = $i18n->accepts($http_accept_language, $self->{_supported});
 		local $SIG{__WARN__} = 'DEFAULT';
+		if($l && ($http_accept_language =~ /-/) && ($http_accept_language !~ qr/$l/i)) {
+			# I18N-AcceptLanguage strict mode doesn't work as I'd expect it to,
+			# if you support 'en' and 'en-gb' and request 'en-US,en;q=0.8',
+			# it actually returns 'en-gb'
+			$self->_debug('Forcing fallback');
+			undef $l;
+		}
+
 		if((!$l) && ($http_accept_language =~ /(.+)-.+/)) {
 			# Fall back position, e,g. we want US English on a site
 			# only giving British English, so allow it as English.
@@ -452,6 +456,7 @@ sub _find_language
 			# requested_language
 			if($i18n->accepts($1, $self->{_supported})) {
 				$l = $1;
+				$self->_debug("Fallback to $l as sublanguage is not supported");
 			}
 		}
 
@@ -488,6 +493,7 @@ sub _find_language
 				my $alpha2 = $1;
 				my $variety = $2;
 				my $accepts = $i18n->accepts($l, $self->{_supported});
+				$self->_debug("accepts = $accepts");
 
 				if($accepts) {
 					$self->_debug("accepts: $accepts");
@@ -535,8 +541,9 @@ sub _find_language
 				$self->_debug("_rlanguage: $self->{_rlanguage}");
 
 				if($accepts) {
-					$self->_debug(__PACKAGE__, ': ', __LINE__, ": http_accept_language = $http_accept_language");
-					$http_accept_language =~ /(.{2})-(..)/;
+					$self->_debug("http_accept_language = $http_accept_language");
+					# $http_accept_language =~ /(.{2})-(..)/;
+					$l =~ /(..)-(..)/;
 					$variety = lc($2);
 					# Ignore en-029 etc (Caribbean English)
 					if(($variety =~ /[a-z]{2,3}/) && !defined($self->{_sublanguage})) {
@@ -1264,7 +1271,7 @@ sub _code2language
 	return unless($code);
 	if($self->{_logger}) {
 		if(defined($self->{_country})) {
-			$self->{_logger}->debug("_code2language $code, country ", $self->{_country});
+			$self->_debug("_code2language $code, country ", $self->{_country});
 		} else {
 			$self->_debug("_code2language $code");
 		}
@@ -1335,7 +1342,13 @@ sub _log {
 
 	if(my $logger = $self->{'logger'}) {
 		if(ref($logger) eq 'CODE') {
-			$logger->({ level => $level, message => \@messages });
+			$logger->({
+				class => ref($self) // __PACKAGE__,
+				function => (caller(2))[3],
+				line => (caller(1))[2],
+				level => $level,
+				message => \@messages
+			});
 		} else {
 			$logger->$level(@messages);
 		}

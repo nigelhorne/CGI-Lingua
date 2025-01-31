@@ -1,4 +1,4 @@
-#!perl -Tw
+#!/usr/bin/env perl
 
 use strict;
 use warnings;
@@ -193,24 +193,32 @@ if(-e 't/online.enabled') {
 	$ENV{'HTTP_ACCEPT_LANGUAGE'} = 'en-US,en;q=0.8';
 	$ENV{'REMOTE_ADDR'} = '74.92.149.57';
 	$l = new_ok('CGI::Lingua' => [
-		supported => [ 'en-gb', 'da', 'fr', 'nl', 'de', 'it', 'cy', 'pt', 'pl', 'ja' ]
+		supported => [ 'en-gb', 'da', 'fr', 'nl', 'de', 'it', 'cy', 'pt', 'pl', 'ja' ],
+		# logger => sub {
+			# my $params = $_[0];
+			# diag($params->{'function'}, ': line ', $params->{'line'}, ': ', @{$params->{'message'}})
+		# }
 	]);
-	cmp_ok($l->sublanguage_code_alpha2(), 'eq', 'us');
+	ok(!defined($l->sublanguage_code_alpha2()));
 	ok($l->language() eq 'English');
-	ok($l->requested_language() eq 'English (United States)');
-	cmp_ok($l->sublanguage(), 'eq', 'United States');
+	ok($l->requested_language() eq 'English');
+	ok(!defined($l->sublanguage()));
 	ok($l->language_code_alpha2() eq 'en');
 
 	$ENV{'HTTP_ACCEPT_LANGUAGE'} = 'en-ZZ,en;q=0.8';
 	$l = new_ok('CGI::Lingua' => [
 		supported => [ 'en-gb', 'da', 'fr', 'nl', 'de', 'it', 'cy', 'pt', 'pl', 'ja' ],
-		syslog => 1
+		syslog => 1,
+		logger => sub {
+			my $params = $_[0];
+			diag($params->{'function'}, ': line ', $params->{'line'}, ': ', @{$params->{'message'}})
+		}
 	]);
 	ok($l->language() eq 'English');
-	cmp_ok($l->sublanguage(), 'eq', 'Unknown');
+	ok(!defined($l->sublanguage()));
 	ok($l->language_code_alpha2() eq 'en');
-	ok($l->sublanguage_code_alpha2() eq 'zz');
-	ok($l->requested_language() eq 'English (Unknown)');
+	ok(!defined($l->sublanguage_code_alpha2()));
+	cmp_ok($l->requested_language(), 'eq', 'English (Unknown)');
 
 	# Asking for French in the US should return French not English
 	$ENV{'HTTP_ACCEPT_LANGUAGE'} = 'fr';

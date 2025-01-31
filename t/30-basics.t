@@ -266,8 +266,7 @@ subtest 'Sublanguage Handling' => sub {
 		);
 
 		is $lingua->language, 'English', 'Base language maintained';
-		like $lingua->sublanguage, qr/(United Kingdom|Canada)/, 
-			'Selects first available sublanguage';
+		like($lingua->sublanguage, qr/(United Kingdom|Canada)/, 'Selects first available sublanguage');
 	};
 
 	subtest 'Case Insensitivity' => sub {
@@ -355,14 +354,18 @@ subtest 'Sublanguage Handling' => sub {
 			cache => $cache
 		};
 
-		if($ENV{'TEST_VERBOSE'}) {
+		# if($ENV{'TEST_VERBOSE'}) {
+		if(1) {
 			$opts->{'debug'} = 1;
-			$opts->{'logger'} = sub { diag(@{$_[0]->{'message'}}) };
+			$opts->{'logger'} = sub {
+				my $params = $_[0];
+				diag($params->{'function'}, ': line ', $params->{'line'}, ': ', @{$params->{'message'}})
+			}
 		}
 
 		my $lingua = CGI::Lingua->new($opts);
 		eval {
-			cmp_ok($lingua->sublanguage_code_alpha2(), 'eq', 'us', 'Honors quality values in Accept-Language');
+			cmp_ok($lingua->sublanguage_code_alpha2(), 'eq', 'us', "Honours quality values in Accept-Language ('$ENV{HTTP_ACCEPT_LANGUAGE}' should be en-us not en-gb)");
 		};
 		diag($@) if($@);
 	};
