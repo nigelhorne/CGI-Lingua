@@ -195,10 +195,10 @@ if(-e 't/online.enabled') {
 	$l = new_ok('CGI::Lingua' => [
 		supported => [ 'en-gb', 'da', 'fr', 'nl', 'de', 'it', 'cy', 'pt', 'pl', 'ja' ]
 	]);
-	ok($l->sublanguage_code_alpha2() eq 'us');
+	cmp_ok($l->sublanguage_code_alpha2(), 'eq', 'us');
 	ok($l->language() eq 'English');
 	ok($l->requested_language() eq 'English (United States)');
-	ok($l->sublanguage() eq 'United States');
+	cmp_ok($l->sublanguage(), 'eq', 'United States');
 	ok($l->language_code_alpha2() eq 'en');
 
 	$ENV{'HTTP_ACCEPT_LANGUAGE'} = 'en-ZZ,en;q=0.8';
@@ -207,7 +207,7 @@ if(-e 't/online.enabled') {
 		syslog => 1
 	]);
 	ok($l->language() eq 'English');
-	ok($l->sublanguage() eq 'Unknown');
+	cmp_ok($l->sublanguage(), 'eq', 'Unknown');
 	ok($l->language_code_alpha2() eq 'en');
 	ok($l->sublanguage_code_alpha2() eq 'zz');
 	ok($l->requested_language() eq 'English (Unknown)');

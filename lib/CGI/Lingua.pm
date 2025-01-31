@@ -416,11 +416,13 @@ sub requested_language {
 
 # Returns the human-readable language, such as 'English'
 
-sub _find_language {
+sub _find_language
+{
 	my $self = shift;
 
 	$self->_trace('Entered _find_language');
 
+	# Initialize defaults
 	$self->{_rlanguage} = 'Unknown';
 	$self->{_slanguage} = 'Unknown';
 
@@ -485,8 +487,7 @@ sub _find_language {
 			} elsif($l =~ /(.+)-(..)$/) {	# TODO: Handle es-419 "Spanish (Latin America)"
 				my $alpha2 = $1;
 				my $variety = $2;
-				# my $accepts = $i18n->accepts($l, $self->{_supported});
-				my $accepts = $l;
+				my $accepts = $i18n->accepts($l, $self->{_supported});
 
 				if($accepts) {
 					$self->_debug("accepts: $accepts");
@@ -519,15 +520,11 @@ sub _find_language {
 							$self->{_slanguage_code_alpha2} = $accepts;
 							if($self->{_sublanguage}) {
 								$self->{_rlanguage} = "$self->{_slanguage} ($self->{_sublanguage})";
-								if($self->{_logger}) {
-									$self->{_logger}->debug("_rlanguage: $self->{_rlanguage}");
-								}
+								$self->_debug("_rlanguage: $self->{_rlanguage}");
 							}
 							$self->{_sublanguage_code_alpha2} = $variety;
 							unless($from_cache) {
-								if($self->{_logger}) {
-									$self->{_logger}->debug("Set $variety to $self->{_slanguage}=$self->{_slanguage_code_alpha2}");
-								}
+								$self->_debug("Set $variety to $self->{_slanguage}=$self->{_slanguage_code_alpha2}");
 								$self->{_cache}->set($variety, "$self->{_slanguage}=$self->{_slanguage_code_alpha2}", '1 month');
 							}
 							return;
@@ -538,6 +535,7 @@ sub _find_language {
 				$self->_debug("_rlanguage: $self->{_rlanguage}");
 
 				if($accepts) {
+					$self->_debug(__PACKAGE__, ': ', __LINE__, ": http_accept_language = $http_accept_language");
 					$http_accept_language =~ /(.{2})-(..)/;
 					$variety = lc($2);
 					# Ignore en-029 etc (Caribbean English)
@@ -586,13 +584,9 @@ sub _find_language {
 							});
 						} else {
 							$self->{_sublanguage} = $language_name;
-							if($self->{_logger}) {
-								$self->_debug('variety name ', $self->{_sublanguage});
-							}
+							$self->_debug('variety name ', $self->{_sublanguage});
 							if($self->{_cache} && !defined($from_cache)) {
-								if($self->{_logger}) {
-									$self->{_logger}->debug("Set $variety to $self->{_slanguage}=$self->{_slanguage_code_alpha2}");
-								}
+								$self->_debug("Set $variety to $self->{_slanguage}=$self->{_slanguage_code_alpha2}");
 								$self->{_cache}->set($variety, "$self->{_slanguage}=$self->{_slanguage_code_alpha2}", '1 month');
 							}
 						}
@@ -607,7 +601,7 @@ sub _find_language {
 		} elsif(($http_accept_language =~ /;/) && (defined($self->{_logger}))) {
 			# e.g. HTTP_ACCEPT_LANGUAGE=de-DE,de;q=0.9
 			# and we don't support DE at all
-			$self->{_logger}->warn(__PACKAGE__, ': ', __LINE__, ": lower priority supported language may be missed HTTP_ACCEPT_LANGUAGE=$http_accept_language");
+			$self->_warn(__PACKAGE__, ': ', __LINE__, ": lower priority supported language may be missed HTTP_ACCEPT_LANGUAGE=$http_accept_language");
 		}
 		if($self->{_slanguage} && ($self->{_slanguage} ne 'Unknown')) {
 			if($self->{_rlanguage} eq 'Unknown') {
@@ -816,6 +810,13 @@ sub _what_language {
 		}
 	}
 
+	if(my $rc = $ENV{'HTTP_ACCEPT_LANGUAGE'}) {
+		if(ref($self)) {
+			return $self->{_what_language} = $rc;
+		}
+		return $rc;
+	}
+
 	if(defined($ENV{'LANG'})) {
 		# Running the script locally, presumably to debug, so set the language
 		# from the Locale
@@ -823,13 +824,6 @@ sub _what_language {
 			return $self->{_what_language} = $ENV{'LANG'};
 		}
 		return $ENV{'LANG'};
-	}
-
-	if(my $rc = $ENV{'HTTP_ACCEPT_LANGUAGE'}) {
-		if(ref($self)) {
-			return $self->{_what_language} = $rc;
-		}
-		return $rc;
 	}
 }
 

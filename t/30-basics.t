@@ -345,17 +345,26 @@ subtest 'Sublanguage Handling' => sub {
 
 	subtest 'Quality Values' => sub {
 		diag('SKIP: Quality Values');
-		plan(skip_all => 'FIXME: these are showing bugs I need to fix');
+		# plan(skip_all => 'FIXME: these are showing bugs I need to fix');
 		local %ENV = (%{$mock_env}, 
 			HTTP_ACCEPT_LANGUAGE => 'en-gb;q=0.7, en-us;q=0.9'
 		);
 		
-		my $lingua = CGI::Lingua->new(
+		my $opts = {
 			supported => ['en-gb', 'en-us'],
-			cache => $cache,
-		);
+			cache => $cache
+		};
 
-		cmp_ok($lingua->sublanguage_code_alpha2(), 'eq', 'us', 'Honors quality values in Accept-Language');
+		if($ENV{'TEST_VERBOSE'}) {
+			$opts->{'debug'} = 1;
+			$opts->{'logger'} = sub { diag(@{$_[0]->{'message'}}) };
+		}
+
+		my $lingua = CGI::Lingua->new($opts);
+		eval {
+			cmp_ok($lingua->sublanguage_code_alpha2(), 'eq', 'us', 'Honors quality values in Accept-Language');
+		};
+		diag($@) if($@);
 	};
 
 	subtest 'Invalid Sublanguage' => sub {
