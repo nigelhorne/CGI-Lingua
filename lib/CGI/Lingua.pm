@@ -1073,9 +1073,8 @@ sub country {
 			}
 		}
 		if($self->{_cache}) {
-			if($self->{_logger}) {
-				$self->{_logger}->debug("Set $ip to $self->{_country}");
-			}
+			$self->_debug("Set $ip to $self->{_country}");
+
 			$self->{_cache}->set($ip, $self->{_country}, '1 hour');
 		}
 	}
@@ -1210,13 +1209,10 @@ CGI::Lingua will make use of that, otherwise it will use ip-api.com
 sub time_zone {
 	my $self = shift;
 
-	if($self->{_logger}) {
-		$self->{_logger}->trace('Entered time_zone');
-	}
+	$self->_trace('Entered time_zone');
+
 	if($self->{_timezone}) {
-		if($self->{_logger}) {
-			$self->{_logger}->trace('quick return: ', $self->{_timezone});
-		}
+		$self->_trace('quick return: ', $self->{_timezone});
 		return $self->{_timezone};
 	}
 
@@ -1459,6 +1455,9 @@ sub _get_params
 Nigel Horne, C<< <njh at bandsman.co.uk> >>
 
 =head1 BUGS
+
+Please report any bugs or feature requests to the author.
+This module is provided as-is without any warranty.
 
 If HTTP_ACCEPT_LANGUAGE is 3 characters, e.g., es-419,
 sublanguage() returns undef.
