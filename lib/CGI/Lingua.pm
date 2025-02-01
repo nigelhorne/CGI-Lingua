@@ -448,7 +448,9 @@ sub _find_language
 			undef $l;
 		}
 
-		if((!$l) && ($http_accept_language =~ /(.+)-.+/)) {
+		my $requested_sublanguage;
+		if((!$l) && ($http_accept_language =~ /(..)\-(..)/)) {
+			$requested_sublanguage = $2;
 			# Fall back position, e,g. we want US English on a site
 			# only giving British English, so allow it as English.
 			# The calling program can detect that it's not the
@@ -486,6 +488,12 @@ sub _find_language
 						# The requested sublanguage
 						# isn't supported so don't
 						# define that
+					} elsif($requested_sublanguage) {
+						if(my $c = $self->_code2countryname($requested_sublanguage)) {
+							$self->{_rlanguage} .= " ($c)";
+						} else {
+							$self->{_rlanguage} .= ' (Unknown)';
+						}
 					}
 					return;
 				}
@@ -519,8 +527,7 @@ sub _find_language
 								});
 								$variety = 'gb';
 							}
-							my $c = $self->_code2countryname($variety);
-							if(defined($c)) {
+							if(defined(my $c = $self->_code2countryname($variety))) {
 								$self->{_sublanguage} = $c;
 							}
 							$self->{_slanguage_code_alpha2} = $accepts;
@@ -580,8 +587,8 @@ sub _find_language
 								eval {
 									$language_name = $self->_code2countryname($variety);
 								};
-							} elsif($self->{_logger}) {
-								$self->{_logger}->debug("Can't find the country code for $variety in Locale::Object::DB");
+							} else {
+								$self->_debug("Can't find the country code for $variety in Locale::Object::DB");
 							}
 						}
 						if($@ || !defined($language_name)) {
@@ -605,7 +612,7 @@ sub _find_language
 					}
 				}
 			}
-		} elsif(($http_accept_language =~ /;/) && (defined($self->{_logger}))) {
+		} elsif($http_accept_language =~ /;/) {
 			# e.g. HTTP_ACCEPT_LANGUAGE=de-DE,de;q=0.9
 			# and we don't support DE at all
 			$self->_warn(__PACKAGE__, ': ', __LINE__, ": lower priority supported language may be missed HTTP_ACCEPT_LANGUAGE=$http_accept_language");
@@ -655,9 +662,7 @@ sub _find_language
 	}
 
 	if(defined($country)) {
-		if($self->{_logger}) {
-			$self->{_logger}->debug("country: $country");
-		}
+		$self->_debug("country: $country");
 		# Determine the first official language of the country
 
 		my $from_cache;
@@ -667,9 +672,7 @@ sub _find_language
 		my $language_name;
 		my $language_code2;
 		if($from_cache) {
-			if($self->{_logger}) {
-				$self->{_logger}->debug("$country is in cache as $from_cache");
-			}
+			$self->_debug("$country is in cache as $from_cache");
 			($language_name, $language_code2) = split(/=/, $from_cache);
 		} else {
 			my $l = $self->_code2country(uc($country));
@@ -678,8 +681,8 @@ sub _find_language
 				if(defined($l)) {
 					$language_name = $l->name;
 					$language_code2 = $l->code_alpha2;
-					if($self->{_logger} && $language_name) {
-						$self->{_logger}->debug("Official language: $language_name");
+					if($language_name) {
+						$self->_debug("Official language: $language_name");
 					}
 				}
 			}
@@ -696,9 +699,7 @@ sub _find_language
 
 				if($language_name && $language_code2 && !defined($http_accept_language)) {
 					# This sort of thing speeds up search engine access a lot
-					if($self->{_logger}) {
-						$self->{_logger}->debug("Fast assign to $language_code2");
-					}
+					$self->_debug("Fast assign to $language_code2");
 					$code = $language_code2;
 				} else {
 					if($self->{_logger}) {
@@ -809,9 +810,7 @@ sub _what_language {
 		if(my $info = $self->{_info}) {
 			if(my $rc = $info->lang()) {
 				# E.g. cgi-bin/script.cgi?lang=de
-				if($self->{_logger}) {
-					$self->{_logger}->trace("_what_language set language to $rc from the lang argument");
-				}
+				$self->_trace("_what_language set language to $rc from the lang argument");
 				return $self->{_what_language} = $rc;
 			}
 		}

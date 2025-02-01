@@ -201,7 +201,7 @@ if(-e 't/online.enabled') {
 	]);
 	ok(!defined($l->sublanguage_code_alpha2()));
 	ok($l->language() eq 'English');
-	ok($l->requested_language() eq 'English');
+	cmp_ok($l->requested_language(), 'eq', 'English (United States)');
 	ok(!defined($l->sublanguage()));
 	ok($l->language_code_alpha2() eq 'en');
 
@@ -209,10 +209,10 @@ if(-e 't/online.enabled') {
 	$l = new_ok('CGI::Lingua' => [
 		supported => [ 'en-gb', 'da', 'fr', 'nl', 'de', 'it', 'cy', 'pt', 'pl', 'ja' ],
 		syslog => 1,
-		logger => sub {
-			my $params = $_[0];
-			diag($params->{'function'}, ': line ', $params->{'line'}, ': ', @{$params->{'message'}})
-		}
+		# logger => sub {
+			# my $params = $_[0];
+			# diag($params->{'function'}, ': line ', $params->{'line'}, ': ', @{$params->{'message'}})
+		# }
 	]);
 	ok($l->language() eq 'English');
 	ok(!defined($l->sublanguage()));
@@ -230,7 +230,7 @@ if(-e 't/online.enabled') {
 	ok(!defined($l->sublanguage()));
 	ok($l->language_code_alpha2() eq 'fr');
 	ok(!defined($l->sublanguage_code_alpha2()));
-	ok($l->requested_language() eq 'French');
+	cmp_ok($l->requested_language(), 'eq', 'French');
 
 	$ENV{'HTTP_ACCEPT_LANGUAGE'} = 'fr-fr';
 	$l = new_ok('CGI::Lingua' => [
