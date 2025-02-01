@@ -479,7 +479,9 @@ sub _find_language
 
 					my $sl;
 					if($http_accept_language =~ /..-(..)$/) {
+						$self->_debug($1);
 						$sl = $self->_code2country($1);
+						$requested_sublanguage = $1 if(!defined($requested_sublanguage));
 					} elsif($http_accept_language =~ /..-([a-z]{2,3})$/i) {
 						$sl = Locale::Object::Country->new(code_alpha3 => $1);
 					}
@@ -492,7 +494,7 @@ sub _find_language
 						if(my $c = $self->_code2countryname($requested_sublanguage)) {
 							$self->{_rlanguage} .= " ($c)";
 						} else {
-							$self->{_rlanguage} .= ' (Unknown)';
+							$self->{_rlanguage} .= " (Unknown: $requested_sublanguage)";
 						}
 					}
 					return;
@@ -702,15 +704,13 @@ sub _find_language
 					$self->_debug("Fast assign to $language_code2");
 					$code = $language_code2;
 				} else {
-					if($self->{_logger}) {
-						$self->{_logger}->debug("Call language2code on $self->{_rlanguage}");
-					}
+					$self->_debug("Call language2code on $self->{_rlanguage}");
+
 					$code = Locale::Language::language2code($self->{_rlanguage});
 					unless($code) {
 						if($http_accept_language && ($http_accept_language ne $self->{_rlanguage})) {
-							if($self->{_logger}) {
-								$self->{_logger}->debug("Call language2code on $http_accept_language");
-							}
+							$self->_debug("Call language2code on $http_accept_language");
+
 							$code = Locale::Language::language2code($http_accept_language);
 						}
 						unless($code) {
@@ -718,9 +718,8 @@ sub _find_language
 							# lookup Norwegian
 							if($self->{_rlanguage} =~ /(.+)\s\(.+/) {
 								if((!defined($http_accept_language)) || ($1 ne $self->{_rlanguage})) {
-									if($self->{_logger}) {
-										$self->{_logger}->debug("Call language2code on $1");
-									}
+									$self->_debug("Call language2code on $1");
+
 									$code = Locale::Language::language2code($1);
 								}
 							}
@@ -1256,8 +1255,8 @@ sub time_zone {
 		}
 	}
 
-	if($self->{_logger} && !defined($self->{_timezone})) {
-		$self->{_logger}->warn("Couldn't determine the timezone");
+	if(!defined($self->{_timezone})) {
+		$self->_warn("Couldn't determine the timezone");
 	}
 	return $self->{_timezone};
 }
@@ -1282,9 +1281,7 @@ sub _code2language
 		$self->_trace("_code2language found in cache $from_cache");
 		return $from_cache;
 	}
-	if($self->{_logger}) {
-		$self->{_logger}->trace('_code2language not in cache, storing');
-	}
+	$self->_trace('_code2language not in cache, storing');
 	return $self->{_cache}->set("code2language/$code", Locale::Language::code2language($code), '1 month');
 }
 
@@ -1327,9 +1324,7 @@ sub _code2countryname
 		$self->_trace("_code2countryname found in cache $from_cache");
 		return $from_cache;
 	}
-	if($self->{_logger}) {
-		$self->_trace('_code2countryname not in cache, storing');
-	}
+	$self->_trace('_code2countryname not in cache, storing');
 	if(my $country = $self->_code2country($code)) {
 		return $self->{_cache}->set("code2countryname/$code", $country->name, '1 month');
 	}

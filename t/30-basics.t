@@ -343,8 +343,6 @@ subtest 'Sublanguage Handling' => sub {
 	};
 
 	subtest 'Quality Values' => sub {
-		diag('SKIP: Quality Values');
-		# plan(skip_all => 'FIXME: these are showing bugs I need to fix');
 		local %ENV = (%{$mock_env}, 
 			HTTP_ACCEPT_LANGUAGE => 'en-gb;q=0.7, en-us;q=0.9'
 		);
@@ -371,13 +369,22 @@ subtest 'Sublanguage Handling' => sub {
 
 	subtest 'Invalid Sublanguage' => sub {
 		diag('SKIP: Invalid Sublanguage');
-		plan(skip_all => 'FIXME: these are showing bugs I need to fix');
+		# plan(skip_all => 'FIXME: these are showing bugs I need to fix');
 		local %ENV = (%{$mock_env}, HTTP_ACCEPT_LANGUAGE => 'en-xx');
 		
-		my $lingua = CGI::Lingua->new(
+		my $opts = {
 			supported => ['en'],
 			cache => $cache,
-		);
+		};
+
+		if($ENV{'TEST_VERBOSE'}) {
+			$opts->{'debug'} = 1;
+			$opts->{'logger'} = sub {
+				my $params = $_[0];
+				diag($params->{'function'}, ': line ', $params->{'line'}, ': ', @{$params->{'message'}})
+			}
+		}
+		my $lingua = new_ok('CGI::Lingua' => [ $opts ]);
 
 		cmp_ok($lingua->language(), 'eq', 'English', 'Valid base language');
 		like($lingua->requested_language(), qr/Unknown.*xx/, 'Shows unknown sublanguage');
@@ -401,7 +408,7 @@ subtest 'Sublanguage Handling' => sub {
 			supported => ['fr', 'fr-ca'],
 			cache => $cache,
 		);
-		
+
 		is($lingua2->language(), 'French', 'Cached result');
 	};
 };

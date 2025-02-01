@@ -218,7 +218,7 @@ if(-e 't/online.enabled') {
 	ok(!defined($l->sublanguage()));
 	ok($l->language_code_alpha2() eq 'en');
 	ok(!defined($l->sublanguage_code_alpha2()));
-	cmp_ok($l->requested_language(), 'eq', 'English (Unknown)');
+	cmp_ok($l->requested_language(), 'eq', 'English (Unknown: ZZ)');
 
 	# Asking for French in the US should return French not English
 	$ENV{'HTTP_ACCEPT_LANGUAGE'} = 'fr';
