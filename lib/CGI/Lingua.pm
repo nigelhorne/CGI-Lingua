@@ -1231,9 +1231,7 @@ sub time_zone {
 		}
 		if(!$self->{_timezone}) {
 			if(eval { require LWP::Simple::WithCache; require JSON::Parse } ) {
-				if($self->{_logger}) {
-					$self->{_logger}->debug("Look up $ip on ip-api.com");
-				}
+				$self->_debug("Look up $ip on ip-api.com");
 
 				LWP::Simple::WithCache->import();
 				JSON::Parse->import();

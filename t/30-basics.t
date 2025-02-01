@@ -368,8 +368,6 @@ subtest 'Sublanguage Handling' => sub {
 	};
 
 	subtest 'Invalid Sublanguage' => sub {
-		diag('SKIP: Invalid Sublanguage');
-		# plan(skip_all => 'FIXME: these are showing bugs I need to fix');
 		local %ENV = (%{$mock_env}, HTTP_ACCEPT_LANGUAGE => 'en-xx');
 		
 		my $opts = {
@@ -388,7 +386,6 @@ subtest 'Sublanguage Handling' => sub {
 
 		cmp_ok($lingua->language(), 'eq', 'English', 'Valid base language');
 		like($lingua->requested_language(), qr/Unknown.*xx/, 'Shows unknown sublanguage');
-		diag($lingua->requested_language());
 		ok(!defined($lingua->sublanguage()));
 	};
 
