@@ -63,8 +63,11 @@ For a list of country codes refer to ISO-3166 (e.g. 'gb' for United Kingdom).
     # Sample web page
     use CGI::Lingua;
     use CHI;
+    use Log::Log4perl;
 
     my $cache = CHI->new(driver => 'File', root_dir => '/tmp/cache');
+    Log::Log4perl->easy_init({ level => $Log::Log4perl::DEBUG });
+
     # We support English, French, British and American English, in that order
     my $lingua = CGI::Lingua->new(
         supported => ['en', 'fr', 'en-gb', 'en-us'],
@@ -89,10 +92,11 @@ Takes an optional parameter syslog, to log messages to
 It can be a boolean to enable/disable logging to syslog, or a reference
 to a hash to be given to Sys::Syslog::setlogsock.
 
-Takes optional parameter logger, an object which is used for warnings
-and traces.
-This logger object is an object that understands warn() and trace()
-messages, such as a [Log::Log4perl](https://metacpan.org/pod/Log%3A%3ALog4perl) object.
+Takes an optional parameter logger, which is used for warnings and traces.
+It can be an object that understands warn() and trace() messages,
+such as a [Log::Log4perl](https://metacpan.org/pod/Log%3A%3ALog4perl) or [Log::Any](https://metacpan.org/pod/Log%3A%3AAny) object,
+a reference to code,
+or a filename.
 
 Takes optional parameter info, an object which can be used to see if a CGI
 parameter is set, for example, an [CGI::Info](https://metacpan.org/pod/CGI%3A%3AInfo) object.
@@ -212,6 +216,9 @@ CGI::Lingua will make use of that, otherwise it will use ip-api.com
 Nigel Horne, `<njh at bandsman.co.uk>`
 
 # BUGS
+
+Please report any bugs or feature requests to the author.
+This module is provided as-is without any warranty.
 
 If HTTP\_ACCEPT\_LANGUAGE is 3 characters, e.g., es-419,
 sublanguage() returns undef.
