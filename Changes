@@ -1,6 +1,6 @@
 Revision history for CGI-Lingua
 
-0.67
+0.67	Fri Feb  7 07:52:22 EST 2025
 	Improved handling of IPv6
 	Allow the logger to be a ref to code
 	Better handling of en-uk

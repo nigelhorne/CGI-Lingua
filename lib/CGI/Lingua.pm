@@ -6,7 +6,7 @@ use Storable; # RT117983
 use Class::Autouse qw{Carp Locale::Language Locale::Object::Country Locale::Object::DB I18N::AcceptLanguage I18N::LangTags::Detect};
 
 use vars qw($VERSION);
-our $VERSION = '0.66';
+our $VERSION = '0.67';
 
 =head1 NAME
 
@@ -14,7 +14,7 @@ CGI::Lingua - Create a multilingual web page
 
 =head1 VERSION
 
-Version 0.66
+Version 0.67
 
 =cut
 
@@ -110,7 +110,7 @@ such as a L<Log::Log4perl> or L<Log::Any> object,
 a reference to code,
 or a filename.
 
-Takes optional parameter info, an object which can be used to see if a CGI
+Takes an optional parameter info, an object which can be used to see if a CGI
 parameter is set, for example, an L<CGI::Info> object.
 
 Since emitting warnings from a CGI class can result in messages being lost (you
