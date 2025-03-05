@@ -2,6 +2,8 @@ package CGI::Lingua;
 
 use warnings;
 use strict;
+
+use Params::Get;
 use Storable; # RT117983
 use Class::Autouse qw{Carp Locale::Language Locale::Object::Country Locale::Object::DB I18N::AcceptLanguage I18N::LangTags::Detect};
 
@@ -108,6 +110,7 @@ Takes an optional parameter logger, which is used for warnings and traces.
 It can be an object that understands warn() and trace() messages,
 such as a L<Log::Log4perl> or L<Log::Any> object,
 a reference to code,
+a reference to an array,
 or a filename.
 
 Takes an optional parameter info, an object which can be used to see if a CGI
@@ -848,7 +851,7 @@ sub country {
 	my $self = shift;
 
 	if($self->{_logger}) {
-		$self->{_logger}->trace('Entered country');
+		$self->_trace('Entered country');
 	}
 
 	# FIXME: If previous calls to country() return undef, we'll
@@ -927,7 +930,7 @@ sub country {
 		}
 	}
 	if($self->{_logger}) {
-		$self->{_logger}->debug("have_ipcountry $self->{_have_ipcountry}");
+		$self->_debug("have_ipcountry $self->{_have_ipcountry}");
 	}
 
 	if($self->{_have_ipcountry}) {
@@ -936,9 +939,7 @@ sub country {
 			$self->{_country} = lc($self->{_country});
 		} elsif(is_ipv4($ip)) {
 			# Although it doesn't say so, it looks like IP::Country is IPv4 only
-			$self->_warn({
-				warning => "$ip is not known by IP::Country"
-			});
+			$self->_notice("$ip is not known by IP::Country");
 		}
 	}
 	unless(defined($self->{_country})) {
@@ -1330,6 +1331,11 @@ sub _log
 {
 	my ($self, $level, @messages) = @_;
 
+	# FIXME: add caller's function
+	# if(($level eq 'warn') || ($level eq 'notice')) {
+		push @{$self->{'messages'}}, { level => $level, message => join(' ', grep defined, @messages) };
+	# }
+
 	if(my $logger = $self->{'logger'}) {
 		if(ref($logger) eq 'CODE') {
 			# Code reference
@@ -1340,6 +1346,8 @@ sub _log
 				level => $level,
 				message => \@messages
 			});
+		} elsif(ref($logger) eq 'ARRAY') {
+			push @{$logger}, { level => $level, message => join(' ', grep defined, @messages) };
 		} elsif(!ref($logger)) {
 			# File
 			if(open(my $fout, '>>', $logger)) {
@@ -1363,6 +1371,11 @@ sub _info {
 	$self->_log('info', @_);
 }
 
+sub _notice {
+	my $self = shift;
+	$self->_log('notice', @_);
+}
+
 sub _trace {
 	my $self = shift;
 	$self->_log('trace', @_);
@@ -1372,7 +1385,7 @@ sub _trace {
 sub _warn {
 	my $self = shift;
 
-	my $params = $self->_get_params('warning', @_);
+	my $params = Params::Get::get_params('warning', @_);
 
 	# Validate input parameters
 	return unless($params && (ref($params) eq 'HASH'));
@@ -1386,9 +1399,6 @@ sub _warn {
 	}
 	# return if($self eq __PACKAGE__);  # Called from class method
 
-	# FIXME: add caller's function
-	push @{$self->{'warnings'}}, { warning => $warning };
-
 	# Handle syslog-based logging
 	if($self->{syslog}) {
 		require Sys::Syslog;
@@ -1397,57 +1407,17 @@ sub _warn {
 		if(ref($self->{syslog} eq 'HASH')) {
 			Sys::Syslog::setlogsock($self->{syslog});
 		}
-		if(my $info = $self->{_info}) {
-			openlog($info->script_name(), 'cons,pid', 'user');
-		} else {
-			openlog(__PACKAGE__, 'cons,pid', 'user');
-		}
-		syslog('warning', $warning);
+		openlog($self->script_name(), 'cons,pid', 'user');
+		syslog('warning|local0', $warning);
 		closelog();
 	}
 
 	# Handle logger-based logging
-	if(my $logger = $self->{logger}) {
-		$self->_log('warn', $warning);
-	} elsif(!defined($self->{syslog})) {
-		# Fallback to Carp warnings
+	$self->_log('warn', $warning);
+	if((!defined($self->{logger})) && (!defined($self->{syslog}))) {
+		# Fallback to Carp
 		Carp::carp($warning);
 	}
-}
-
-# Helper routine to parse the arguments given to a function.
-# Processes arguments passed to methods and ensures they are in a usable format,
-#	allowing the caller to call the function in anyway that they want
-#	e.g. foo('bar'), foo(arg => 'bar'), foo({ arg => 'bar' }) all mean the same
-#	when called _get_params('arg', @_);
-sub _get_params
-{
-	shift;  # Discard the first argument (typically $self)
-	my $default = shift;
-
-	# Directly return hash reference if the first parameter is a hash reference
-	return $_[0] if(ref $_[0] eq 'HASH');
-
-	my %rc;
-	my $num_args = scalar @_;
-
-	# Populate %rc based on the number and type of arguments
-	if(($num_args == 1) && (defined $default)) {
-		# %rc = ($default => shift);
-		return { $default => shift };
-	} elsif($num_args == 1) {
-		Carp::croak('Usage: ', __PACKAGE__, '->', (caller(1))[3], '()');
-	} elsif(($num_args == 0) && (defined($default))) {
-		Carp::croak('Usage: ', __PACKAGE__, '->', (caller(1))[3], "($default => \$val)");
-	} elsif(($num_args % 2) == 0) {
-		%rc = @_;
-	} elsif($num_args == 0) {
-		return;
-	} else {
-		Carp::croak('Usage: ', __PACKAGE__, '->', (caller(1))[3], '()');
-	}
-
-	return \%rc;
 }
 
 =head1 AUTHOR
