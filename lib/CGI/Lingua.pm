@@ -174,9 +174,9 @@ sub new {
 			# $self->debug("Looking in cache for $key");
 		}
 		if(my $rc = $cache->get($key)) {
-			if($logger) {
+			# if($logger) {
 				# $logger->debug('Found - thawing');
-			}
+			# }
 			$rc = Storable::thaw($rc);
 			$rc->{_logger} = $logger;
 			$rc->{_syslog} = $params{syslog};
@@ -741,20 +741,16 @@ sub _find_language
 						$self->_warn({
 							warning => "Couldn't determine closest language for $language_name in $self->{_supported}"
 						});
-					} elsif($self->{_logger}) {
-						$self->{_logger}->debug("language set to $self->{_slanguage}, code set to $code");
+					} else {
+						$self->_debug("language set to $self->{_slanguage}, code set to $code");
 					}
 				}
 			}
 			if(!defined($self->{_slanguage_code_alpha2})) {
-				if($self->{_logger}) {
-					$self->{_logger}->debug("Can't determine slanguage_code_alpha2");
-				}
+				$self->_debug("Can't determine slanguage_code_alpha2");
 			} elsif(!defined($from_cache) && $self->{_cache} &&
 			   defined($self->{_slanguage_code_alpha2})) {
-				if($self->{_logger}) {
-					$self->{_logger}->debug("Set $country to $language_name=$self->{_slanguage_code_alpha2}");
-				}
+				$self->_debug("Set $country to $language_name=$self->{_slanguage_code_alpha2}");
 				$self->{_cache}->set($country, "$language_name=$self->{_slanguage_code_alpha2}", '1 month');
 			}
 		} elsif(defined($ip)) {
@@ -900,12 +896,10 @@ sub country {
 
 	if($self->{_cache}) {
 		$self->{_country} = $self->{_cache}->get($ip);
-		if($self->{_logger}) {
-			if(defined($self->{_country})) {
-				$self->{_logger}->debug("Get $ip from cache = $self->{_country}");
-			} else {
-				$self->{_logger}->debug("$ip isn't in the cache");
-			}
+		if(defined($self->{_country})) {
+			$self->_debug("Get $ip from cache = $self->{_country}");
+		} else {
+			$self->_debug("$ip isn't in the cache");
 		}
 		if(defined($self->{_country})) {
 			return $self->{_country};
@@ -921,9 +915,7 @@ sub country {
 			$self->{_have_ipcountry} = 0;
 		}
 	}
-	if($self->{_logger}) {
-		$self->_debug("have_ipcountry $self->{_have_ipcountry}");
-	}
+	$self->_debug("have_ipcountry $self->{_have_ipcountry}");
 
 	if($self->{_have_ipcountry}) {
 		$self->{_country} = $self->{_ipcountry}->inet_atocc($ip);
@@ -966,9 +958,7 @@ sub country {
 	}
 	if((!$self->{_country}) &&
 	   (eval { require LWP::Simple::WithCache; require JSON::Parse } )) {
-		if($self->{_logger}) {
-			$self->{_logger}->debug("Look up $ip on geoplugin");
-		}
+		$self->_debug("Look up $ip on geoplugin");
 
 		LWP::Simple::WithCache->import();
 		JSON::Parse->import();
@@ -978,9 +968,8 @@ sub country {
 		}
 	}
 	unless($self->{_country}) {
-		if($self->{_logger}) {
-			$self->{_logger}->debug("Look up $ip on Whois");
-		}
+		$self->_debug("Look up $ip on Whois");
+
 		require Net::Whois::IP;
 		Net::Whois::IP->import();
 
@@ -1010,13 +999,9 @@ sub country {
 		}
 
 		if($self->{_country}) {
-			if($self->{_logger}) {
-				$self->{_logger}->debug("Found up $ip on Net::WhoisIP as ", $self->{_country});
-			}
+			$self->_debug("Found up $ip on Net::WhoisIP as ", $self->{_country});
 		} else {
-			if($self->{_logger}) {
-				$self->{_logger}->debug("Look up $ip on IANA");
-			}
+			$self->_debug("Look up $ip on IANA");
 
 			require Net::Whois::IANA;
 			Net::Whois::IANA->import();
@@ -1027,9 +1012,7 @@ sub country {
 			};
 			unless ($@) {
 				$self->{_country} = $iana->country();
-				if($self->{_logger}) {
-					$self->{_logger}->debug("IANA reports $ip as ", $self->{_country});
-				}
+				$self->_debug("IANA reports $ip as ", $self->{_country});
 			}
 		}
 
@@ -1255,12 +1238,10 @@ sub _code2language
 	my ($self, $code) = @_;
 
 	return unless($code);
-	if($self->{_logger}) {
-		if(defined($self->{_country})) {
-			$self->_debug("_code2language $code, country ", $self->{_country});
-		} else {
-			$self->_debug("_code2language $code");
-		}
+	if(defined($self->{_country})) {
+		$self->_debug("_code2language $code, country ", $self->{_country});
+	} else {
+		$self->_debug("_code2language $code");
 	}
 	unless($self->{_cache}) {
 		return Locale::Language::code2language($code);
