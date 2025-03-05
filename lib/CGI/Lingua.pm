@@ -850,17 +850,13 @@ caching capability of CGI::Lingua.
 sub country {
 	my $self = shift;
 
-	if($self->{_logger}) {
-		$self->_trace('Entered country');
-	}
+	$self->_trace('Entered country');
 
 	# FIXME: If previous calls to country() return undef, we'll
 	# waste time going through again and no doubt returning undef
 	# again.
 	if($self->{_country}) {
-		if($self->{_logger}) {
-			$self->{_logger}->trace('quick return: ', $self->{_country});
-		}
+		$self->_trace('quick return: ', $self->{_country});
 		return $self->{_country};
 	}
 
@@ -894,15 +890,11 @@ sub country {
 		}
 	}
 	if(is_private_ip($ip)) {
-		if($self->{_logger}) {
-			$self->{_logger}->debug("Can't determine country from LAN connection $ip");
-		}
+		$self->_debug("Can't determine country from LAN connection $ip");
 		return;
 	}
 	if(is_loopback_ip($ip)) {
-		if($self->{_logger}) {
-			$self->{_logger}->debug("Can't determine country from loopback connection $ip");
-		}
+		$self->_debug("Can't determine country from loopback connection $ip");
 		return;
 	}
 
