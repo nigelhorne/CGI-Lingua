@@ -753,9 +753,7 @@ sub _find_language
 				$self->{_cache}->set($country, "$language_name=$self->{_slanguage_code_alpha2}", '1 month');
 			}
 		} elsif(defined($ip)) {
-			$self->_warn({
-				warning => "Can't determine language from IP $ip, country $country"
-			});
+			$self->_notice("Can't determine language from IP $ip, country $country");
 		}
 	}
 }
