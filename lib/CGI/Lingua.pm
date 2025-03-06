@@ -1379,7 +1379,7 @@ sub _warn {
 		if(ref($self->{syslog} eq 'HASH')) {
 			Sys::Syslog::setlogsock($self->{syslog});
 		}
-		openlog($self->script_name(), 'cons,pid', 'user');
+		openlog($self->{'_info'}->script_name(), 'cons,pid', 'user');
 		syslog('warning|local0', $warning);
 		closelog();
 	}
