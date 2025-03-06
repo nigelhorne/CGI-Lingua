@@ -8,7 +8,7 @@ use Storable; # RT117983
 use Class::Autouse qw{Carp Locale::Language Locale::Object::Country Locale::Object::DB I18N::AcceptLanguage I18N::LangTags::Detect};
 
 use vars qw($VERSION);
-our $VERSION = '0.67';
+our $VERSION = '0.68';
 
 =head1 NAME
 
@@ -16,7 +16,7 @@ CGI::Lingua - Create a multilingual web page
 
 =head1 VERSION
 
-Version 0.67
+Version 0.68
 
 =cut
 
@@ -26,10 +26,9 @@ CGI::Lingua is a powerful module for multilingual web applications
 offering extensive language/country detection strategies.
 
 No longer does your website need to be in English only.
-CGI::Lingua provides a simple basis to determine which language to display a
-website. The website tells CGI::Lingua which languages it supports. Based on
-that list CGI::Lingua tells the application which language the user would like
-to use.
+CGI::Lingua provides a simple basis to determine which language to display a website.
+The website tells CGI::Lingua which languages it supports.
+Based on that list CGI::Lingua tells the application which language the user would like to use.
 
     use CGI::Lingua;
     # ...

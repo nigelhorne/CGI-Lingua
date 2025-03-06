@@ -1,6 +1,6 @@
 Revision history for CGI-Lingua
 
-0.68
+0.68	Wed Mar  5 21:12:04 EST 2025
 	Use Get::Params
 	Use the logging system from CGI::Info
 	Change "$ip is not known by IP::Country" from warning to notice
