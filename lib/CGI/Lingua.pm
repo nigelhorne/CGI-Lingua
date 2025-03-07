@@ -1060,8 +1060,6 @@ sub country {
 					});
 					$self->{_country} = 'Unknown';
 				}
-			} elsif($self->{_country} eq '1') {
-				$self->{_country} = 'us';
 			}
 
 			if($self->{_cache}) {
