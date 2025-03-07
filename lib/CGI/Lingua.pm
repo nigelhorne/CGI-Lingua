@@ -756,6 +756,7 @@ sub _find_language
 			if($country eq '1') {
 				# The US has no official language, but it's safe enough to fall back to en_US
 				$self->_debug("Can't determine language from IP $ip, country $country - forcing en_US for the US");
+				$
 				$self->{_slanguage} = 'English';
 				$self->{_slanguage_code_alpha2} = 'en';
 				$self->{_sublanguage} = 'United States';
@@ -1053,7 +1054,10 @@ sub country {
 				});
 				$self->{_country} = 'Unknown';
 			}
+		} elsif($self->{_country} eq '1') {
+			$self->{_country} = 'us';
 		}
+
 		if($self->{_cache}) {
 			$self->_debug("Set $ip to $self->{_country}");
 
