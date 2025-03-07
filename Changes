@@ -1,6 +1,7 @@
 Revision history for CGI-Lingua
 
 0.69
+	The US has no official language, but it's safe enough to fall back to en_US
 	Fix where to find the script name
 	Reduce "Can't determine language to IP" from warning to notice
 
