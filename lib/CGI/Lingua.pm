@@ -905,12 +905,9 @@ sub country {
 		$self->{_country} = $self->{_cache}->get($ip);
 		if(defined($self->{_country})) {
 			$self->_debug("Get $ip from cache = $self->{_country}");
-		} else {
-			$self->_debug("$ip isn't in the cache");
-		}
-		if(defined($self->{_country})) {
 			return $self->{_country};
 		}
+		$self->_debug("$ip isn't in the cache");
 	}
 
 	if($self->{_have_ipcountry} == -1) {
@@ -1035,33 +1032,38 @@ sub country {
 	}
 
 	if($self->{_country}) {
-		$self->{_country} = lc($self->{_country});
-		if($self->{_country} eq 'hk') {
-			# Hong Kong is no longer a country, but Whois thinks
-			# it is - try "whois 218.213.130.87"
-			$self->{_country} = 'cn';
-		} elsif($self->{_country} eq 'eu') {
-			require Net::Subnet;
-
-			# RT-86809, Baidu claims it's in EU not CN
-			Net::Subnet->import();
-			if(subnet_matcher('185.10.104.0/22')->($ip)) {
+		if($self->{_country} !~ /\D/) {
+			$self->_warn('IP matches to a numeric country');
+			delete $self->{_country};	# Seems to be a number
+		} else {
+			$self->{_country} = lc($self->{_country});
+			if($self->{_country} eq 'hk') {
+				# Hong Kong is no longer a country, but Whois thinks
+				# it is - try "whois 218.213.130.87"
 				$self->{_country} = 'cn';
-			} else {
-				# There is no country called 'eu'
-				$self->_warn({
-					warning => "$ip has country of eu"
-				});
-				$self->{_country} = 'Unknown';
+			} elsif($self->{_country} eq 'eu') {
+				require Net::Subnet;
+
+				# RT-86809, Baidu claims it's in EU not CN
+				Net::Subnet->import();
+				if(subnet_matcher('185.10.104.0/22')->($ip)) {
+					$self->{_country} = 'cn';
+				} else {
+					# There is no country called 'eu'
+					$self->_warn({
+						warning => "$ip has country of eu"
+					});
+					$self->{_country} = 'Unknown';
+				}
+			} elsif($self->{_country} eq '1') {
+				$self->{_country} = 'us';
 			}
-		} elsif($self->{_country} eq '1') {
-			$self->{_country} = 'us';
-		}
 
-		if($self->{_cache}) {
-			$self->_debug("Set $ip to $self->{_country}");
+			if($self->{_cache}) {
+				$self->_debug("Set $ip to $self->{_country}");
 
-			$self->{_cache}->set($ip, $self->{_country}, '1 hour');
+				$self->{_cache}->set($ip, $self->{_country}, '1 hour');
+			}
 		}
 	}
 
