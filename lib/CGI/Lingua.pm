@@ -904,8 +904,13 @@ sub country {
 	if($self->{_cache}) {
 		$self->{_country} = $self->{_cache}->get($ip);
 		if(defined($self->{_country})) {
-			$self->_debug("Get $ip from cache = $self->{_country}");
-			return $self->{_country};
+			if($self->{_country} !~ /\D/) {
+				$self->_warn('cache contains a numeric country');
+				delete $self->{_country};	# Seems to be a number
+			} else {
+				$self->_debug("Get $ip from cache = $self->{_country}");
+				return $self->{_country};
+			}
 		}
 		$self->_debug("$ip isn't in the cache");
 	}
@@ -1182,7 +1187,7 @@ sub locale {
 			return $c;
 		}
 	}
-	return ();	# returns undef
+	return undef;
 }
 
 =head2 time_zone
