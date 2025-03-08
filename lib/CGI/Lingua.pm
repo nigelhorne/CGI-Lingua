@@ -901,7 +901,7 @@ sub country {
 	}
 
 	if($self->{_cache}) {
-		$self->{_country} = $self->{_cache}->get($ip);
+		$self->{_country} = $self->{_cache}->get(__PACKAGE__ . ":country:$ip");
 		if(defined($self->{_country})) {
 			if($self->{_country} !~ /\D/) {
 				$self->_warn('cache contains a numeric country: ' . $self->{_country});
@@ -1068,7 +1068,7 @@ sub country {
 			} elsif($self->{_cache}) {
 				$self->_debug("Set $ip to $self->{_country}");
 
-				$self->{_cache}->set($ip, $self->{_country}, '1 hour');
+				$self->{_cache}->set(__PACKAGE__ . ":country:$ip", $self->{_country}, '1 hour');
 			}
 		}
 	}
