@@ -905,6 +905,7 @@ sub country {
 		if(defined($self->{_country})) {
 			if($self->{_country} !~ /\D/) {
 				$self->_warn('cache contains a numeric country');
+				$self->{_cache}->remove($ip);
 				delete $self->{_country};	# Seems to be a number
 			} else {
 				$self->_debug("Get $ip from cache = $self->{_country}");
