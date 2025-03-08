@@ -515,7 +515,7 @@ sub _find_language
 					} else {
 						my $from_cache;
 						if($self->{_cache}) {
-							$from_cache = $self->{_cache}->get($accepts);
+							$from_cache = $self->{_cache}->get(__PACKAGE__ . ":accepts:$accepts");
 						}
 						if($from_cache) {
 							$self->_debug("$accepts is in cache as $from_cache");
@@ -542,7 +542,7 @@ sub _find_language
 							$self->{_sublanguage_code_alpha2} = $variety;
 							unless($from_cache) {
 								$self->_debug("Set $variety to $self->{_slanguage}=$self->{_slanguage_code_alpha2}");
-								$self->{_cache}->set($variety, "$self->{_slanguage}=$self->{_slanguage_code_alpha2}", '1 month');
+								$self->{_cache}->set(__PACKAGE__ . ":accepts:$variety", "$self->{_slanguage}=$self->{_slanguage_code_alpha2}", '1 month');
 							}
 							return;
 						}
@@ -571,7 +571,7 @@ sub _find_language
 						my $from_cache;
 						my $language_name;
 						if($self->{_cache}) {
-							$from_cache = $self->{_cache}->get($variety);
+							$from_cache = $self->{_cache}->get(__PACKAGE__ . ":variety:$variety");
 						}
 						if(defined($from_cache)) {
 							$self->_debug("$variety is in cache as $from_cache");
@@ -605,7 +605,7 @@ sub _find_language
 							$self->_debug('variety name ', $self->{_sublanguage});
 							if($self->{_cache} && !defined($from_cache)) {
 								$self->_debug("Set $variety to $self->{_slanguage}=$self->{_slanguage_code_alpha2}");
-								$self->{_cache}->set($variety, "$self->{_slanguage}=$self->{_slanguage_code_alpha2}", '1 month');
+								$self->{_cache}->set(__PACKAGE__ . ":variety:$variety", "$self->{_slanguage}=$self->{_slanguage_code_alpha2}", '1 month');
 							}
 						}
 					}
@@ -671,7 +671,7 @@ sub _find_language
 
 		my $from_cache;
 		if($self->{_cache}) {
-			$from_cache = $self->{_cache}->get($country);
+			$from_cache = $self->{_cache}->get(__PACKAGE__ . ':language_name:' . $country);
 		}
 		my $language_name;
 		my $language_code2;
@@ -717,8 +717,8 @@ sub _find_language
 						}
 						unless($code) {
 							# If the language is Norwegian (Nynorsk)
-							# lookup Norwegian
-							if($self->{_rlanguage} =~ /(.+)\s\(.+/) {
+						# lookup Norwegian
+						if($self->{_rlanguage} =~ /(.+)\s\(.+/) {
 								if((!defined($http_accept_language)) || ($1 ne $self->{_rlanguage})) {
 									$self->_debug("Call language2code on $1");
 
@@ -749,19 +749,7 @@ sub _find_language
 			} elsif(!defined($from_cache) && $self->{_cache} &&
 			   defined($self->{_slanguage_code_alpha2})) {
 				$self->_debug("Set $country to $language_name=$self->{_slanguage_code_alpha2}");
-				$self->{_cache}->set($country, "$language_name=$self->{_slanguage_code_alpha2}", '1 month');
-			}
-		} elsif(defined($ip)) {
-			if($country eq '1') {
-				# The US has no official language, but it's safe enough to fall back to en_US
-				$self->_debug("Can't determine language from IP $ip, country $country - forcing en_US for the US");
-
-				$self->{_slanguage} = 'English';
-				$self->{_slanguage_code_alpha2} = 'en';
-				$self->{_sublanguage} = 'United States';
-				$self->{_sublanguage_code_alpha2} = 'us';
-			} else {
-				$self->_notice("Can't determine language from IP $ip, country $country");
+				$self->{_cache}->set(__PACKAGE__ . ':language_name:' . $country, "$language_name=$self->{_slanguage_code_alpha2}", '1 month');
 			}
 		}
 	}
@@ -1264,12 +1252,12 @@ sub _code2language
 	unless($self->{_cache}) {
 		return Locale::Language::code2language($code);
 	}
-	if(my $from_cache = $self->{_cache}->get("code2language/$code")) {
+	if(my $from_cache = $self->{_cache}->get(__PACKAGE__ . ":code2language:$code")) {
 		$self->_trace("_code2language found in cache $from_cache");
 		return $from_cache;
 	}
 	$self->_trace('_code2language not in cache, storing');
-	return $self->{_cache}->set("code2language/$code", Locale::Language::code2language($code), '1 month');
+	return $self->{_cache}->set(__PACKAGE__ . ":code2language:$code", Locale::Language::code2language($code), '1 month');
 }
 
 # Wrapper to Locale::Object::Country allowing for persistence to be added
@@ -1307,13 +1295,13 @@ sub _code2countryname
 		}
 		return;
 	}
-	if(my $from_cache = $self->{_cache}->get("code2countryname/$code")) {
+	if(my $from_cache = $self->{_cache}->get(__PACKAGE__ . ":code2countryname:$code")) {
 		$self->_trace("_code2countryname found in cache $from_cache");
 		return $from_cache;
 	}
 	$self->_trace('_code2countryname not in cache, storing');
 	if(my $country = $self->_code2country($code)) {
-		return $self->{_cache}->set("code2countryname/$code", $country->name, '1 month');
+		return $self->{_cache}->set(__PACKAGE__ . ":code2countryname:$code", $country->name, '1 month');
 	}
 }
 
