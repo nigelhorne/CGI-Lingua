@@ -4,6 +4,7 @@ use warnings;
 use strict;
 
 use Params::Get;
+use Log::Abstraction;
 use Storable; # RT117983
 use Class::Autouse qw{Carp Locale::Language Locale::Object::Country Locale::Object::DB I18N::AcceptLanguage I18N::LangTags::Detect};
 
@@ -156,7 +157,7 @@ sub new {
 	}
 
 	my $cache = $params{cache};
-	my $logger = $params{logger};
+	my $logger = Log::Abstraction->new($params{'logger'});
 	my $info = $params{info};
 
 	if($cache && $ENV{'REMOTE_ADDR'}) {
@@ -213,6 +214,7 @@ sub new {
 		_have_geoip => -1,	# -1 = don't know
 		_have_geoipfree => -1,	# -1 = don't know
 		_debug => $params{debug} || 0,
+		logger => $logger,
 	}, $class;
 }
 
@@ -840,7 +842,7 @@ caching capability of CGI::Lingua.
 sub country {
 	my $self = shift;
 
-	$self->_trace('Entered country');
+	$self->_trace(__PACKAGE__, ': Entered country()');
 
 	# FIXME: If previous calls to country() return undef, we'll
 	# waste time going through again and no doubt returning undef
@@ -1305,38 +1307,18 @@ sub _code2countryname
 	}
 }
 
-# Helper routines for logger()
+# Log and remember a message
 sub _log
 {
 	my ($self, $level, @messages) = @_;
 
 	# FIXME: add caller's function
 	# if(($level eq 'warn') || ($level eq 'notice')) {
-		push @{$self->{'messages'}}, { level => $level, message => join(' ', grep defined, @messages) };
+		push @{$self->{'messages'}}, { level => $level, message => join('', grep defined, @messages) };
 	# }
 
 	if(my $logger = $self->{'logger'}) {
-		if(ref($logger) eq 'CODE') {
-			# Code reference
-			$logger->({
-				class => ref($self) // __PACKAGE__,
-				function => (caller(2))[3],
-				line => (caller(1))[2],
-				level => $level,
-				message => \@messages
-			});
-		} elsif(ref($logger) eq 'ARRAY') {
-			push @{$logger}, { level => $level, message => join(' ', grep defined, @messages) };
-		} elsif(!ref($logger)) {
-			# File
-			if(open(my $fout, '>>', $logger)) {
-				print $fout uc($level), ': ', ref($self) // __PACKAGE__, ' ', (caller(2))[3], (caller(1))[2], join(' ', @messages), "\n";
-				close $fout;
-			}
-		} else {
-			# Object
-			$logger->$level(@messages);
-		}
+		$self->{'logger'}->$level(\@messages);
 	}
 }
 
@@ -1363,40 +1345,9 @@ sub _trace {
 # Emit a warning message somewhere
 sub _warn {
 	my $self = shift;
-
 	my $params = Params::Get::get_params('warning', @_);
 
-	# Validate input parameters
-	return unless($params && (ref($params) eq 'HASH'));
-	my $warning = $params->{'warning'};
-	return unless($warning);
-
-	if($self eq __PACKAGE__) {
-		# Called from class method
-		Carp::carp($warning);
-		return;
-	}
-	# return if($self eq __PACKAGE__);  # Called from class method
-
-	# Handle syslog-based logging
-	if($self->{syslog}) {
-		require Sys::Syslog;
-
-		Sys::Syslog->import();
-		if(ref($self->{syslog} eq 'HASH')) {
-			Sys::Syslog::setlogsock($self->{syslog});
-		}
-		openlog($self->{'_info'}->script_name(), 'cons,pid', 'user');
-		syslog('warning|local0', $warning);
-		closelog();
-	}
-
-	# Handle logger-based logging
-	$self->_log('warn', $warning);
-	if((!defined($self->{logger})) && (!defined($self->{syslog}))) {
-		# Fallback to Carp
-		Carp::carp($warning);
-	}
+	$self->_log('warn', $params->{'warning'});
 }
 
 =head1 AUTHOR
