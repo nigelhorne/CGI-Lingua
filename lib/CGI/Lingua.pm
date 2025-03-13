@@ -157,7 +157,14 @@ sub new {
 	}
 
 	my $cache = $params{cache};
-	my $logger = Log::Abstraction->new($params{'logger'});
+	my $logger;
+	if($logger = $params{'logger'}) {
+		if(!Scalar::Util::blessed($logger)) {
+			$logger = Log::Abstraction->new($logger);
+		}
+	} else {
+		$logger = Log::Abstraction->new();
+	}
 	my $info = $params{info};
 
 	if($cache && $ENV{'REMOTE_ADDR'}) {
