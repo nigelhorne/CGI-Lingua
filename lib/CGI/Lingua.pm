@@ -1325,7 +1325,7 @@ sub _log
 	# }
 
 	if(my $logger = $self->{'logger'}) {
-		$self->{'logger'}->$level(\@messages);
+		$self->{'logger'}->$level(join(@messages));
 	}
 }
 
