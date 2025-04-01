@@ -116,6 +116,24 @@ It takes several optional parameters:
     a reference to code,
     a reference to an array,
     or a filename.
+    See [Log::Abstraction](https://metacpan.org/pod/Log%3A%3AAbstraction) for further details.
+
+- `info`
+
+    Takes an optional parameter info, an object which can be used to see if a CGI
+    parameter is set, for example, an [CGI::Info](https://metacpan.org/pod/CGI%3A%3AInfo) object.
+
+- `data`
+
+    Passed on to [I18N::AcceptLanguage](https://metacpan.org/pod/I18N%3A%3AAcceptLanguage).
+
+- `dont_use_ip`
+
+    By default, if none of the
+    requested languages is supported, CGI::Lingua->language() looks in the IP
+    address for the language to use.
+    This may not be what you want,
+    so use this option to disable the feature.
 
 - `syslog`
 
@@ -124,22 +142,11 @@ It takes several optional parameters:
     It can be a boolean to enable/disable logging to syslog, or a reference
     to a hash to be given to Sys::Syslog::setlogsock.
 
-Takes an optional parameter info, an object which can be used to see if a CGI
-parameter is set, for example, an [CGI::Info](https://metacpan.org/pod/CGI%3A%3AInfo) object.
-
 Since emitting warnings from a CGI class can result in messages being lost (you
 may forget to look in your server's log), or appear to the client in
 amongst HTML causing invalid HTML, it is recommended either syslog
 or logger (or both) are set.
 If neither is given, [Carp](https://metacpan.org/pod/Carp) will be used.
-
-Takes an optional parameter dont\_use\_ip.  By default, if none of the
-requested languages is supported, CGI::Lingua->language() looks in the IP
-address for the language to use.
-This may not be what you want,
-so use this option to disable the feature.
-
-The optional parameter debug is passed on to [I18N::AcceptLanguage](https://metacpan.org/pod/I18N%3A%3AAcceptLanguage).
 
 ## language
 
