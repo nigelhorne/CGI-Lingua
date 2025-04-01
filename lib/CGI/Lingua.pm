@@ -1417,11 +1417,19 @@ This means that if you support languages at a lower priority, it may be missed.
 
 =head1 SEE ALSO
 
-L<HTTP::BrowserDetect>
-L<I18N::AcceptLangauge>
-L<Locale::Country>
+=over 4
+
+=item * L<HTTP::BrowserDetect>
+
+=item * L<I18N::AcceptLangauge>
+
+=item * L<Locale::Country>
+
+=back
 
 =head1 SUPPORT
+
+This module is provided as-is without any warranty.
 
 You can find documentation for this module with the perldoc command.
 

@@ -267,11 +267,13 @@ This means that if you support languages at a lower priority, it may be missed.
 
 # SEE ALSO
 
-[HTTP::BrowserDetect](https://metacpan.org/pod/HTTP%3A%3ABrowserDetect)
-[I18N::AcceptLangauge](https://metacpan.org/pod/I18N%3A%3AAcceptLangauge)
-[Locale::Country](https://metacpan.org/pod/Locale%3A%3ACountry)
+- [HTTP::BrowserDetect](https://metacpan.org/pod/HTTP%3A%3ABrowserDetect)
+- [I18N::AcceptLangauge](https://metacpan.org/pod/I18N%3A%3AAcceptLangauge)
+- [Locale::Country](https://metacpan.org/pod/Locale%3A%3ACountry)
 
 # SUPPORT
+
+This module is provided as-is without any warranty.
 
 You can find documentation for this module with the perldoc command.
 
