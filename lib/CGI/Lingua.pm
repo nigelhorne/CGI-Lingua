@@ -3,8 +3,9 @@ package CGI::Lingua;
 use warnings;
 use strict;
 
-use Params::Get;
+use Config::Auto;
 use Log::Abstraction;
+use Params::Get;
 use Storable; # RT117983
 use Class::Autouse qw{Carp Locale::Language Locale::Object::Country Locale::Object::DB I18N::AcceptLanguage I18N::LangTags::Detect};
 
@@ -95,15 +96,30 @@ For a list of country codes refer to ISO-3166 (e.g. 'gb' for United Kingdom).
 
 Supported_languages is the same as supported.
 
-Takes optional parameter cache, an object which is used to cache country
-lookups.
-This cache object is an object that understands get() and set() messages,
-such as a L<CHI> object.
+It takes other optional parameters:
+
+=over 4
+
+=item * C<config_file>
+
+Points to a configuration file which contains the parameters to C<new()>.
+The file can be in any common format,
+including C<YAML>, C<XML>, and C<INI>.
+This allows the parameters to be set at run time.
+
+=item * C<syslog>
 
 Takes an optional parameter syslog, to log messages to
 L<Sys::Syslog>.
 It can be a boolean to enable/disable logging to syslog, or a reference
 to a hash to be given to Sys::Syslog::setlogsock.
+
+=back
+
+Takes optional parameter cache, an object which is used to cache country
+lookups.
+This cache object is an object that understands get() and set() messages,
+such as a L<CHI> object.
 
 Takes an optional parameter logger, which is used for warnings and traces.
 It can be an object that understands warn() and trace() messages,
@@ -133,7 +149,7 @@ The optional parameter debug is passed on to L<I18N::AcceptLanguage>.
 
 sub new {
 	my $class = shift;
-	my %params = (ref($_[0]) eq 'HASH') ? %{$_[0]} : @_;
+	my %args = (ref($_[0]) eq 'HASH') ? %{$_[0]} : @_;
 
 	if(!defined($class)) {
 		# Using CGI::Lingua->new(), not CGI::Lingua()
@@ -144,28 +160,37 @@ sub new {
 		$class = __PACKAGE__;
 	} elsif(ref($class)) {
 		# clone the given object
-		return bless { %{$class}, %params }, ref($class);
+		return bless { %{$class}, %args }, ref($class);
+	}
+
+	# Load the configuration from a config file, if provided
+	if(exists($args{'config_file'}) && (my $config = Config::Auto::parse($args{'config_file'}))) {
+		# my $config = YAML::XS::LoadFile($args{'config_file'});
+		if($config->{$class}) {
+			$config = $config->{$class};
+		}
+		%args = (%{$config}, %args);
 	}
 
 	# TODO: check that the number of supported languages is > 0
-	# unless($params{supported} && ($#params{supported} > 0)) {
+	# unless($args{supported} && ($#args{supported} > 0)) {
 		# croak('You must give a list of supported languages');
 	# }
-	$params{'supported'} ||= $params{'supported_languages'};
-	unless($params{supported}) {
+	$args{'supported'} ||= $args{'supported_languages'};
+	unless($args{supported}) {
 		Carp::croak('You must give a list of supported languages');
 	}
 
-	my $cache = $params{cache};
+	my $cache = $args{cache};
 	my $logger;
-	if($logger = $params{'logger'}) {
+	if($logger = $args{'logger'}) {
 		if(!Scalar::Util::blessed($logger)) {
 			$logger = Log::Abstraction->new($logger);
 		}
 	} else {
 		$logger = Log::Abstraction->new();
 	}
-	my $info = $params{info};
+	my $info = $args{info};
 
 	if($cache && $ENV{'REMOTE_ADDR'}) {
 		my $key = "$ENV{REMOTE_ADDR}/";
@@ -175,7 +200,7 @@ sub new {
 		} elsif($l = $class->_what_language()) {
 			$key .= "$l/";
 		}
-		$key .= join('/', @{$params{supported}});
+		$key .= join('/', @{$args{supported}});
 		if($logger) {
 			# $self->debug("Looking in cache for $key");
 		}
@@ -185,9 +210,9 @@ sub new {
 			# }
 			$rc = Storable::thaw($rc);
 			$rc->{_logger} = $logger;
-			$rc->{_syslog} = $params{syslog};
+			$rc->{_syslog} = $args{syslog};
 			$rc->{_cache} = $cache;
-			$rc->{_supported} = $params{supported};
+			$rc->{_supported} = $args{supported};
 			$rc->{_info} = $info;
 			$rc->{_have_ipcountry} = -1;
 			$rc->{_have_geoip} = -1;
@@ -203,8 +228,8 @@ sub new {
 	}
 
 	return bless {
-		%params,
-		_supported => $params{supported}, # List of languages (two letters) that the application
+		%args,
+		_supported => $args{supported}, # List of languages (two letters) that the application
 		_cache => $cache,	# CHI
 		_info => $info,
 		# _rlanguage => undef,	# Requested language
@@ -214,13 +239,13 @@ sub new {
 		# _sublanguage_code_alpha2 => undef, # E.g. us, gb
 		# _country => undef,	# Two letters, e.g. gb
 		# _locale => undef,	# Locale::Object::Country
-		_syslog => $params{syslog},
-		_dont_use_ip => $params{dont_use_ip} || 0,
+		_syslog => $args{syslog},
+		_dont_use_ip => $args{dont_use_ip} || 0,
 		_logger => $logger,
 		_have_ipcountry => -1,	# -1 = don't know
 		_have_geoip => -1,	# -1 = don't know
 		_have_geoipfree => -1,	# -1 = don't know
-		_debug => $params{debug} || 0,
+		_debug => $args{debug} || 0,
 		logger => $logger,
 	}, $class;
 }

@@ -66,6 +66,7 @@ if(eval 'require IP::Country') {
 }
 
 my $test_requires = {
+	'File::Temp' => 0,
 	'Test::Carp' => 0,
 	'Test::DescribeMe' => 0,
 	'Test::Most' => 0,
@@ -109,6 +110,7 @@ WriteMakefile(
 		'ExtUtils::MakeMaker' => 6.64,	# Minimum version for TEST_REQUIRES
     }, TEST_REQUIRES => $test_requires,
     PREREQ_PM => {
+    	'Config::Auto' => 0,
 	'DBD::SQLite' => 0,	# Locale::Object doesn't declare this prerequisite
 	'ExtUtils::MakeMaker' => 6.64,	# Minimum version for TEST_REQUIRES
 	'Locale::Object::Country' => 0.78,	# Fix for RT#79214
