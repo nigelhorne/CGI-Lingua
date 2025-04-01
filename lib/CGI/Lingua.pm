@@ -96,9 +96,15 @@ For a list of country codes refer to ISO-3166 (e.g. 'gb' for United Kingdom).
 
 Supported_languages is the same as supported.
 
-It takes other optional parameters:
+It takes several optional parameters:
 
 =over 4
+
+=item * C<cache>
+
+An object which is used to cache country lookups.
+This cache object is an object that understands get() and set() messages,
+such as a L<CHI> object.
 
 =item * C<config_file>
 
@@ -106,6 +112,15 @@ Points to a configuration file which contains the parameters to C<new()>.
 The file can be in any common format,
 including C<YAML>, C<XML>, and C<INI>.
 This allows the parameters to be set at run time.
+
+=item * C<logger>
+
+Used for warnings and traces.
+It can be an object that understands warn() and trace() messages,
+such as a L<Log::Log4perl> or L<Log::Any> object,
+a reference to code,
+a reference to an array,
+or a filename.
 
 =item * C<syslog>
 
@@ -115,18 +130,6 @@ It can be a boolean to enable/disable logging to syslog, or a reference
 to a hash to be given to Sys::Syslog::setlogsock.
 
 =back
-
-Takes optional parameter cache, an object which is used to cache country
-lookups.
-This cache object is an object that understands get() and set() messages,
-such as a L<CHI> object.
-
-Takes an optional parameter logger, which is used for warnings and traces.
-It can be an object that understands warn() and trace() messages,
-such as a L<Log::Log4perl> or L<Log::Any> object,
-a reference to code,
-a reference to an array,
-or a filename.
 
 Takes an optional parameter info, an object which can be used to see if a CGI
 parameter is set, for example, an L<CGI::Info> object.
