@@ -9,7 +9,7 @@ use Params::Get;
 use Storable; # RT117983
 use Class::Autouse qw{Carp Locale::Language Locale::Object::Country Locale::Object::DB I18N::AcceptLanguage I18N::LangTags::Detect};
 
-our $VERSION = '0.70';
+our $VERSION = '0.71';
 
 =head1 NAME
 
@@ -17,7 +17,7 @@ CGI::Lingua - Create a multilingual web page
 
 =head1 VERSION
 
-Version 0.70
+Version 0.71
 
 =cut
 
