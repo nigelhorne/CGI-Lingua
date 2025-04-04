@@ -1387,11 +1387,14 @@ sub _trace {
 }
 
 # Emit a warning message somewhere
-sub _warn {
+sub _warn
+{
 	my $self = shift;
 	my $params = Params::Get::get_params('warning', @_);
 
-	$self->_log('warn', $params->{'warning'});
+	if($params->{'warning'}) {
+		$self->_log('warn', $params->{'warning'});
+	}
 }
 
 =head1 AUTHOR
