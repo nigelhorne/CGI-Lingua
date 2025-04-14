@@ -3,7 +3,7 @@ package CGI::Lingua;
 use warnings;
 use strict;
 
-use Config::Auto;
+use Config::Abstraction;
 use Log::Abstraction;
 use Params::Get;
 use Storable; # RT117983
@@ -176,7 +176,7 @@ sub new
 	}
 
 	# Load the configuration from a config file, if provided
-	if(exists($params->{'config_file'}) && (my $config = Config::Auto::parse($params->{'config_file'}))) {
+	if(exists($params->{'config_file'}) && (my $config = Config::Abstraction->new(config_dirs => ['/'], config_file => $params->{'config_file'})->all())) {
 		# my $config = YAML::XS::LoadFile($params->{'config_file'});
 		if($config->{$class}) {
 			$config = $config->{$class};
