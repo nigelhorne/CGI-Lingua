@@ -1114,7 +1114,9 @@ sub _load_geoip
 {
 	my $self = shift;
 
-	if(($^O eq 'MSWin32') || (-r '/usr/local/share/GeoIP/GeoIP.dat') || (-r '/usr/share/GeoIP/GeoIP.dat')) {
+	# For Windows, see http://www.cpantesters.org/cpan/report/54117bd0-6eaf-1014-8029-ee20cb952333
+	if((($^O eq 'MSWin32') && (-r 'c:/GeoIP/GeoIP.dat')) ||
+	   ((-r '/usr/local/share/GeoIP/GeoIP.dat') || (-r '/usr/share/GeoIP/GeoIP.dat'))) {
 		# Don't use 'eval { use ... ' as recommended by Perlcritic
 		# See https://www.cpantesters.org/cpan/report/6db47260-389e-11ec-bc66-57723b537541
 		eval 'require Geo::IP';
