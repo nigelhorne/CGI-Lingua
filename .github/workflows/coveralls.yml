@@ -1,5 +1,8 @@
 ---
 name: Code coverage - coveralls.io
+permissions:
+  contents: read
+  actions: write
 
 on:
   pull_request:
