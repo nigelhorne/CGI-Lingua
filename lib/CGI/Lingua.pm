@@ -1380,8 +1380,9 @@ sub _warn
 	my $self = shift;
 	my $params = Params::Get::get_params('warning', @_);
 
-	if($params->{'warning'}) {
-		$self->_log('warn', $params->{'warning'});
+	$self->_log('warn', $params->{'warning'});
+	if(!defined($self->{'logger'})) {
+		Carp::carp($params->{'warning'});
 	}
 }
 
