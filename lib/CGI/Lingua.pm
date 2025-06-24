@@ -904,7 +904,7 @@ sub country {
 			$ip = '127.0.0.1';
 		} elsif(!is_ipv6($ip)) {
 			$self->_warn({
-				warning => "$ip isn't a valid IP address\n"
+				warning => "$ip isn't a valid IP address"
 			});
 			return;
 		}
