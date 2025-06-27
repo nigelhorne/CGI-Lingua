@@ -3,7 +3,6 @@ package CGI::Lingua;
 use warnings;
 use strict;
 
-use Log::Abstraction;
 use Object::Configure;
 use Params::Get;
 use Storable; # RT117983
@@ -1378,10 +1377,12 @@ sub _trace {
 sub _warn
 {
 	my $self = shift;
-	my $params = Params::Get::get_params('warning', @_);
+	if(defined($self->{'logger'})) {
+		$self->{'logger'}->warn(\@_);
+	} else {
+		my $params = Params::Get::get_params('warning', @_);
 
-	$self->_log('warn', $params->{'warning'});
-	if(!defined($self->{'logger'})) {
+		$self->_log('warn', $params->{'warning'});
 		Carp::carp($params->{'warning'});
 	}
 }

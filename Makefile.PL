@@ -119,7 +119,6 @@ WriteMakefile(
 	'I18N::LangTags::Detect' => 1.04,
 	'Data::Validate::IP' => 0.25,	# For is_private_ip
 	'Locale::Codes' => 3.59,	# Silence noisy warn messages in perl 5.28
-	'Log::Abstraction' => 0.05,
 	'Net::Whois::IANA' => 0,
 	'Net::Whois::IP' => 0,
 	'NetAddr::IP' => 0,
