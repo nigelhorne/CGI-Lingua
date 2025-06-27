@@ -1156,8 +1156,7 @@ sub locale {
 			$candidate =~ s/\s$//g;
 			if($candidate =~ /^[a-zA-Z]{2}-([a-zA-Z]{2})$/) {
 				local $SIG{__WARN__} = undef;
-				my $c = $self->_code2country($1);
-				if($c) {
+				if(my $c = $self->_code2country($1)) {
 					$self->{_locale} = $c;
 					return $c;
 				}
@@ -1169,12 +1168,9 @@ sub locale {
 			HTTP::BrowserDetect->import();
 			my $browser = HTTP::BrowserDetect->new($agent);
 
-			if($browser && $browser->country()) {
-				my $c = $self->_code2country($browser->country());
-				if($c) {
-					$self->{_locale} = $c;
-					return $c;
-				}
+			if($browser && $browser->country() && (my $c = $self->_code2country($browser->country()))) {
+				$self->{_locale} = $c;
+				return $c;
 			}
 		}
 	}
