@@ -2,6 +2,7 @@ Revision history for CGI-Lingua
 
 0.75
 	Call logger->warn directly if defined
+	Downgraded the level of the message about IP address not in IP::Country from notice to debug
 
 0.74	Tue Jun 24 18:31:31 EDT 2025
 	Use Object::Configure

@@ -949,7 +949,7 @@ sub country {
 			$self->{_country} = lc($self->{_country});
 		} elsif(is_ipv4($ip)) {
 			# Although it doesn't say so, it looks like IP::Country is IPv4 only
-			$self->_notice("$ip is not known by IP::Country");
+			$self->_debug("$ip is not known by IP::Country");
 		}
 	}
 	unless(defined($self->{_country})) {
