@@ -1017,7 +1017,7 @@ sub country {
 			if($self->{_country}) {
 				if($self->{_country} eq 'EU') {
 					delete($self->{_country});
-				} elsif(($self->{_country} eq 'US') && ($whois->{'StateProv'} eq 'PR')) {
+				} elsif(($self->{_country} eq 'US') && defined($whois->{'StateProv'}) && ($whois->{'StateProv'} eq 'PR')) {
 					# RT#131347: Despite what Whois thinks, Puerto Rico isn't in the US
 					$self->{_country} = 'pr';
 				}
