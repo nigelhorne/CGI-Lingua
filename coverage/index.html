@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<title>CGI::Lingua Coverage Report</title>
+	<style>
+		body { font-family: sans-serif; }
+		table { border-collapse: collapse; width: 100%; }
+		th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+		th { background-color: #f2f2f2; }
+		.low { background-color: #fdd; }
+		.med { background-color: #ffd; }
+		.high { background-color: #dfd; }
+		.badges img { margin-right: 10px; }
+		.disabled-icon {
+			opacity: 0.4;
+			cursor: default;
+		}
+		.icon-link {
+			text-decoration: none;
+		}
+		.icon-link:hover {
+			opacity: 0.7;
+			cursor: pointer;
+		}
+		.coverage-badge {
+			padding: 2px 6px;
+			border-radius: 4px;
+			font-weight: bold;
+			color: white;
+			font-size: 0.9em;
+		}
+		.badge-good { background-color: #4CAF50; }
+		.badge-warn { background-color: #FFC107; }
+		.badge-bad { background-color: #F44336; }
+		.summary-row {
+			font-weight: bold;
+			background-color: #f0f0f0;
+		}
+		td.positive { color: green; font-weight: bold; }
+		td.negative { color: red; font-weight: bold; }
+		td.neutral { color: gray; }
+	</style>
+</head>
+<body>
+<div class="badges">
+	<a href="https://github.com/nigelhorne/CGI-Lingua">
+		<img src="https://img.shields.io/github/stars/nigelhorne/CGI-Lingua?style=social" alt="GitHub stars">
+	</a>
+	<img src="https://img.shields.io/badge/coverage-36%25-red" alt="Coverage badge">
+</div>
+<h1>CGI::Lingua</h1><h2>Coverage Report</h2>
+<table>
+<tr><th>File</th><th>Stmt</th><th>Branch</th><th>Cond</th><th>Sub</th><th>Total</th><th>&Delta;</th></tr>
+<tr class="low"><td><a href="blib-lib-CGI-Lingua-pm.html" title="View coverage line by line">blib/lib/CGI/Lingua.pm</a> <a href="https://github.com/nigelhorne/CGI-Lingua/blob/f1b5c4382d52f8e02db19d813d02d6b339e127f7/blib/lib/CGI/Lingua.pm" class="icon-link" title="View source on GitHub">&#128269;</a></td><td>41.0</td><td>29.4</td><td>24.8</td><td>72.2</td><td><span class="coverage-badge badge-bad" title="Needs improvement">36.4%</span></td><td class="neutral" title="No previous data">&#9679;</td></tr>
+<tr class="summary-row"><td colspan="2"><strong>Summary</strong></td><td colspan="2">1 files</td><td colspan="3">Avg: 36%, Low: 1</td></tr>
+<tr class="low"><td><strong>Total</strong></td><td>41.0</td><td>29.4</td><td>24.8</td><td>72.2</td><td colspan="2"><strong>36.4</strong></td></tr>
+</table>
+<canvas id="coverageTrend" width="600" height="300"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+<script>
+function linearRegression(data) {
+	const xs = data.map(p => new Date(p.x).getTime());
+	const ys = data.map(p => p.y);
+	const n = xs.length;
+
+	const sumX = xs.reduce((a, b) => a + b, 0);
+	const sumY = ys.reduce((a, b) => a + b, 0);
+	const sumXY = xs.reduce((acc, val, i) => acc + val * ys[i], 0);
+	const sumX2 = xs.reduce((acc, val) => acc + val * val, 0);
+
+	const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+	const intercept = (sumY - slope * sumX) / n;
+
+	return xs.map(x => ({
+		x: new Date(x).toISOString(),
+		y: slope * x + intercept
+	}));
+}
+
+const dataPoints = [  ];
+const regressionPoints = linearRegression(dataPoints);
+const ctx = document.getElementById('coverageTrend').getContext('2d');
+const chart = new Chart(ctx, {
+	type: 'line',
+	data: {
+		datasets: [{
+			label: 'Total Coverage (%)',
+			data: dataPoints,
+			borderColor: 'green',
+			backgroundColor: 'rgba(0,128,0,0.1)',
+			pointRadius: 5,
+			pointHoverRadius: 7,
+			pointStyle: 'circle',
+			fill: false,
+			tension: 0.3,
+			pointBackgroundColor: function(context) {
+				return context.raw.pointBackgroundColor || 'gray';
+			}
+		}, {
+			label: 'Regression Line',
+			data: regressionPoints,
+			borderColor: 'blue',
+			borderDash: [5, 5],
+			pointRadius: 0,
+			fill: false,
+			tension: 0.0
+		}]
+	}, options: {
+		scales: {
+			x: {
+				type: 'time',
+				time: {
+					tooltipFormat: 'MMM d, yyyy HH:mm:ss',
+					unit: 'minute'
+				},
+				title: { display: true, text: 'Timestamp' }
+			},
+			y: { beginAtZero: true, max: 100, title: { display: true, text: 'Coverage (%)' } }
+		}, plugins: {
+			legend: {
+				display: true,
+				position: 'top', // You can also use 'bottom', 'left', or 'right'
+				labels: {
+					boxWidth: 12,
+					padding: 10,
+					font: {
+						size: 12,
+						weight: 'bold'
+					}
+				}
+			}, tooltip: {
+				callbacks: {
+					label: function(context) {
+						const raw = context.raw;
+						const coverage = raw.y.toFixed(1);
+						const delta = raw.delta?.toFixed(1) ?? '0.0';
+						const sign = delta > 0 ? '+' : delta < 0 ? '-' : '±';
+						// const baseLine = `${raw.label}: ${coverage}% (${sign}${Math.abs(delta)}%)`;
+						const baseLine = `${coverage}% (${sign}${Math.abs(delta)}%)`;
+						const commentLine = raw.comment ? raw.comment : null;
+						return commentLine ? [baseLine, commentLine] : [baseLine];
+					}
+				}
+			}
+		}, onClick: (e) => {
+			const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
+			if (points.length) {
+				const url = chart.data.datasets[0].data[points[0].index].url;
+				window.open(url, '_blank');
+			}
+		}
+	}
+});
+document.getElementById('toggleTrend').addEventListener('change', function(e) {
+	const show = e.target.checked;
+	const trendDataset = chart.data.datasets.find(ds => ds.label === 'Regression Line');
+	trendDataset.hidden = !show;
+	chart.update();
+});
+</script>
+<footer>
+	<p>Project: <a href="https://github.com/nigelhorne/CGI-Lingua">CGI-Lingua</a></p>
+	<p><em>Last updated: 2025-09-03 19:50:35 - <a href="https://github.com/nigelhorne/CGI-Lingua/commit/f1b5c4382d52f8e02db19d813d02d6b339e127f7">commit <code>f1b5c43</code></a></em></p>
+</footer>
+</body>
+</html>
