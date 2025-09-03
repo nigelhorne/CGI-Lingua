@@ -48,6 +48,7 @@ t/pod-synopsis.t
 t/pod.t
 t/port.t
 t/prereq.t
+t/priority.t
 t/rt131347.t
 t/rt131607.t
 t/rt69509.t
