@@ -903,6 +903,7 @@ sub country {
 	Data::Validate::IP->import();
 
 	if(!is_ipv4($ip)) {
+		$self->_debug("$ip isn't IPv4. Is it IPv6?");
 		if($ip eq '::1') {
 			# special case that is easy to handle
 			$ip = '127.0.0.1';
@@ -1381,6 +1382,7 @@ sub _warn
 	if(defined($self->{'logger'})) {
 		$self->{'logger'}->warn(\@_);
 	} else {
+		# This shouldn't happen, since Object::Configure always sets something
 		my $params = Params::Get::get_params('warning', @_);
 
 		$self->_log('warn', $params->{'warning'});

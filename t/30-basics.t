@@ -212,6 +212,7 @@ subtest 'IPv6 Handling' => sub {
 		local %ENV = (%{$mock_env}, REMOTE_ADDR => 'garbage::v6');
 
 		my $lingua = CGI::Lingua->new(supported => ['en']);
+		delete $lingua->{logger};
 
 		warning_like { $lingua->country() } qr/valid IP address/i,
 			'Warns on invalid IPv6 format';
@@ -243,6 +244,7 @@ subtest 'Sublanguage Handling' => sub {
 		is $lingua->sublanguage_code_alpha2, 'gb', 'Correct sublanguage code';
 		like $lingua->requested_language, qr/English.*United Kingdom/,
 			'Shows full requested language';
+		diag(Data::Dumper->new([$lingua->{'messages'}])->Dump()) if($ENV{'TEST_VERBOSE'});
 	};
 
 	subtest 'Base Language Fallback' => sub {
