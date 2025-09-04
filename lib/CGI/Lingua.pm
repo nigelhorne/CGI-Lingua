@@ -480,16 +480,21 @@ sub _find_language
 		}
 
 		my $requested_sublanguage;
-		if((!$l) && ($http_accept_language =~ /(..)\-(..)/)) {
-			$requested_sublanguage = $2;
-			# Fall back position, e,g. we want US English on a site
-			# only giving British English, so allow it as English.
-			# The calling program can detect that it's not the
-			# wanted flavour of English by looking at
-			# requested_language
-			if($i18n->accepts($1, $self->{_supported})) {
-				$l = $1;
-				$self->_debug("Fallback to $l as sublanguage is not supported");
+		if(!$l) {
+			# FIXME: This scans the HTTP_ACCEPTED_LANGUAGE left to right, it ignores the priority value
+			while($http_accept_language =~ /(..)\-(..)/g) {
+				$requested_sublanguage = $2;
+				# Fall back position, e,g. we want US English on a site
+				# only giving British English, so allow it as English.
+				# The calling program can detect that it's not the
+				# wanted flavour of English by looking at
+				# requested_language
+				$self->_debug("See if $1 is supported");
+				if($i18n->accepts($1, $self->{_supported})) {
+					$l = $1;
+					$self->_debug("Fallback to $l as sublanguage $requested_sublanguage is not supported");
+					last;
+				}
 			}
 		}
 
@@ -1385,7 +1390,7 @@ sub _warn
 
 =head1 AUTHOR
 
-Nigel Horne, C<< <njh at bandsman.co.uk> >>
+Nigel Horne, C<< <njh at nigelhorne.com> >>
 
 =head1 BUGS
 
@@ -1407,6 +1412,8 @@ This means that if you support languages at a lower priority, it may be missed.
 =head1 SEE ALSO
 
 =over 4
+
+=item * Testing Dashboard L<https://nigelhorne.github.io/CGI-Lingua/coverage/>
 
 =item * L<HTTP::BrowserDetect>
 

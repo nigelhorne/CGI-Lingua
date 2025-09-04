@@ -4,6 +4,8 @@ Revision history for CGI-Lingua
 	Call logger->warn directly if defined
 	Downgraded the level of the message about IP address not in IP::Country from notice to debug
 	Added testing dashboard on GitHub Pages
+	Improved fallback to lower priority if requested sublanguage is not supported
+		This may help https://github.com/nigelhorne/ged2site/issues/129
 
 0.74	Tue Jun 24 18:31:31 EDT 2025
 	Use Object::Configure
