@@ -110,13 +110,6 @@ subtest 'Locale Detection' => sub {
 	$mock_country->mock('name', sub { 'MockCountry' });
 	$mock_country->mock('code_alpha2', sub { 'MC' });
 
-	# Mock _code2country to return our mock country object
-	my $mock_lingua = Test::MockModule->new('CGI::Lingua');
-	$mock_lingua->mock('_code2country', sub {
-		my ($self, $code) = @_;
-		return bless { code => lc $code }, 'Locale::Object::Country';
-	});
-
 	# Locale from Locale::Object::Country
 	subtest 'From User-Agent' => sub {
 		local %ENV = (
@@ -135,11 +128,19 @@ subtest 'Locale Detection' => sub {
 		local %ENV = %{$mock_env};
 		$ENV{GEOIP_COUNTRY_CODE} = 'XX';
 
+		# Mock _code2country to return our mock country object
+		my $mock_lingua = Test::MockModule->new('CGI::Lingua');
+		$mock_lingua->mock('_code2country', sub {
+			my ($self, $code) = @_;
+			return bless { code => lc $code }, 'Locale::Object::Country';
+		});
+
 		my $lingua = CGI::Lingua->new(supported => ['en']);
 		$mock_lingua->mock('_code2country', sub { undef });
 
-		ok !defined $lingua->locale, 'Undefined for invalid country code';
+		ok(!defined $lingua->locale(), 'Undefined for invalid country code');
 	};
+	Test::MockModule->unmock_all();
 };
 
 subtest 'IPv6 Handling' => sub {
@@ -413,6 +414,7 @@ subtest 'Sublanguage Handling' => sub {
 
 		is($lingua2->language(), 'French', 'Cached result');
 	};
+	Test::MockModule->unmock_all();
 };
 
 subtest 'should load config file if provided' => sub {

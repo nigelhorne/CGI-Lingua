@@ -363,9 +363,11 @@ on a site that only serves British English, sublanguage() will return undef.
 sub sublanguage {
 	my $self = shift;
 
+	$self->_trace('Entered sublanguage');
 	unless($self->{_slanguage}) {
 		$self->_find_language();
 	}
+	$self->_trace('Leaving sublanguage ', ($self->{_sublanguage} || 'undef'));
 	return $self->{_sublanguage};
 }
 
@@ -566,12 +568,13 @@ sub _find_language
 								$variety = 'gb';
 							}
 							if(defined(my $c = $self->_code2countryname($variety))) {
+								$self->_debug(__PACKAGE__, ': ', __LINE__, ":  setting sublanguage to $c");
 								$self->{_sublanguage} = $c;
 							}
 							$self->{_slanguage_code_alpha2} = $accepts;
 							if($self->{_sublanguage}) {
 								$self->{_rlanguage} = "$self->{_slanguage} ($self->{_sublanguage})";
-								$self->_debug("_rlanguage: $self->{_rlanguage}");
+								$self->_debug(__PACKAGE__, ': ', __LINE__, ": _rlanguage: $self->{_rlanguage}");
 							}
 							$self->{_sublanguage_code_alpha2} = $variety;
 							unless($from_cache) {
@@ -630,6 +633,8 @@ sub _find_language
 							}
 						}
 						if($@ || !defined($language_name)) {
+							$self->_warn($@) if($@);
+							$self->_debug(__PACKAGE__, ': ', __LINE__, ': setting sublanguage to Unknown');
 							$self->{_sublanguage} = 'Unknown';
 							$self->_warn({
 								warning => "Can't determine values for $http_accept_language"
@@ -927,7 +932,7 @@ sub country {
 		$self->{_country} = $self->{_cache}->get(__PACKAGE__ . ":country:$ip");
 		if(defined($self->{_country})) {
 			if($self->{_country} !~ /\D/) {
-				$self->_warn('cache contains a numeric country: ' . $self->{_country});
+				$self->_warn('cache contains a numeric country: ', $self->{_country});
 				$self->{_cache}->remove($ip);
 				delete $self->{_country};	# Seems to be a number
 			} else {
@@ -1086,7 +1091,7 @@ sub country {
 			}
 
 			if($self->{_country} !~ /\D/) {
-				$self->_warn('cache contains a numeric country: ' . $self->{_country});
+				$self->_warn('cache contains a numeric country: ', $self->{_country});
 				delete $self->{_country};	# Seems to be a number
 			} elsif($self->{_cache}) {
 				$self->_debug("Set $ip to $self->{_country}");
@@ -1300,9 +1305,9 @@ sub _code2country
 
 	return unless($code);
 	if($self->{_country}) {
-		$self->_trace("_code2country $code, country ", $self->{_country});
+		$self->_trace(">_code2country $code, country ", $self->{_country});
 	} else {
-		$self->_trace("_code2country $code");
+		$self->_trace(">_code2country $code");
 	}
 	local $SIG{__WARN__} = sub {
 		if($_[0] !~ /No result found in country table/) {
@@ -1311,6 +1316,7 @@ sub _code2country
 	};
 	my $rc = Locale::Object::Country->new(code_alpha2 => $code);
 	local $SIG{__WARN__} = 'DEFAULT';
+	$self->_trace('<_code2country ', $code || 'undef');
 	return $rc;
 }
 
@@ -1320,7 +1326,7 @@ sub _code2countryname
 	my ($self, $code) = @_;
 
 	return unless($code);
-	$self->_trace("_code2countryname $code");
+	$self->_trace(">_code2countryname $code");
 	unless($self->{_cache}) {
 		my $country = $self->_code2country($code);
 		if(defined($country)) {
@@ -1332,10 +1338,12 @@ sub _code2countryname
 		$self->_trace("_code2countryname found in cache $from_cache");
 		return $from_cache;
 	}
-	$self->_trace('_code2countryname not in cache, storing');
 	if(my $country = $self->_code2country($code)) {
-		return $self->{_cache}->set(__PACKAGE__ . ":code2countryname:$code", $country->name, '1 month');
+		$self->_debug('_code2countryname not in cache, storing');
+		$self->_trace('<_code2countryname ', $country->name());
+		return $self->{_cache}->set(__PACKAGE__ . ":code2countryname:$code", $country->name(), '1 month');
 	}
+	$self->_trace('<_code2countryname undef');
 }
 
 # Log and remember a message
