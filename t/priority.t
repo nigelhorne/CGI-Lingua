@@ -56,4 +56,14 @@ ok(!defined($l->sublanguage()));	# We don't have US English sublanguage only Bri
 ok($l->requested_language() eq 'English (United States)');
 # diag(Data::Dumper->new([$l->{'messages'}])->Dump());
 
+local $ENV{'HTTP_ACCEPT_LANGUAGE'} = 'zh-CN,zh;q=0.9,en;q=0.8,*;q=0.1';
+
+$l = CGI::Lingua->new(supported => ['en-gb']);
+ok(defined $l);
+ok($l->isa('CGI::Lingua'));
+ok($l->language() eq 'English');
+ok(!defined($l->sublanguage()));	# We don't have US English sublanguage only British English supported
+ok($l->requested_language() eq 'English');
+# diag(Data::Dumper->new([$l->{'messages'}])->Dump());
+
 done_testing();

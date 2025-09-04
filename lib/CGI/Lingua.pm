@@ -484,6 +484,7 @@ sub _find_language
 		my $requested_sublanguage;
 		if(!$l) {
 			# FIXME: This scans the HTTP_ACCEPTED_LANGUAGE left to right, it ignores the priority value
+			$self->_debug(__PACKAGE__, ': ', __LINE__, ": look through $http_accept_language for alternatives");
 			while($http_accept_language =~ /(..)\-(..)/g) {
 				$requested_sublanguage = $2;
 				# Fall back position, e,g. we want US English on a site
@@ -491,10 +492,25 @@ sub _find_language
 				# The calling program can detect that it's not the
 				# wanted flavour of English by looking at
 				# requested_language
-				$self->_debug("See if $1 is supported");
+				$self->_debug(__PACKAGE__, ': ', __LINE__, ": see if $1 is supported");
 				if($i18n->accepts($1, $self->{_supported})) {
 					$l = $1;
 					$self->_debug("Fallback to $l as sublanguage $requested_sublanguage is not supported");
+					last;
+				}
+			}
+		}
+		if(!$l) {
+			# FIXME: This scans the HTTP_ACCEPTED_LANGUAGE left to right, it ignores the priority value
+			$self->_debug(__PACKAGE__, ': ', __LINE__, ": look harder through $http_accept_language for alternatives");
+			foreach my $possible(split(/,/, $http_accept_language)) {
+				next if($possible =~ /..\-../);	# Already checked those with sublanguages
+				$possible =~ s/;.*$//;
+				$self->_debug(__PACKAGE__, ': ', __LINE__, ": see if $possible is supported");
+				if($i18n->accepts($possible, $self->{_supported})) {
+					$l = $possible;
+					$self->_debug("Fallback to $possible as best alternative");
+					undef $requested_sublanguage;
 					last;
 				}
 			}
