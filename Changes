@@ -7,6 +7,7 @@ Revision history for CGI-Lingua
 	Improved fallback to lower priority if requested sublanguage is not supported
 		This may help https://github.com/nigelhorne/ged2site/issues/129
 	Fix t/30-basic's use of TestModule - reduce the scope
+	new() - If you're only giving the supported list, no need to use a positional parameter
 
 0.74	Tue Jun 24 18:31:31 EDT 2025
 	Use Object::Configure

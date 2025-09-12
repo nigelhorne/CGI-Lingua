@@ -32,7 +32,7 @@ Based on that list CGI::Lingua tells the application which language the user wou
 
     use CGI::Lingua;
     # ...
-    my $l = CGI::Lingua->new(supported => ['en', 'fr', 'en-gb', 'en-us']);
+    my $l = CGI::Lingua->new(['en', 'fr', 'en-gb', 'en-us']);
     my $language = $l->language();
     if ($language eq 'English') {
 	print '<P>Hello</P>';
@@ -65,7 +65,8 @@ Based on that list CGI::Lingua tells the application which language the user wou
 
 Creates a CGI::Lingua object.
 
-Takes one mandatory parameter: a list of languages, in RFC-1766 format,
+Takes one mandatory parameter, C<supported>,
+a list of languages, in RFC-1766 format,
 that the website supports.
 Language codes are of the form primary-code [ - country-code ] e.g.
 'en', 'en-gb' for English and British English respectively.
@@ -159,7 +160,7 @@ If neither is given, L<Carp> will be used.
 sub new
 {
 	my $class = shift;
-	my $params = Params::Get::get_params(undef, @_);
+	my $params = Params::Get::get_params('supported', @_);
 
 	if(!defined($class)) {
 		if($params) {
