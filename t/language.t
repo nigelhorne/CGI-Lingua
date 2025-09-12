@@ -39,7 +39,7 @@ if(-e 't/online.enabled') {
 	$l = CGI::Lingua->new(['en', 'fr', 'en-gb', 'en-us']);
 	ok(defined($l));
 	ok($l->isa('CGI::Lingua'));
-	ok($l->language() eq 'English');
+	ok($l->name() eq 'English');
 	ok($l->requested_language() eq 'English');
 
 	$l = CGI::Lingua->new(
