@@ -165,6 +165,9 @@ sub new
 	if(!defined($class)) {
 		if($params) {
 			# Using CGI::Lingua:new(), not CGI::Lingua->new()
+			if(my $logger = $params->{'logger'}) {
+				$logger->error(__PACKAGE__, ' use ->new() not ::new() to instantiate');
+			}
 			croak(__PACKAGE__, ' use ->new() not ::new() to instantiate');
 		}
 
@@ -183,6 +186,9 @@ sub new
 	# }
 	$params->{'supported'} ||= $params->{'supported_languages'};
 	unless($params->{supported}) {
+		if(my $logger = $params->{'logger'}) {
+			$logger->error('You must give a list of supported languages');
+		}
 		Carp::croak('You must give a list of supported languages');
 	}
 
@@ -206,7 +212,7 @@ sub new
 				# $logger->debug('Found - thawing');
 			# }
 			$rc = Storable::thaw($rc);
-			$rc->{_logger} = $params->{'logger'};
+			$rc->{logger} = $params->{'logger'};
 			$rc->{_syslog} = $params->{syslog};
 			$rc->{_cache} = $cache;
 			$rc->{_supported} = $params->{supported};
@@ -238,7 +244,6 @@ sub new
 		# _locale => undef,	# Locale::Object::Country
 		_syslog => $params->{syslog},
 		_dont_use_ip => $params->{dont_use_ip} || 0,
-		_logger => $params->{'logger'},
 		_have_ipcountry => -1,	# -1 = don't know
 		_have_geoip => -1,	# -1 = don't know
 		_have_geoipfree => -1,	# -1 = don't know
@@ -1273,6 +1278,9 @@ sub time_zone {
 					$self->{_timezone} = JSON::Parse::parse_json($data)->{'timezone'};
 				}
 			} else {
+				if(my $logger = $self->{'logger'}) {
+					$logger->error('You must have LWP::Simple::WithCache installed to connect to ip-api.com');
+				}
 				Carp::croak('You must have LWP::Simple::WithCache installed to connect to ip-api.com');
 			}
 		}

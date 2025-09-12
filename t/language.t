@@ -354,7 +354,7 @@ if(-e 't/online.enabled') {
 		dont_use_ip => 1,
 		logger => MyLogger->new()
 	}]);
-	cmp_ok($l->language(), 'eq', 'Japanese', 'Checking quality value');
+	cmp_ok($l->preferred_language(), 'eq', 'Japanese', 'Checking quality value');
 
 	# Cover edge case: malformed Accept-Language headers
 	subtest 'Malformed Accept-Language headers' => sub {
