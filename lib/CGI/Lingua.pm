@@ -674,7 +674,7 @@ sub _find_language
 		} elsif($http_accept_language =~ /;/) {
 			# e.g. HTTP_ACCEPT_LANGUAGE=de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7
 			# and we don't support DE at all, but we do accept en-US
-			$self->_notice(__PACKAGE__, ': ', __LINE__, ": lower priority supported language may be missed HTTP_ACCEPT_LANGUAGE=$http_accept_language, supported languages are: ", join(',', @{$self->{supported}}));
+			$self->_notice(__PACKAGE__, ': ', __LINE__, ": couldn't honour HTTP_ACCEPT_LANGUAGE=$http_accept_language, supported languages are: ", join(',', @{$self->{supported}}));
 		}
 		if($self->{_slanguage} && ($self->{_slanguage} ne 'Unknown')) {
 			if($self->{_rlanguage} eq 'Unknown') {
