@@ -226,7 +226,7 @@ for my $file (sort keys %{$data->{summary}}) {
 	my $points_attr = join(',', @file_history);
 
 	push @html, sprintf(
-		qq{<tr class="%s"><td><a href="%s" title="View coverage line by line">%s</a> %s<canvas class="sparkline" width="80" height="20" data-points="$points_attr"></canvas></td><td>%.1f</td><td>%.1f</td><td>%.1f</td><td>%.1f</td><td>%s</td>%s</tr>\n},
+		qq{<tr class="%s"><td><a href="%s" title="View coverage line by line" target="_blank">%s</a> %s<canvas class="sparkline" width="80" height="20" data-points="$points_attr"></canvas></td><td>%.1f</td><td>%.1f</td><td>%.1f</td><td>%.1f</td><td>%s</td>%s</tr>\n},
 		$row_class, $html_file, $file, $source_link,
 		$info->{statement}{percentage} // 0,
 		$info->{branch}{percentage} // 0,
@@ -266,7 +266,7 @@ if (my $stat = stat($cover_db)) {
 	$timestamp = strftime('%Y-%m-%d %H:%M:%S', localtime($stat->mtime));
 }
 
-my $commit_url = "https://github.com/nigelhorne/CGI-Lingua/commit/$commit_sha";
+Readonly my $commit_url => "https://github.com/nigelhorne/CGI-Lingua/commit/$commit_sha";
 my $short_sha = substr($commit_sha, 0, 7);
 
 push @html, '</tbody></table>';
