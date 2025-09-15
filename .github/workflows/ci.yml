@@ -99,6 +99,7 @@ jobs:
           git config user.email "github-actions@github.com"
           git add coverage_history/
           git commit -m "Add coverage snapshot for $TIMESTAMP ($SHA)" || echo "No changes to commit"
+          git pull --rebase
           git push origin HEAD:${{ github.ref_name }}
 
       # Deploy HTML report to GitHub Pages
