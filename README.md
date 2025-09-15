@@ -16,7 +16,7 @@ CGI::Lingua - Create a multilingual web page
 
 # VERSION
 
-Version 0.74
+Version 0.75
 
 # SYNOPSIS
 
@@ -30,7 +30,7 @@ Based on that list CGI::Lingua tells the application which language the user wou
 
     use CGI::Lingua;
     # ...
-    my $l = CGI::Lingua->new(supported => ['en', 'fr', 'en-gb', 'en-us']);
+    my $l = CGI::Lingua->new(['en', 'fr', 'en-gb', 'en-us']);
     my $language = $l->language();
     if ($language eq 'English') {
         print '<P>Hello</P>';
@@ -63,7 +63,8 @@ Based on that list CGI::Lingua tells the application which language the user wou
 
 Creates a CGI::Lingua object.
 
-Takes one mandatory parameter: a list of languages, in RFC-1766 format,
+Takes one mandatory parameter, `supported`,
+a list of languages, in RFC-1766 format,
 that the website supports.
 Language codes are of the form primary-code \[ - country-code \] e.g.
 'en', 'en-gb' for English and British English respectively.
