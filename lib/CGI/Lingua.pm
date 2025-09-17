@@ -167,13 +167,14 @@ sub new
 			if(my $logger = $params->{'logger'}) {
 				$logger->error(__PACKAGE__, ' use ->new() not ::new() to instantiate');
 			}
-			croak(__PACKAGE__, ' use ->new() not ::new() to instantiate');
+			Carp::croak(__PACKAGE__, ' use ->new() not ::new() to instantiate');
 		}
 
 		# FIXME: this only works when no arguments are given
 		$class = __PACKAGE__;
 	} elsif(ref($class)) {
 		# clone the given object
+		$params->{_supported} ||= $params->{supported} if(defined($params->{'supported'}));
 		return bless { %{$class}, %{$params} }, ref($class);
 	}
 

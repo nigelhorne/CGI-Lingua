@@ -66,18 +66,21 @@ if(eval 'require IP::Country') {
 }
 
 my $test_requires = {
+	'autodie' => 0,
+	'CHI' => 0,
+	'IPC::System::Simple' => 0,
+	'Log::Abstraction' => 0,
 	'File::Temp' => 0,
 	'Test::Carp' => 0,
+	'Test::Compile' => 0,
 	'Test::DescribeMe' => 0,
+	'Test::Mockingbird' => 0,
 	'Test::Most' => 0,
 	'Test::Needs' => 0,
 	'Test::NoWarnings' => 0,
 	'Test::Requires' => 0,
-	# 'Test::Kwalitee' => 0,
-	'autodie' => 0,
-	'IPC::System::Simple' => 0,
-	'Test::Compile' => 0,
 	'Test::Without::Module' => 0
+	# 'Test::Kwalitee' => 0,
 };
 
 if($online_tests) {
@@ -149,7 +152,7 @@ WriteMakefile(
 		}
 	},
     },
-    MIN_PERL_VERSION	=> '5.6.2'	# Probably would work, but never tested on earlier versions than this
+	MIN_PERL_VERSION	=> '5.6.2'	# Probably would work, but never tested on earlier versions than this
 );
 
 sub are_online
