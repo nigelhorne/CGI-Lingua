@@ -1297,7 +1297,7 @@ sub time_zone {
 				if(my $logger = $self->{'logger'}) {
 					$logger->error('You must have LWP::Simple::WithCache installed to connect to ip-api.com');
 				}
-				Carp::croak('You must have LWP::Simple::WithCache installed to connect to ip-api.com');
+				Carp::croak('You must have LWP::Simple::WithCache or LWP::Simple installed to connect to ip-api.com');
 			}
 		}
 	} else {
