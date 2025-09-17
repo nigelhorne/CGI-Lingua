@@ -1251,7 +1251,7 @@ sub locale {
 Returns the timezone of the web client.
 
 If L<Geo::IP> is installed,
-CGI::Lingua will make use of that, otherwise it will use ip-api.com
+CGI::Lingua will make use of that, otherwise it will use L<ip-api.com>
 
 =cut
 
@@ -1282,6 +1282,15 @@ sub time_zone {
 				JSON::Parse->import();
 
 				if(my $data = LWP::Simple::WithCache::get("http://ip-api.com/json/$ip")) {
+					$self->{_timezone} = JSON::Parse::parse_json($data)->{'timezone'};
+				}
+			} elsif(eval { require LWP::Simple; require JSON::Parse } ) {
+				$self->_debug("Look up $ip on ip-api.com");
+
+				LWP::Simple->import();
+				JSON::Parse->import();
+
+				if(my $data = LWP::Simple::get("http://ip-api.com/json/$ip")) {
 					$self->{_timezone} = JSON::Parse::parse_json($data)->{'timezone'};
 				}
 			} else {

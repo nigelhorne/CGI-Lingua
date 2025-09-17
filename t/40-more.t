@@ -7,6 +7,7 @@ use CHI;
 use Log::Abstraction;
 use Test::Most;
 use Test::Mockingbird;
+use Test::RequiresInternet ('ip-api.com' => 'http');
 
 BEGIN { use_ok('CGI::Lingua') }
 
