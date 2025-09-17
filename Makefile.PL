@@ -122,8 +122,8 @@ WriteMakefile(
 	'Net::Whois::IANA' => 0,
 	'Net::Whois::IP' => 0,
 	'NetAddr::IP' => 0,
-	'Object::Configure' => 0,
-	'Params::Get' => 0,
+	'Object::Configure' => 0.14,
+	'Params::Get' => 0.13,
 	'Class::Load' => 0,
 	'CGI::Info' => 0.60, # For AUTOLOAD
 	'Sys::Syslog' => 0,
@@ -141,9 +141,10 @@ WriteMakefile(
 			web => 'https://github.com/nigelhorne/CGI-Lingua',
 			repository => 'https://github.com/nigelhorne/CGI-Lingua',
 		}, bugtracker => {
-			# web => 'https://rt.cpan.org/Public/Dist/Display.html?Name=CGI-Lingua',
-			web => 'https://github.com/nigelhorne/CGI-Lingua/issues',
-			url => 'https://github.com/nigelhorne/CGI-Lingua/issues',
+			url => 'https://rt.cpan.org/Public/Dist/Display.html?Name=CGI-Lingua',
+			web => 'https://rt.cpan.org/Public/Dist/Display.html?Name=CGI-Lingua',
+			# web => 'https://github.com/nigelhorne/CGI-Lingua/issues',
+			# url => 'https://github.com/nigelhorne/CGI-Lingua/issues',
 			mailto => 'bug-CGI-Lingua@rt.cpan.org'
 		}
 	},

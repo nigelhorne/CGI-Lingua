@@ -3,8 +3,8 @@ package CGI::Lingua;
 use warnings;
 use strict;
 
-use Object::Configure;
-use Params::Get;
+use Object::Configure 0.14;
+use Params::Get 0.13;
 use Storable; # RT117983
 use Class::Autouse qw{Carp Locale::Language Locale::Object::Country Locale::Object::DB I18N::AcceptLanguage I18N::LangTags::Detect};
 
@@ -179,6 +179,13 @@ sub new
 	}
 
 	$params = Object::Configure::configure($class, $params);
+
+	# Validate logger object has required methods
+	if(defined $params->{'logger'}) {
+		unless(Scalar::Util::blessed($params->{'logger'}) && $params->{'logger'}->can('info') && $params->{'logger'}->can('error')) {
+			Carp::croak("Logger must be an object with info() and error() methods");
+		}
+	}
 
 	# TODO: check that the number of supported languages is > 0
 	# unless($params->{supported} && ($#params->{supported} > 0)) {
