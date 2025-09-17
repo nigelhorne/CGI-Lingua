@@ -1446,7 +1446,6 @@ Nigel Horne, C<< <njh at nigelhorne.com> >>
 =head1 BUGS
 
 Please report any bugs or feature requests to the author.
-This module is provided as-is without any warranty.
 
 If HTTP_ACCEPT_LANGUAGE is 3 characters, e.g., es-419,
 sublanguage() returns undef.
@@ -1465,6 +1464,8 @@ This means that if you support languages at a lower priority, it may be missed.
 =over 4
 
 =item * Testing Dashboard L<https://nigelhorne.github.io/CGI-Lingua/coverage/>
+
+=item * VWF - Versatile Web Framework L<https://github.com/nigelhorne/vwf>
 
 =item * L<HTTP::BrowserDetect>
 
