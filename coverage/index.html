@@ -65,7 +65,7 @@
 	<a href="https://github.com/nigelhorne/CGI-Lingua">
 		<img src="https://img.shields.io/github/stars/nigelhorne/CGI-Lingua?style=social" alt="GitHub stars">
 	</a>
-	<img src="https://img.shields.io/badge/coverage-37%25-red" alt="Coverage badge">
+	<img src="https://img.shields.io/badge/coverage-57%25-yellow" alt="Coverage badge">
 </div>
 <h1>CGI::Lingua</h1><h2>Coverage Report</h2>
 <table data-sort-col="0" data-sort-order="asc">
@@ -84,11 +84,11 @@
 
 <tbody>
 
-<tr class="low"><td><a href="blib-lib-CGI-Lingua-pm.html" title="View coverage line by line" target="_blank">blib/lib/CGI/Lingua.pm</a> <a href="https://github.com/nigelhorne/CGI-Lingua/blob/3121f65af46b6472ea2b508418fce19785dd3141/blib/lib/CGI/Lingua.pm" class="icon-link" title="View source on GitHub">&#128269;</a><canvas class="sparkline" width="80" height="20" data-points="36.4,36.4,36.4,37.5,36.5,37.5,37.3,37.3,37.5,37.3,37.3,37.4"></canvas></td><td>42.4</td><td>30.4</td><td>25.2</td><td>72.2</td><td><span class="coverage-badge badge-bad" title="Needs improvement">37.4%</span></td><td class="neutral" title="Previous: 37.4%">&#9679; 0.0%</td></tr>
+<tr class="low"><td><a href="blib-lib-CGI-Lingua-pm.html" title="View coverage line by line" target="_blank">blib/lib/CGI/Lingua.pm</a> <a href="https://github.com/nigelhorne/CGI-Lingua/blob/1809689ea74c52500c3f6265a1cfb52785d500b5/blib/lib/CGI/Lingua.pm" class="icon-link" title="View source on GitHub">&#128269;</a><canvas class="sparkline" width="80" height="20" data-points="36.4,36.4,36.4,37.5,36.5,37.5,37.3,37.3,37.5,37.3,37.3,37.4,37.4"></canvas></td><td>65.2</td><td>50.0</td><td>36.6</td><td>91.7</td><td><span class="coverage-badge badge-bad" title="Needs improvement">57.7%</span></td><td class="positive" title="Previous: 37.4%">&#9650; 20.3%</td></tr>
 
-<tr class="summary-row nosort"><td colspan="2"><strong>Summary</strong></td><td colspan="2">1 files</td><td colspan="3">Avg: 37%, Low: 1</td></tr>
+<tr class="summary-row nosort"><td colspan="2"><strong>Summary</strong></td><td colspan="2">1 files</td><td colspan="3">Avg: 57%, Low: 1</td></tr>
 
-<tr class="low nosort"><td><strong>Total</strong></td><td>42.4</td><td>30.4</td><td>25.2</td><td>72.2</td><td colspan="2"><strong>37.4</strong></td></tr>
+<tr class="med nosort"><td><strong>Total</strong></td><td>65.2</td><td>50.0</td><td>36.6</td><td>91.7</td><td colspan="2"><strong>57.7</strong></td></tr>
 
 </tbody></table>
 <p>
@@ -136,7 +136,8 @@ const dataPoints = [ { x: "2025-09-03T15:45:59-04:00", y: 36.4135407136322, delt
 { x: "2025-09-12T13:33:10-04:00", y: 37.3462214411248, delta: -0.1, url: "https://github.com/nigelhorne/CGI-Lingua/commit/6da8de8", label: "2025-09-12T13:33:10-04:00", pointBackgroundColor: "red", comment: "Test synonyms" },
 { x: "2025-09-15T07:57:21-04:00", y: 37.3462214411248, delta: 0.0, url: "https://github.com/nigelhorne/CGI-Lingua/commit/d0185f2", label: "2025-09-15T07:57:21-04:00", pointBackgroundColor: "gray", comment: "Rebase in ci.yml" },
 { x: "2025-09-16T08:23:06-04:00", y: 37.3462214411248, delta: 0.0, url: "https://github.com/nigelhorne/CGI-Lingua/commit/d03359b", label: "2025-09-16T08:23:06-04:00", pointBackgroundColor: "gray", comment: "I can't reproduce https://github.com/nigelhorne/CGI-Lingua/issues/31, but this may fix it" },
-{ x: "2025-09-17T07:19:19-04:00", y: 37.4456993918332, delta: 0.1, url: "https://github.com/nigelhorne/CGI-Lingua/commit/df5e417", label: "2025-09-17T07:19:19-04:00", pointBackgroundColor: "green", comment: "Check the sanity of the logger argument" } ];
+{ x: "2025-09-17T07:19:19-04:00", y: 37.4456993918332, delta: 0.1, url: "https://github.com/nigelhorne/CGI-Lingua/commit/df5e417", label: "2025-09-17T07:19:19-04:00", pointBackgroundColor: "green", comment: "Check the sanity of the logger argument" },
+{ x: "2025-09-17T07:53:37-04:00", y: 37.4350086655113, delta: -0.0, url: "https://github.com/nigelhorne/CGI-Lingua/commit/3121f65", label: "2025-09-17T07:53:37-04:00", pointBackgroundColor: "gray", comment: "Ensure the logger can handle warn (https://github.com/nigelhorne/CGI-Lingua/issues/31)" } ];
 
 const regressionPoints = linearRegression(dataPoints);
 // Try to register the zoom plugin (handles different UMD builds)
@@ -393,7 +394,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <footer>
 	<p>Project: <a href="https://github.com/nigelhorne/CGI-Lingua">CGI-Lingua</a></p>
-	<p><em>Last updated: 2025-09-17 11:58:35 - <a href="https://github.com/nigelhorne/CGI-Lingua/commit/3121f65af46b6472ea2b508418fce19785dd3141">commit <code>3121f65</code></a></em></p>
+	<p><em>Last updated: 2025-09-17 13:02:48 - <a href="https://github.com/nigelhorne/CGI-Lingua/commit/1809689ea74c52500c3f6265a1cfb52785d500b5">commit <code>1809689</code></a></em></p>
 </footer>
 </body>
 </html>
