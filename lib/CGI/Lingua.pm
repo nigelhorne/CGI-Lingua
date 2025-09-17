@@ -77,16 +77,15 @@ For a list of country codes refer to ISO-3166 (e.g. 'gb' for United Kingdom).
     # Sample web page
     use CGI::Lingua;
     use CHI;
-    use Log::Log4perl;
+    use Log::Abstraction;
 
     my $cache = CHI->new(driver => 'File', root_dir => '/tmp/cache');
-    Log::Log4perl->easy_init({ level => $Log::Log4perl::DEBUG });
 
     # We support English, French, British and American English, in that order
     my $lingua = CGI::Lingua->new(
         supported => ['en', 'fr', 'en-gb', 'en-us'],
         cache     => $cache,
-        logger    => Log::Log4perl->get_logger(),
+        logger    => Log::Abstraction->new()
     );
 
     print "Content-Type: text/plain\n\n";
@@ -117,7 +116,7 @@ This allows the parameters to be set at run time.
 
 Used for warnings and traces.
 It can be an object that understands warn() and trace() messages,
-such as a L<Log::Log4perl> or L<Log::Any> object,
+such as a L<Log::Abstraction>, L<Log::Log4perl> or L<Log::Any> object,
 a reference to code,
 a reference to an array,
 or a filename.
@@ -182,7 +181,7 @@ sub new
 
 	# Validate logger object has required methods
 	if(defined $params->{'logger'}) {
-		unless(Scalar::Util::blessed($params->{'logger'}) && $params->{'logger'}->can('info') && $params->{'logger'}->can('error')) {
+		unless(Scalar::Util::blessed($params->{'logger'}) && $params->{'logger'}->can('warn') && $params->{'logger'}->can('info') && $params->{'logger'}->can('error')) {
 			Carp::croak("Logger must be an object with info() and error() methods");
 		}
 	}
