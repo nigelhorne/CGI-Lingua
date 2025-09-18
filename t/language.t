@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use CGI::Info;
+use Log::Abstraction;
 use Test::Most;
 
 use lib 't/lib';
@@ -53,10 +54,10 @@ if(-e 't/online.enabled') {
 
 	$ENV{'HTTP_ACCEPT_LANGUAGE'} = 'en-gb,en;q=0.5';
 	delete $ENV{'REMOTE_ADDR'};
-	$l = CGI::Lingua->new(
+	$l = CGI::Lingua->new({
 		supported => ['en', 'fr', 'en-gb', 'en-us'],
 		dont_use_ip => 1,
-	);
+	});
 	ok(defined $l);
 	ok($l->isa('CGI::Lingua'));
 	ok($l->language() eq 'English');
