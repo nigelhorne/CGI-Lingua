@@ -1,6 +1,6 @@
 Revision history for CGI-Lingua
 
-0.78
+0.78	Tue Nov 11 15:27:14 EST 2025
 	Added workaround for https://github.com/bricas/geo-ipfree/issues/10
 	Started fuzz testing
 
