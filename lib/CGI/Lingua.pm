@@ -999,7 +999,10 @@ sub country {
 		if($self->{_have_geoip} == 1) {
 			$self->{_country} = $self->{_geoip}->country_code_by_addr($ip);
 		}
-		unless(defined($self->{_country})) {
+
+		# FIXME:  45.128.139.41 is broken in Geo::IPFree,
+		#	see https://github.com/bricas/geo-ipfree/issues/10
+		if(!defined($self->{_country}) && ($ip ne '45.128.139.41')) {
 			if($self->{_have_geoipfree} == -1) {
 				# Don't use 'eval { use ... ' as recommended by Perlcritic
 				# See https://www.cpantesters.org/cpan/report/6db47260-389e-11ec-bc66-57723b537541
