@@ -20,7 +20,7 @@ https://pjcj.net
 <h1>Branch Coverage</h1>
 <table>
 <tr><td class="h" align="right">File:</td><td align="left">blib/lib/CGI/Lingua.pm</td></tr>
-<tr><td class="h" align="right">Coverage:</td><td align="left" class="c0">50.0%</td></tr>
+<tr><td class="h" align="right">Coverage:</td><td align="left" class="c0">50.5%</td></tr>
 </table>
 <div><br/></div>
 <table>
@@ -169,8 +169,8 @@ require JSON::Parse
 <tr><td class="h"><a id="L1032">1032</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if (my $data = LWP::Simple::WithCache::get(&quot;http://www.geoplugin.net/json.gp?ip=$ip&quot;))</td></tr>
 <tr><td class="h"><a id="L1036">1036</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">unless ($$self{&quot;_country&quot;})</td></tr>
 <tr><td class="h"><a id="L1051">1051</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">unless ($@ or not defined $whois or ref $whois ne &quot;HASH&quot;)</td></tr>
-<tr><td class="h"><a id="L1052">1052</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (defined $$whois{&#39;Country&#39;}) { }</td></tr>
-<tr><td class="h"></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">elsif (defined $$whois{&#39;country&#39;}) { }</td></tr>
+<tr><td class="h"><a id="L1052">1052</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $$whois{&#39;Country&#39;}) { }</td></tr>
+<tr><td class="h"></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">elsif (defined $$whois{&#39;country&#39;}) { }</td></tr>
 <tr><td class="h"><a id="L1057">1057</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if ($$self{&quot;_country&quot;})</td></tr>
 <tr><td class="h"><a id="L1058">1058</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if ($$self{&#39;_country&#39;} eq &#39;EU&#39;) { }</td></tr>
 <tr><td class="h"></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">elsif ($$self{&#39;_country&#39;} eq &#39;US&#39; and defined $$whois{&#39;StateProv&#39;} and $$whois{&#39;StateProv&#39;} eq &#39;PR&#39;) { }</td></tr>
