@@ -1394,7 +1394,7 @@ sub _log
 
 	if(scalar(@messages)) {
 		# FIXME: add caller's function
-		# if(($level eq 'warn') || ($level eq 'notice')) {
+		# if(($level eq 'warn') || ($level eq 'info')) {
 			push @{$self->{'messages'}}, { level => $level, message => join('', grep defined, @messages) };
 		# }
 
