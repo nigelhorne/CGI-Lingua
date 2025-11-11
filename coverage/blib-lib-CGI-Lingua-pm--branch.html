@@ -237,7 +237,7 @@ require JSON::Parse
 <tr><td class="h"><a id="L1376">1376</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (defined $country)</td></tr>
 <tr><td class="h"><a id="L1381">1381</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $from_cache = $$self{&quot;_cache&quot;}-&gt;get(&#39;CGI::Lingua&#39; . &quot;:code2countryname:$code&quot;))</td></tr>
 <tr><td class="h"><a id="L1385">1385</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (my $country = $self-&gt;_code2country($code))</td></tr>
-<tr><td class="h"><a id="L1398">1398</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (scalar @messages)</td></tr>
+<tr><td class="h"><a id="L1398">1398</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (ref $self and scalar @messages)</td></tr>
 <tr><td class="h"><a id="L1404">1404</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (my $logger = $$self{&quot;logger&quot;})</td></tr>
 <tr><td class="h"><a id="L1434">1434</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (defined $$self{&#39;logger&#39;}) { }</td></tr>
 </table>
