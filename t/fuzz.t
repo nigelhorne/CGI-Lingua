@@ -6,8 +6,8 @@ use warnings;
 use FindBin qw($Bin);
 use IPC::Run3;
 use IPC::System::Simple qw(system);
-use Test::Most;
 use Test::Needs 'App::Test::Generator';
+use Test::Most;
 
 my $dirname = "$Bin/conf";
 
