@@ -24,7 +24,7 @@ jobs:
           - macos-latest
           - ubuntu-latest
           - windows-latest
-        perl: ['5.40', '5.38', '5.36', '5.34', '5.32', '5.30', '5.28', '5.22']
+        perl: ['5.42', '5.40', '5.38', '5.36', '5.34', '5.32', '5.30', '5.28', '5.22']
     name: Perl ${{ matrix.perl }} on ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
@@ -43,7 +43,6 @@ jobs:
           cpanm -iqn --skip-satisfied --installdeps --notest .
       - name: Make Module
         env:
-          AUTHOR_TESTING: 1
           AUTOMATED_TESTING: 1
           NO_NETWORK_TESTING: 1
           NONINTERACTIVE_TESTING: 1
@@ -53,7 +52,6 @@ jobs:
           make
       - name: Run Tests
         env:
-          AUTHOR_TESTING: 1
           AUTOMATED_TESTING: 1
           NO_NETWORK_TESTING: 1
           NONINTERACTIVE_TESTING: 1
