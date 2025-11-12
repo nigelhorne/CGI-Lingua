@@ -1,6 +1,6 @@
 ---
 # Create https://nigelhorne.github.io/CGI-Lingua/coverage/
-name: CI
+name: Test Dashboard
 
 permissions:
   contents: write  # needed to push to gh-pages
@@ -41,7 +41,7 @@ jobs:
       - name: Install dependencies
         run: |
           cpanm --notest --installdeps .
-          cpanm -iqn ExtUtils::MakeMaker LWP::Simple Test::Most Devel::Cover Devel::Cover::Report::Html
+          cpanm -iqn ExtUtils::MakeMaker Test::Most Devel::Cover Devel::Cover::Report::Html POSIX File::Glob File::Slurp File::stat Readonly
 
       # Optional: run Perl::Critic static checks
       # - name: Run Perl::Critic
@@ -99,7 +99,6 @@ jobs:
           git config user.email "github-actions@github.com"
           git add coverage_history/
           git commit -m "Add coverage snapshot for $TIMESTAMP ($SHA)" || echo "No changes to commit"
-          git pull --rebase
           git push origin HEAD:${{ github.ref_name }}
 
       # Deploy HTML report to GitHub Pages
