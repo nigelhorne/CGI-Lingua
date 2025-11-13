@@ -1,6 +1,6 @@
 Revision history for CGI-Lingua
 
-0.79
+0.79	Wed Nov 12 21:33:38 EST 2025
 	new: "supported" can now be a simple string if only one language is supported
 	Moved the Test::Needs higher up the use list (RT#171642)
 
