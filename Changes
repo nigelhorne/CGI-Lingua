@@ -2,6 +2,7 @@ Revision history for CGI-Lingua
 
 0.80
 	Added a couple of test prereqs (RT#171642)
+	Reduce priority of messages when Locale::Object dies
 
 0.79	Wed Nov 12 21:33:38 EST 2025
 	new: "supported" can now be a simple string if only one language is supported

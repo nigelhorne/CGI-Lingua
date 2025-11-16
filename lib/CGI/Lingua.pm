@@ -559,7 +559,12 @@ sub _find_language
 						$sl = $self->_code2country($1);
 						$requested_sublanguage = $1 if(!defined($requested_sublanguage));
 					} elsif($http_accept_language =~ /..-([a-z]{2,3})$/i) {
-						$sl = Locale::Object::Country->new(code_alpha3 => $1);
+						eval {
+							$sl = Locale::Object::Country->new(code_alpha3 => $1);
+						};
+						if($@) {
+							$self->_info($@);
+						}
 					}
 					if($sl) {
 						$self->{_rlanguage} .= ' (' . $sl->name() . ')';
