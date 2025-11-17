@@ -1129,7 +1129,7 @@ sub country {
 					$self->{_country} = 'cn';
 				} else {
 					# There is no country called 'eu'
-					$self->_warn({
+					$self->_info({
 						warning => "$ip has country of eu"
 					});
 					$self->{_country} = 'Unknown';
