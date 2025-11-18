@@ -339,7 +339,7 @@ locale is used via the LANG environment variable.
 =cut
 
 sub language {
-	my $self = shift;
+	my $self = $_[0];
 
 	unless($self->{_slanguage}) {
 		$self->_find_language();
@@ -367,7 +367,7 @@ Synonym for language, for compatibility with Local::Object::Language
 =cut
 
 sub name {
-	my $self = shift;
+	my $self = $_[0];
 
 	return $self->language();
 }
@@ -383,7 +383,7 @@ on a site that only serves British English, sublanguage() will return undef.
 =cut
 
 sub sublanguage {
-	my $self = shift;
+	my $self = $_[0];
 
 	$self->_trace('Entered sublanguage');
 	unless($self->{_slanguage}) {
@@ -404,7 +404,7 @@ language_code_alpha2() returns undef.
 =cut
 
 sub language_code_alpha2 {
-	my $self = shift;
+	my $self = $_[0];
 
 	$self->_trace('Entered language_code_alpha2');
 	unless($self->{_slanguage}) {
@@ -421,7 +421,7 @@ Synonym for language_code_alpha2, kept for historical reasons.
 =cut
 
 sub code_alpha2 {
-	my $self = shift;
+	my $self = $_[0];
 
 	return $self->language_code_alpha2();
 }
@@ -434,7 +434,7 @@ when you've asked for en-gb, or undef.
 =cut
 
 sub sublanguage_code_alpha2 {
-	my $self = shift;
+	my $self = $_[0];
 
 	unless($self->{_slanguage}) {
 		$self->_find_language();
@@ -454,7 +454,7 @@ e.g. "English (United Kingdom)"
 =cut
 
 sub requested_language {
-	my $self = shift;
+	my $self = $_[0];
 
 	unless($self->{_rlanguage}) {
 		$self->_find_language();
@@ -874,7 +874,7 @@ sub _get_closest
 
 # What's the language being requested? Can be used in both a class and an object context
 sub _what_language {
-	my $self = shift;
+	my $self = $_[0];
 
 	if(ref($self)) {
 		$self->_trace('Entered _what_language');
