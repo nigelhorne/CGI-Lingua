@@ -1,0 +1,835 @@
+{
+   "runs" : [
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361470.32424,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "-e",
+         "start" : 1764361470.32396,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361470.48851,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "-e",
+         "start" : 1764361470.4883,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361470.65308,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "-e",
+         "start" : 1764361470.65283,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361470.81768,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "-e",
+         "start" : 1764361470.81741,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361470.97988,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "-e",
+         "start" : 1764361470.97966,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361471.14429,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "-e",
+         "start" : 1764361471.14408,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361471.306,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "-e",
+         "start" : 1764361471.30581,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361471.46868,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "-e",
+         "start" : 1764361471.4685,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361471.64963,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "-e",
+         "start" : 1764361471.63824,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361498.54187,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "-e",
+         "start" : 1764361471.84395,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361471.98838,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "-e",
+         "start" : 1764361471.98829,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361472.47318,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/00-compile.t",
+         "start" : 1764361472.22016,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361472.84255,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/10-load.t",
+         "start" : 1764361472.84107,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361473.80738,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/20-new.t",
+         "start" : 1764361473.43791,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361474.43859,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/30-basics.t",
+         "start" : 1764361474.4383,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361474.79618,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/40-more.t",
+         "start" : 1764361474.79592,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361475.08386,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/boiler.t",
+         "start" : 1764361475.06336,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361475.47898,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/carp.t",
+         "start" : 1764361475.44796,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361475.97405,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/changes.t",
+         "start" : 1764361475.97387,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361476.68839,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/cloudflare.t",
+         "start" : 1764361476.32325,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361477.24484,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/comment-spelling.t",
+         "start" : 1764361477.24464,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361480.01404,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/country.t",
+         "start" : 1764361477.61024,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361480.49871,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/coverage.t",
+         "start" : 1764361480.49798,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361480.85507,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/cr.t",
+         "start" : 1764361480.83024,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361481.33403,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/critic.t",
+         "start" : 1764361481.33384,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361481.56592,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/cv.t",
+         "start" : 1764361481.56573,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361481.79754,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/dist.t",
+         "start" : 1764361481.79735,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361482.24017,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/en_029.t",
+         "start" : 1764361482.12266,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361482.72761,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/eof.t",
+         "start" : 1764361482.72741,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361482.96116,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/eol.t",
+         "start" : 1764361482.96093,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361483.31509,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/es_419.t",
+         "start" : 1764361483.28927,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361483.8066,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/eu.t",
+         "start" : 1764361483.80596,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361484.00092,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/fuzz.t",
+         "start" : 1764361484.00089,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361484.21963,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/gv.t",
+         "start" : 1764361484.21942,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361484.55764,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/hk.t",
+         "start" : 1764361484.55669,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361485.49745,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/hp-tablet.t",
+         "start" : 1764361485.12927,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361486.04883,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/kwalitee.t",
+         "start" : 1764361486.04858,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361486.46565,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/language.t",
+         "start" : 1764361486.46421,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361486.99971,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/links.t",
+         "start" : 1764361486.99953,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361487.24388,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/locale.t",
+         "start" : 1764361487.24325,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361487.63163,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/logger.t",
+         "start" : 1764361487.62818,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361488.09464,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/manifest.t",
+         "start" : 1764361488.09443,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361488.32912,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/metrics.t",
+         "start" : 1764361488.3289,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361488.56245,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/modules-used.t",
+         "start" : 1764361488.56226,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361488.79463,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/no404s.t",
+         "start" : 1764361488.79444,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361489.02694,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/noopentickets.t",
+         "start" : 1764361489.02675,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361489.26213,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/noplan.t",
+         "start" : 1764361489.26191,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361489.4943,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/pod-cm.t",
+         "start" : 1764361489.49361,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361489.73104,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/pod-snippets.t",
+         "start" : 1764361489.73081,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361489.96482,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/pod-spelling.t",
+         "start" : 1764361489.96464,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361490.19742,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/pod-synopsis.t",
+         "start" : 1764361490.19723,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361490.45841,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/pod.t",
+         "start" : 1764361490.41412,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361490.72576,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/port.t",
+         "start" : 1764361490.72553,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361490.96717,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/prereq.t",
+         "start" : 1764361490.96696,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361491.68198,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/priority.t",
+         "start" : 1764361491.32733,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361492.31681,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/rt131347.t",
+         "start" : 1764361492.31189,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361492.77267,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/rt131607.t",
+         "start" : 1764361492.77248,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361493.1248,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/rt69509.t",
+         "start" : 1764361493.09904,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361493.72226,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/rt77332.t",
+         "start" : 1764361493.69707,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361494.30004,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/rt79214.t",
+         "start" : 1764361494.29478,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361494.8067,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/rt86809.t",
+         "start" : 1764361494.79261,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361495.05697,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/strict.t",
+         "start" : 1764361495.05678,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361495.79104,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/sub-lang.t",
+         "start" : 1764361495.41021,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361496.36235,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/time_zone.t",
+         "start" : 1764361496.36173,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361496.60775,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/unused.t",
+         "start" : 1764361496.60756,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361497.40736,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/usgb.t",
+         "start" : 1764361496.98193,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361497.99665,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/vars.t",
+         "start" : 1764361497.99643,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361498.22992,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/version.t",
+         "start" : 1764361498.22973,
+         "version" : "0.79"
+      },
+      {
+         "OS" : "linux",
+         "abstract" : "Create a multilingual web page",
+         "dir" : "/home/runner/work/CGI-Lingua/CGI-Lingua",
+         "finish" : 1764361498.48649,
+         "name" : "CGI-Lingua",
+         "perl" : "5.40.3",
+         "run" : "t/zz.t",
+         "start" : 1764361498.47229,
+         "version" : "0.79"
+      }
+   ],
+   "summary" : {
+      "Total" : {
+         "branch" : {
+            "covered" : 169,
+            "error" : 221,
+            "percentage" : 43.3333333333333,
+            "total" : 390,
+            "uncoverable" : 0
+         },
+         "condition" : {
+            "covered" : 48,
+            "error" : 91,
+            "percentage" : 34.5323741007194,
+            "total" : 139,
+            "uncoverable" : 0
+         },
+         "statement" : {
+            "covered" : 344,
+            "error" : 278,
+            "percentage" : 55.3054662379421,
+            "total" : 622
+         },
+         "subroutine" : {
+            "covered" : 28,
+            "error" : 8,
+            "percentage" : 77.7777777777778,
+            "total" : 36
+         },
+         "total" : {
+            "covered" : 589,
+            "error" : 598,
+            "percentage" : 49.6208930075821,
+            "total" : 1187,
+            "uncoverable" : 0
+         }
+      },
+      "blib/lib/CGI/Lingua.pm" : {
+         "branch" : {
+            "covered" : 169,
+            "error" : 221,
+            "percentage" : 43.3333333333333,
+            "total" : 390,
+            "uncoverable" : 0
+         },
+         "condition" : {
+            "covered" : 48,
+            "error" : 91,
+            "percentage" : 34.5323741007194,
+            "total" : 139,
+            "uncoverable" : 0
+         },
+         "statement" : {
+            "covered" : 344,
+            "error" : 278,
+            "percentage" : 55.3054662379421,
+            "total" : 622
+         },
+         "subroutine" : {
+            "covered" : 28,
+            "error" : 8,
+            "percentage" : 77.7777777777778,
+            "total" : 36
+         },
+         "total" : {
+            "covered" : 589,
+            "error" : 598,
+            "percentage" : 49.6208930075821,
+            "total" : 1187,
+            "uncoverable" : 0
+         }
+      }
+   }
+}
