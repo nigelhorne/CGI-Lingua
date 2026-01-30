@@ -65,7 +65,7 @@ Based on that list CGI::Lingua tells the application which language the user wou
 
 Creates a CGI::Lingua object.
 
-Takes one mandatory parameter, C<supported>,
+Takes one mandatory parameter, C<supported>, (aka C<supported_languages>)
 a list of languages, in RFC-1766 format,
 that the website supports.
 It can either be a simple string,
@@ -235,7 +235,6 @@ sub new
 			$rc->{_have_ipcountry} = -1;
 			$rc->{_have_geoip} = -1;
 			$rc->{_have_geoipfree} = -1;
-
 
 			if(($rc->{_what_language} || $rc->{_rlanguage}) && $info && $info->lang()) {
 				delete $rc->{_what_language};
@@ -1530,7 +1529,7 @@ L<http://deps.cpantesters.org/?module=CGI::Lingua>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2010-2025 Nigel Horne.
+Copyright 2010-2026 Nigel Horne.
 
 This program is released under the following licence: GPL2
 
