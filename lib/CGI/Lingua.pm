@@ -1480,7 +1480,7 @@ This means that if you support languages at a lower priority, it may be missed.
 
 =over 4
 
-=item * Testing Dashboard L<https://nigelhorne.github.io/CGI-Lingua/coverage/>
+=item * L<Test Dashboard|https://nigelhorne.github.io/CGI-Info/coverage/>
 
 =item * VWF - Versatile Web Framework L<https://github.com/nigelhorne/vwf>
 
