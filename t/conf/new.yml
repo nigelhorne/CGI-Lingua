@@ -13,6 +13,8 @@ function: new
 input:
   supported:
     type: string
+    min: 2
+    max: 5
 
 output:
   isa: CGI::Lingua

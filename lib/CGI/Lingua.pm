@@ -196,11 +196,19 @@ sub new
 		# croak('You must give a list of supported languages');
 	# }
 	$params->{'supported'} ||= $params->{'supported_languages'};
-	unless($params->{supported}) {
+	if(!defined($params->{supported})) {
 		if(my $logger = $params->{'logger'}) {
 			$logger->error('You must give a list of supported languages');
 		}
 		Carp::croak('You must give a list of supported languages');
+	}
+
+	if(ref($params->{supported})) {
+		if(ref($params->{supported}) ne 'ARRAY') {
+			Carp::croak('List of supported languages must be an array ref');
+		}
+	} elsif((length($params->{supported}) < 2) || (length($params->{supported}) > 5)) {
+		Carp::croak('Supported languages must be the short code');
 	}
 
 	my $cache = $params->{cache};

@@ -2,6 +2,7 @@ Revision history for CGI-Lingua
 
 0.81
 	Latest testing dashboard
+	Added sanity testing for the supported argument
 
 0.80	Wed Dec 17 07:44:05 EST 2025
 	Added a couple of test prereqs (RT#171642)
