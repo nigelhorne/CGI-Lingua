@@ -29,6 +29,7 @@ t/eof.t
 t/eol.t
 t/es_419.t
 t/eu.t
+t/function.t
 t/fuzz.t
 t/gv.t
 t/hk.t

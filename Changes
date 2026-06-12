@@ -5,6 +5,7 @@ Revision history for CGI-Lingua
 	- Fix ref() parenthesisation bug in new() that broke cache lookups for arrayref-supported
 	- Normalise _warn() to always extract message via Params::Get; plain-string calls no longer silently lose arguments when no logger is set
 	- _code2language() and _code2countryname() now return the computed value explicitly rather than the result of cache->set(), which is not guaranteed across all CHI drivers
+	- Logger validation now only checks blessed objects before Object::Configure; non-blessed values (arrayrefs, hashrefs) pass through for Object::Configure to convert, fixing t/logger.t regression
 
 	[ Enhancement ]
 	- Latest testing dashboard
@@ -19,6 +20,11 @@ Revision history for CGI-Lingua
 	[ Tests ]
 	- Replace Test::MockModule with Test::Mockingbird in t/30-basics.t
 	- Add t/locales.t: geographic (GB/US/FR/DE/CN) and POSIX locale independence tests
+	- Add t/function.t: white-box subtests for every public and private method
+	- Fix t/function.t: _log test now injects spy logger directly to bypass Object::Configure
+	- Fix t/function.t: _warn test clears Object::Configure logger to exercise Carp path
+	- Fix t/function.t: locale() subtest now calls locale() and asserts return value
+	- Update t/function.t: document that plain hashref logger is converted by Object::Configure
 
 	[ Security ]
 	- Validate and untaint HTTP_ACCEPT_LANGUAGE before use (taint-mode compliance)

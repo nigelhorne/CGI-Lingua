@@ -144,19 +144,20 @@ sub new
 		return bless { %{$class}, %{$params} }, ref($class);
 	}
 
-	$params = Object::Configure::configure($class, $params);
-
-	# Validate the optional logger before anything else touches it
-	if(defined $params->{'logger'}) {
+	# Validate blessed logger objects before Object::Configure runs.
+	# Non-blessed values (arrayrefs, hashrefs) are valid config forms that
+	# Object::Configure knows how to convert into a Log::Abstraction instance.
+	if(defined $params->{'logger'} && blessed($params->{'logger'})) {
 		unless(
-			blessed($params->{'logger'})
-			&& $params->{'logger'}->can('warn')
+			$params->{'logger'}->can('warn')
 			&& $params->{'logger'}->can('info')
 			&& $params->{'logger'}->can('error')
 		) {
 			Carp::croak('Logger must be a blessed object with warn/info/error methods');
 		}
 	}
+
+	$params = Object::Configure::configure($class, $params);
 
 	# Normalise supported / supported_languages alias
 	$params->{'supported'} ||= $params->{'supported_languages'};
