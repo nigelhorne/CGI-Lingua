@@ -246,7 +246,7 @@ pre details.mutant-details ul {
 <strong>Structural Coverage (Approximate)</strong><p>
 TER1 (Statement): 84.88%<br>
 TER2 (Branch): 75.12%<br>
-TER3 (LCSAJ): 95.9% (142/148)<br>
+TER3 (LCSAJ): 95.9% (140/146)<br>
 Approximate LCSAJ segments: 427<br>
 </div>
 
@@ -449,30 +449,30 @@ Approximate LCSAJ segments: 427<br>
 </span><span class="">  157: 		}
 </span><span class="">  158: 	}
 </span><span class="">  159: 
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">160 → 164 → 172</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">160 → 164 → 0</span></span>  160: 	$params = Object::Configure::configure($class, $params);
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">160 → 164 → 180</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">160 → 164 → 0</span></span>  160: 	$params = Object::Configure::configure($class, $params);
 </span><span class="">  161: 
 </span><span class="">  162: 	# Normalise supported / supported_languages alias
 </span><span class="">  163: 	$params-&gt;{&#39;supported&#39;} ||= $params-&gt;{&#39;supported_languages&#39;};
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic.">  164: 	if(!defined($params-&gt;{supported})) {
-</span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="survived-1 tooltip" data-tooltip="Mutation survived. Add targeted tests to validate this branch.">  165: 		if(my $logger = $params-&gt;{&#39;logger&#39;}) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic.">  164: 	if(defined($params-&gt;{supported})) {
+</span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="survived-1 tooltip" data-tooltip="Mutation survived. Add targeted tests to validate this branch.">  165: 		# Validate supported type/length
 </span>
 					<details class="mutant-details">
 					<summary>Mutants (Total: 1, Killed: 0, Survived: 1)</summary>
 					<ul>
 				<li><b>COND_INV_165_3: Invert condition if to unless</b><br>MEDIUM: Add tests asserting both true and false outcomes
 </li></ul></details>
-<span class="">  166: 			$logger-&gt;error(&#39;You must give a list of supported languages&#39;);
-</span><span class="">  167: 		}
-</span><span class="">  168: 		Carp::croak(&#39;You must give a list of supported languages&#39;);
-</span><span class="">  169: 	}
-</span><span class="">  170: 
-</span><span class="">  171: 	# Validate supported type/length
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">172 → 172 → 180</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">172 → 172 → 0</span></span>  172: 	if(ref($params-&gt;{supported})) {
-</span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic.">  173: 		if(ref($params-&gt;{supported}) ne &#39;ARRAY&#39;) {
-</span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="">  174: 			Carp::croak(&#39;List of supported languages must be an array ref&#39;);
-</span><span class="">  175: 		}
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic.">  176: 	} elsif((length($params-&gt;{supported}) &lt; 2) || (length($params-&gt;{supported}) &gt; 5)) {
-</span><p> <b> Mutants (Total: 6, Killed: 6, Survived: 0)</b><p><span class="">  177: 		Carp::croak(&#39;Supported languages must be the short code&#39;);
+<span class="">  166: 		if(ref($params-&gt;{supported})) {
+</span><span class="">  167: 			if(ref($params-&gt;{supported}) ne &#39;ARRAY&#39;) {
+</span><span class="">  168: 				Carp::croak(&#39;List of supported languages must be an array ref&#39;);
+</span><span class="">  169: 			}
+</span><span class="">  170: 		} elsif((length($params-&gt;{supported}) &lt; 2) || (length($params-&gt;{supported}) &gt; 5)) {
+</span><span class="">  171: 			Carp::croak(&#39;Supported languages must be the short code&#39;);
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic.">  172: 		}
+</span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic.">  173: 	} else {
+</span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="">  174: 		if(my $logger = $params-&gt;{&#39;logger&#39;}) {
+</span><span class="">  175: 			$logger-&gt;error(&#39;You must give a list of supported languages&#39;);
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic.">  176: 		}
+</span><p> <b> Mutants (Total: 6, Killed: 6, Survived: 0)</b><p><span class="">  177: 		Carp::croak(&#39;You must give a list of supported languages&#39;);
 </span><span class="">  178: 	}
 </span><span class="">  179: 
 </span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">180 → 184 → 206</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">180 → 184 → 0</span></span>  180: 	my $cache = $params-&gt;{cache};
@@ -1066,7 +1066,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">635 → 646 → 655</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">635 → 646 → 0</span></span>  635: 	my ($self, $l, $requested_sublanguage, $header) = @_;
 </span><span class="">  636: 
 </span><span class="">  637: 	$self-&gt;{_slanguage} = $self-&gt;_code2language($l);
-</span><span class="survived-2 tooltip" data-tooltip="Return value mutation survived. Add tests asserting exact return values. Boolean logic mutation survived. Add tests covering both true and false paths.">  638: 	return 0 unless $self-&gt;{_slanguage};
+</span><span class="survived-2 tooltip" data-tooltip="Boolean logic mutation survived. Add tests covering both true and false paths. Return value mutation survived. Add tests asserting exact return values.">  638: 	return 0 unless $self-&gt;{_slanguage};
 </span>
 					<details class="mutant-details">
 					<summary>Mutants (Total: 2, Killed: 0, Survived: 2)</summary>
@@ -1255,7 +1255,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class="">  728: 						$CACHE_TTL_LONG
 </span><span class="">  729: 					) if $self-&gt;{_cache};
 </span><span class="">  730: 				}
-</span><span class="survived-2 tooltip" data-tooltip="Boolean logic mutation survived. Add tests covering both true and false paths. Return value mutation survived. Add tests asserting exact return values.">  731: 				return 1;
+</span><span class="survived-2 tooltip" data-tooltip="Return value mutation survived. Add tests asserting exact return values. Boolean logic mutation survived. Add tests covering both true and false paths.">  731: 				return 1;
 </span>
 					<details class="mutant-details">
 					<summary>Mutants (Total: 2, Killed: 0, Survived: 2)</summary>
@@ -1286,7 +1286,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">738 → 748 → 800</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">738 → 748 → 0</span></span>  738: 	$self-&gt;{_rlanguage} = $self-&gt;_code2language($alpha2);
 </span><span class="">  739: 	$self-&gt;_debug(&quot;_rlanguage: $self-&gt;{_rlanguage}&quot;);
 </span><span class="">  740: 
-</span><span class="survived-2 tooltip" data-tooltip="Boolean logic mutation survived. Add tests covering both true and false paths. Return value mutation survived. Add tests asserting exact return values.">  741: 	return 0 unless $accepts;
+</span><span class="survived-2 tooltip" data-tooltip="Return value mutation survived. Add tests asserting exact return values. Boolean logic mutation survived. Add tests covering both true and false paths.">  741: 	return 0 unless $accepts;
 </span>
 					<details class="mutant-details">
 					<summary>Mutants (Total: 2, Killed: 0, Survived: 2)</summary>
@@ -1369,7 +1369,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">800 → 800 → 805</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">800 → 800 → 0</span></span>  800: 	if(defined($self-&gt;{_sublanguage})) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="">  801: 		$self-&gt;{_rlanguage} = &quot;$self-&gt;{_slanguage} ($self-&gt;{_sublanguage})&quot;;
 </span><span class="">  802: 		$self-&gt;{_sublanguage_code_alpha2} = $variety;
-</span><span class="survived-2 tooltip" data-tooltip="Boolean logic mutation survived. Add tests covering both true and false paths. Return value mutation survived. Add tests asserting exact return values.">  803: 		return 1;
+</span><span class="survived-2 tooltip" data-tooltip="Return value mutation survived. Add tests asserting exact return values. Boolean logic mutation survived. Add tests covering both true and false paths.">  803: 		return 1;
 </span>
 					<details class="mutant-details">
 					<summary>Mutants (Total: 2, Killed: 0, Survived: 2)</summary>
@@ -1392,7 +1392,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 								</div>
 							</li></ul></details>
 <span class="">  804: 	}
-</span><span class="survived-2 tooltip" data-tooltip="Boolean logic mutation survived. Add tests covering both true and false paths. Return value mutation survived. Add tests asserting exact return values."><span class="lcsaj-tip"><span class="lcsaj-dot-uncovered">●</span><span class="lcsaj-tip-text">[NOT COVERED] 805 → 805 → 0</span></span>  805: 	return 0;
+</span><span class="survived-2 tooltip" data-tooltip="Return value mutation survived. Add tests asserting exact return values. Boolean logic mutation survived. Add tests covering both true and false paths."><span class="lcsaj-tip"><span class="lcsaj-dot-uncovered">●</span><span class="lcsaj-tip-text">[NOT COVERED] 805 → 805 → 0</span></span>  805: 	return 0;
 </span>
 					<details class="mutant-details">
 					<summary>Mutants (Total: 2, Killed: 0, Survived: 2)</summary>
@@ -1866,7 +1866,7 @@ is( func(VALUE_AT_BOUNDARY), EXPECTED, &#39;Test boundary behaviour&#39; );
 					<ul>
 				<li><b>COND_INV_1123_3: Invert condition if to unless</b><br>MEDIUM: Add tests asserting both true and false outcomes
 </li></ul></details>
-<span class="survived-2 tooltip" data-tooltip="Mutation survived. Add targeted tests to validate this branch. Boundary mutation survived. Add tests around edge values (e.g. min, max, off-by-one)."> 1124: 			if($self-&gt;{_have_geoipfree} == $GEO_UNKNOWN) {
+<span class="survived-2 tooltip" data-tooltip="Boundary mutation survived. Add tests around edge values (e.g. min, max, off-by-one). Mutation survived. Add targeted tests to validate this branch."> 1124: 			if($self-&gt;{_have_geoipfree} == $GEO_UNKNOWN) {
 </span>
 					<details class="mutant-details">
 					<summary>Mutants (Total: 2, Killed: 0, Survived: 2)</summary>
@@ -2523,7 +2523,7 @@ is( func(VALUE_AT_BOUNDARY), EXPECTED, &#39;Test boundary behaviour&#39; );
 </li></ul></details>
 <span class=""> 1494: 		$self-&gt;_warn({ warning =&gt; &quot;Couldn&#39;t determine the timezone&quot; });
 </span><span class=""> 1495: 	}
-</span><span class="survived-2 tooltip" data-tooltip="Return value mutation survived. Add tests asserting exact return values. Boolean logic mutation survived. Add tests covering both true and false paths."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1496 → 1496 → 0</span></span> 1496: 	return $self-&gt;{_timezone};
+</span><span class="survived-2 tooltip" data-tooltip="Boolean logic mutation survived. Add tests covering both true and false paths. Return value mutation survived. Add tests asserting exact return values."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1496 → 1496 → 0</span></span> 1496: 	return $self-&gt;{_timezone};
 </span>
 					<details class="mutant-details">
 					<summary>Mutants (Total: 2, Killed: 0, Survived: 2)</summary>
@@ -2656,7 +2656,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1593: 		return $name;
 </span><p> <b> Mutants (Total: 2, Killed: 2, Survived: 0)</b><p><span class=""> 1594: 	}
 </span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1595 → 1596 → 0</span></span> 1595: 	$self-&gt;_trace(&#39;&lt;_code2countryname undef&#39;);
-</span><span class="survived-2 tooltip" data-tooltip="Return value mutation survived. Add tests asserting exact return values. Boolean logic mutation survived. Add tests covering both true and false paths."> 1596: 	return undef;
+</span><span class="survived-2 tooltip" data-tooltip="Boolean logic mutation survived. Add tests covering both true and false paths. Return value mutation survived. Add tests asserting exact return values."> 1596: 	return undef;
 </span>
 					<details class="mutant-details">
 					<summary>Mutants (Total: 2, Killed: 0, Survived: 2)</summary>

@@ -32,11 +32,11 @@ https://pjcj.net
 <tr><td class="h"><a id="L143">143</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if defined $params-&gt;{&#39;supported&#39;}</td></tr>
 <tr><td class="h"><a id="L150">150</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $params-&gt;{&#39;logger&#39;} and &amp;blessed($params-&gt;{&#39;logger&#39;}))</td></tr>
 <tr><td class="h"><a id="L151">151</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ($params-&gt;{&#39;logger&#39;}-&gt;can(&quot;warn&quot;) and $params-&gt;{&#39;logger&#39;}-&gt;can(&quot;info&quot;) and $params-&gt;{&#39;logger&#39;}-&gt;can(&quot;error&quot;))</td></tr>
-<tr><td class="h"><a id="L164">164</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless (defined $params-&gt;{&#39;supported&#39;})</td></tr>
-<tr><td class="h"><a id="L165">165</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (my $logger = $params-&gt;{&#39;logger&#39;})</td></tr>
-<tr><td class="h"><a id="L172">172</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (ref $params-&gt;{&#39;supported&#39;}) { }</td></tr>
+<tr><td class="h"><a id="L164">164</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $params-&gt;{&#39;supported&#39;}) { }</td></tr>
+<tr><td class="h"><a id="L166">166</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (ref $params-&gt;{&#39;supported&#39;}) { }</td></tr>
 <tr><td class="h"></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">elsif (length $params-&gt;{&#39;supported&#39;} &lt; 2 or length $params-&gt;{&#39;supported&#39;} &gt; 5) { }</td></tr>
-<tr><td class="h"><a id="L173">173</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (ref $params-&gt;{&#39;supported&#39;} ne &quot;ARRAY&quot;)</td></tr>
+<tr><td class="h"><a id="L167">167</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (ref $params-&gt;{&#39;supported&#39;} ne &quot;ARRAY&quot;)</td></tr>
+<tr><td class="h"><a id="L174">174</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (my $logger = $params-&gt;{&#39;logger&#39;})</td></tr>
 <tr><td class="h"><a id="L184">184</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($cache and $ENV{&#39;REMOTE_ADDR&#39;})</td></tr>
 <tr><td class="h"><a id="L186">186</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $rc = $cache-&gt;get($key))</td></tr>
 <tr><td class="h"><a id="L199">199</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if ($rc-&gt;{&#39;_what_language&#39;} || $rc-&gt;{&#39;_rlanguage&#39;} and $info and $info-&gt;lang)</td></tr>
