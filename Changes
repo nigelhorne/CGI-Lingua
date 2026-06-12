@@ -21,10 +21,12 @@ Revision history for CGI-Lingua
 	- Replace Test::MockModule with Test::Mockingbird in t/30-basics.t
 	- Add t/locales.t: geographic (GB/US/FR/DE/CN) and POSIX locale independence tests
 	- Add t/function.t: white-box subtests for every public and private method
+	- Add t/unit.t: black-box subtests for every public method driven strictly by POD API contracts
 	- Fix t/function.t: _log test now injects spy logger directly to bypass Object::Configure
 	- Fix t/function.t: _warn test clears Object::Configure logger to exercise Carp path
 	- Fix t/function.t: locale() subtest now calls locale() and asserts return value
 	- Update t/function.t: document that plain hashref logger is converted by Object::Configure
+	- Add t/integration.t: end-to-end integration tests covering multi-method coherence, priority negotiation, cache DESTROY→thaw workflow, concurrent object isolation, clone behaviour, spy-verified network call routing, and optional-dependency fallback via Test::Without::Module
 
 	[ Security ]
 	- Validate and untaint HTTP_ACCEPT_LANGUAGE before use (taint-mode compliance)

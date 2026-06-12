@@ -34,6 +34,7 @@ t/fuzz.t
 t/gv.t
 t/hk.t
 t/hp-tablet.t
+t/integration.t
 t/kwalitee.t
 t/language.t
 t/lib/MyLogger.pm

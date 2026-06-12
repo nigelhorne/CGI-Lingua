@@ -294,7 +294,6 @@ sub DESTROY {
 	$cache->set($key, Storable::nfreeze($copy), $CACHE_TTL_LONG);
 }
 
-
 =head2 language
 
 Tells the CGI application in what language to display its messages.

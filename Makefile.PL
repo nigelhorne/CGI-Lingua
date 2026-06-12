@@ -83,9 +83,9 @@ my $test_requires = {
 	'Test::NoWarnings' => 0,
 	'Test::Requires' => 0,
 	'Test::RequiresInternet' => 0,
+	'Test::Returns' => 0,
 	'Test::Which' => 0,
 	'Test::Without::Module' => 0
-	# 'Test::Kwalitee' => 0,
 };
 
 if($online_tests) {
