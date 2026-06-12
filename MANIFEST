@@ -24,6 +24,7 @@ t/cr.t
 t/critic.t
 t/cv.t
 t/dist.t
+t/edge_cases.t
 t/en_029.t
 t/eof.t
 t/eol.t

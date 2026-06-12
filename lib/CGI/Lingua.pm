@@ -20,7 +20,7 @@ use Class::Autouse qw{
 	I18N::LangTags::Detect
 };
 
-our $VERSION = '0.81';
+our $VERSION = '0.80';
 
 # ── Module-level constants ───────────────────────────────────────────────────
 # Gathering magic strings here makes behavioural changes one-edit operations.
@@ -43,7 +43,7 @@ CGI::Lingua - Create a multilingual web page
 
 =head1 VERSION
 
-Version 0.81
+Version 0.80
 
 =cut
 
@@ -1079,7 +1079,7 @@ sub country {
 		if(defined($self->{_country})) {
 			if($self->{_country} !~ /\D/) {
 				$self->_warn({ warning => 'cache contains a numeric country: ' . $self->{_country} });
-				$self->{_cache}->remove($ip);
+				$self->{_cache}->remove($CACHE_NS . "country:$ip");
 				delete $self->{_country};
 			} else {
 				$self->_debug("Get $ip from cache = $self->{_country}");
@@ -1152,7 +1152,8 @@ sub country {
 		JSON::Parse->import();
 
 		if(my $data = LWP::Simple::WithCache::get("http://www.geoplugin.net/json.gp?ip=$ip")) {
-			$self->{_country} = JSON::Parse::parse_json($data)->{'geoplugin_countryCode'};
+			eval { $self->{_country} = JSON::Parse::parse_json($data)->{'geoplugin_countryCode'} };
+			$self->_warn({ warning => "geoplugin returned unparseable JSON: $@" }) if $@;
 		}
 	}
 
@@ -1459,7 +1460,8 @@ sub time_zone {
 				JSON::Parse->import();
 
 				if(my $data = LWP::Simple::WithCache::get("http://ip-api.com/json/$ip")) {
-					$self->{_timezone} = JSON::Parse::parse_json($data)->{'timezone'};
+					eval { $self->{_timezone} = JSON::Parse::parse_json($data)->{'timezone'} };
+					$self->_warn({ warning => "ip-api.com returned unparseable JSON: $@" }) if $@;
 				}
 			} elsif(eval { require LWP::Simple; require JSON::Parse }) {
 				$self->_debug("Look up $ip on ip-api.com");
@@ -1467,7 +1469,8 @@ sub time_zone {
 				JSON::Parse->import();
 
 				if(my $data = LWP::Simple::get("http://ip-api.com/json/$ip")) {
-					$self->{_timezone} = JSON::Parse::parse_json($data)->{'timezone'};
+					eval { $self->{_timezone} = JSON::Parse::parse_json($data)->{'timezone'} };
+					$self->_warn({ warning => "ip-api.com returned unparseable JSON: $@" }) if $@;
 				}
 			} else {
 				if(my $logger = $self->{'logger'}) {
