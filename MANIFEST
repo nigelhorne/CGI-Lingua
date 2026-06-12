@@ -64,6 +64,7 @@ t/rt86809.t
 t/strict.t
 t/sub-lang.t
 t/time_zone.t
+t/unit.t
 t/unused.t
 t/usgb.t
 t/vars.t
