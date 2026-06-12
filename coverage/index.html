@@ -65,6 +65,10 @@
 			background-color: #eee;
 			color: #666;
 		}
+		tr.cpan-na td {
+			background-color: #ffffde;
+			color: #666;
+		}
 		.new-failure {
 			background: #c00;
 			color: #fff;
@@ -73,6 +77,56 @@
 			border-radius: 4px;
 			font-size: 0.85em;
 		}
+		.notice {
+			padding: 8px 12px;
+			margin: 10px 0;
+			border-radius: 4px;
+			font-size: 0.95em;
+		}
+		.notice strong {
+			font-weight: bold;
+		}
+		.notice.perl-version-cliff {
+			background-color: #fff3cd; /* soft amber */
+			border: 1px solid #ffeeba;
+			color: #856404;
+		}
+		.notice.perl-version-cliff a {
+			color: #533f03;
+			text-decoration: underline;
+		}
+		.notice.perl-version-cliff a:hover {
+			text-decoration: none;
+		}
+		.notice.locale-cliff {
+			border-left: 4px solid #d97706;
+			background: #fffbeb;
+			padding: 0.5em 1em;
+		}
+		.notice.rt-issues {
+			background: #fff6e5;
+			border-left: 4px solid #d9822b;
+		}
+		table.root-causes {
+			border-collapse: collapse;
+			width: 100%;
+			margin-bottom: 1.5em;
+		}
+		table.root-causes th,
+		table.root-causes td {
+			border: 1px solid #ccc;
+			padding: 8px;
+			vertical-align: top;
+		}
+		table.root-causes tr.high {
+			background-color: #dfd;
+		}
+		table.root-causes tr.med {
+			background-color: #ffd;
+		}
+		table.root-causes tr.low {
+			background-color: #fdd;
+		}
 	</style>
 </head>
 <body>
@@ -80,7 +134,7 @@
 	<a href="https://github.com/nigelhorne/CGI-Lingua">
 		<img src="https://img.shields.io/github/stars/nigelhorne/CGI-Lingua?style=social" alt="GitHub stars">
 	</a>
-	<img src="https://img.shields.io/badge/coverage-50%25-red" alt="Coverage badge">
+	<img src="https://img.shields.io/badge/coverage-67%25-red" alt="Coverage badge">
 </div>
 <h1>CGI::Lingua</h1><h2>Coverage Report</h2>
 <table data-sort-col="0" data-sort-order="asc">
@@ -99,9 +153,9 @@
 
 <tbody>
 
-<tr class="low"><td><a href="blib-lib-CGI-Lingua-pm.html" title="View coverage line by line" target="_blank">blib/lib/CGI/Lingua.pm</a> <a href="https://github.com/nigelhorne/CGI-Lingua/blob/27ee17bb3b7a3eb8ee874060e4dce5ffe1b9975e/blib/lib/CGI/Lingua.pm" class="icon-link" title="View source on GitHub">&#128269;</a><canvas class="sparkline" width="80" height="20" data-points="49.6,49.6,49.5,49.5,49.5,50.3,49.5,50.3,50.4,50.4"></canvas></td><td>56.2</td><td>43.7</td><td>35.2</td><td>83.3</td><td><span class="coverage-badge badge-bad" title="Needs improvement">50.4%</span></td><td class="neutral" title="Previous: 50.4%">&#9679; 0.0%</td></tr>
-<tr class="summary-row nosort"><td colspan="2"><strong>Summary</strong></td><td colspan="2">1 files</td><td colspan="3">Avg: 50%, Low: 1</td></tr>
-<tr class="med nosort"><td><strong>Total</strong></td><td>56.2</td><td>43.7</td><td>35.2</td><td>83.3</td><td colspan="2"><strong>50.4</strong></td></tr>
+<tr class="low"><td><a href="blib-lib-CGI-Lingua-pm.html" title="View coverage line by line" target="_blank">lib/CGI/Lingua.pm</a> <a href="https://github.com/nigelhorne/CGI-Lingua/blob/0094f7c9593cace1dc87226bf4301631cdd4c7b8/lib/CGI/Lingua.pm" class="icon-link" title="View source on GitHub">&#128269;</a><canvas class="sparkline" width="80" height="20" data-points="49.6,49.5,49.5,49.5,50.3,49.5,50.3,50.4,50.4,50.4"></canvas></td><td>72.8</td><td>61.7</td><td>49.7</td><td>91.8</td><td><span class="coverage-badge badge-bad" title="Needs improvement">67.2%</span></td><td class="neutral" title="Previous (sparkline): 50.4%">&#9679; 0.0%</td></tr>
+<tr class="summary-row nosort"><td colspan="2"><strong>Summary</strong></td><td colspan="2">1 files</td><td colspan="3">Avg: 67%, Low: 1</td></tr>
+<tr class="med nosort"><td><strong>Total</strong></td><td>72.8</td><td>61.7</td><td>49.7</td><td>91.8</td><td colspan="2"><strong>67.2</strong></td></tr>
 </tbody></table>
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1em;">
 	<div>
@@ -118,12 +172,11 @@
 		<button id="resetZoomBtn" type="button">Reset Zoom</button>
 	</div>
 </div>
-
 <canvas id="coverageTrend" width="600" height="300"></canvas>
 <!-- Zoom controls for the trend chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- Add chartjs-plugin-zoom (required for wheel/pinch/drag zoom & pan) -->
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.1.1/dist/chartjs-plugin-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom\@2.1.1/dist/chartjs-plugin-zoom.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
 <script>
 function linearRegression(data) {
@@ -136,7 +189,7 @@ function linearRegression(data) {
 	const sumXY = xs.reduce((acc, val, i) => acc + val * ys[i], 0);
 	const sumX2 = xs.reduce((acc, val) => acc + val * val, 0);
 
-	if (n < 2 || (n * sumX2 - sumX * sumX) === 0) {
+	if(n < 2 || (n * sumX2 - sumX * sumX) === 0) {
 		return [];
 	}
 	const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
@@ -148,24 +201,24 @@ function linearRegression(data) {
 	}));
 }
 
-const dataPoints = [ { x: "2025-11-12T21:33:48-05:00", y: 49.8307952622673, delta: 0, url: "https://github.com/nigelhorne/CGI-Lingua/commit/39a7478", label: "2025-11-12T21:33:48-05:00", pointBackgroundColor: "gray", comment: "Release 0.79" },
-{ x: "2025-11-16T08:28:39-05:00", y: 49.6208930075821, delta: -0.2, url: "https://github.com/nigelhorne/CGI-Lingua/commit/2ec43d9", label: "2025-11-16T08:28:39-05:00", pointBackgroundColor: "red", comment: "Reduce priority of messages when Locale::Object dies" },
-{ x: "2025-11-28T13:56:51-05:00", y: 49.6208930075821, delta: 0.0, url: "https://github.com/nigelhorne/CGI-Lingua/commit/68d097e", label: "2025-11-28T13:56:51-05:00", pointBackgroundColor: "gray", comment: "Use Test::Which" },
-{ x: "2025-12-17T07:45:16-05:00", y: 49.5366470092671, delta: -0.1, url: "https://github.com/nigelhorne/CGI-Lingua/commit/d8e4d70", label: "2025-12-17T07:45:16-05:00", pointBackgroundColor: "red", comment: "Merge pull request #33 from nigelhorne/dependabot/github_actions/actions/checkout-6" },
-{ x: "2025-12-18T16:32:46-05:00", y: 49.5366470092671, delta: 0.0, url: "https://github.com/nigelhorne/CGI-Lingua/commit/84b4a8b", label: "2025-12-18T16:32:46-05:00", pointBackgroundColor: "gray", comment: "Latest fuzz driver" },
-{ x: "2026-01-30T14:00:03-05:00", y: 49.5366470092671, delta: 0.0, url: "https://github.com/nigelhorne/CGI-Lingua/commit/c8bcb6f", label: "2026-01-30T14:00:03-05:00", pointBackgroundColor: "gray", comment: "Latest test dashboard" },
-{ x: "2026-01-30T14:54:56-05:00", y: 50.2948609941028, delta: 0.8, url: "https://github.com/nigelhorne/CGI-Lingua/commit/192bb03", label: "2026-01-30T14:54:56-05:00", pointBackgroundColor: "green", comment: "Combine the document load functions" },
-{ x: "2026-01-30T21:36:50-05:00", y: 50.2948609941028, delta: 0.0, url: "https://github.com/nigelhorne/CGI-Lingua/commit/12ef1d7", label: "2026-01-30T21:36:50-05:00", pointBackgroundColor: "gray", comment: "Try to find reasons for CPAN test failures" },
-{ x: "2026-02-16T11:40:24-05:00", y: 50.4166666666667, delta: 0.1, url: "https://github.com/nigelhorne/CGI-Lingua/commit/01087b3", label: "2026-02-16T11:40:24-05:00", pointBackgroundColor: "green", comment: "Added sanity testing for the supported argument" },
-{ x: "2026-03-30T08:01:32-04:00", y: 50.4166666666667, delta: 0.0, url: "https://github.com/nigelhorne/CGI-Lingua/commit/528a541", label: "2026-03-30T08:01:32-04:00", pointBackgroundColor: "gray", comment: "Merge pull request #34 from nigelhorne/dependabot/github_actions/codecov/codecov-action-6" } ];
 
+const dataPoints = [ { x: "2025-11-16T08:28:39-05:00", y: 49.6208930075821, delta: 0, url: "https://github.com/nigelhorne/CGI-Lingua/commit/2ec43d9d7bc1aefa3ec53b13a0b42dab6ee4fdba", label: "2025-11-16T08:28:39-05:00", pointBackgroundColor: "gray", comment: "Reduce priority of messages when Locale::Object dies" },
+{ x: "2025-11-28T13:56:51-05:00", y: 49.6208930075821, delta: 0.0, url: "https://github.com/nigelhorne/CGI-Lingua/commit/68d097e45b3b58a15a02d4c887b36c3c0bcff781", label: "2025-11-28T13:56:51-05:00", pointBackgroundColor: "gray", comment: "Use Test::Which" },
+{ x: "2025-12-17T07:45:16-05:00", y: 49.5366470092671, delta: -0.1, url: "https://github.com/nigelhorne/CGI-Lingua/commit/d8e4d70c2f20b988d90485baf38205e06edabde3", label: "2025-12-17T07:45:16-05:00", pointBackgroundColor: "red", comment: "Merge pull request #33 from nigelhorne/dependabot/github_actions/actions/checkout-6" },
+{ x: "2025-12-18T16:32:46-05:00", y: 49.5366470092671, delta: 0.0, url: "https://github.com/nigelhorne/CGI-Lingua/commit/84b4a8b33cdbf9b3056f85f22f86423af502e4ef", label: "2025-12-18T16:32:46-05:00", pointBackgroundColor: "gray", comment: "Latest fuzz driver" },
+{ x: "2026-01-30T14:00:03-05:00", y: 49.5366470092671, delta: 0.0, url: "https://github.com/nigelhorne/CGI-Lingua/commit/c8bcb6f5ecd24f37149263cfc29482dd734bf3f3", label: "2026-01-30T14:00:03-05:00", pointBackgroundColor: "gray", comment: "Latest test dashboard" },
+{ x: "2026-01-30T14:54:56-05:00", y: 50.2948609941028, delta: 0.8, url: "https://github.com/nigelhorne/CGI-Lingua/commit/192bb034e1af986ec711838d879ad9f0ab0c1362", label: "2026-01-30T14:54:56-05:00", pointBackgroundColor: "green", comment: "Combine the document load functions" },
+{ x: "2026-01-30T21:36:50-05:00", y: 50.2948609941028, delta: 0.0, url: "https://github.com/nigelhorne/CGI-Lingua/commit/12ef1d7e4f1ca99668134595f555027daa3e70af", label: "2026-01-30T21:36:50-05:00", pointBackgroundColor: "gray", comment: "Try to find reasons for CPAN test failures" },
+{ x: "2026-02-16T11:40:24-05:00", y: 50.4166666666667, delta: 0.1, url: "https://github.com/nigelhorne/CGI-Lingua/commit/01087b382b981e4214c90ceb55d8feae4bc4b3cb", label: "2026-02-16T11:40:24-05:00", pointBackgroundColor: "green", comment: "Added sanity testing for the supported argument" },
+{ x: "2026-03-30T08:01:32-04:00", y: 50.4166666666667, delta: 0.0, url: "https://github.com/nigelhorne/CGI-Lingua/commit/528a5417b3943f39799b5366b0a9d98f0cc842e5", label: "2026-03-30T08:01:32-04:00", pointBackgroundColor: "gray", comment: "Merge pull request #34 from nigelhorne/dependabot/github_actions/codecov/codecov-action-6" },
+{ x: "2026-06-12T07:17:33-04:00", y: 50.4166666666667, delta: 0.0, url: "https://github.com/nigelhorne/CGI-Lingua/commit/27ee17bb3b7a3eb8ee874060e4dce5ffe1b9975e", label: "2026-06-12T07:17:33-04:00", pointBackgroundColor: "gray", comment: "Merge pull request #35 from nigelhorne/dependabot/github_actions/codecov/codecov-action-7" } ];
 const regressionPoints = linearRegression(dataPoints);
 // Try to register the zoom plugin (handles different UMD builds)
 (function registerZoomPlugin(){
 	try {
 		const candidates = ['chartjsPluginZoom','ChartZoom','zoomPlugin','chartjs_plugin_zoom','ChartjsPluginZoom','chartjsPluginZoom'];
-		for (const name of candidates) {
-			if (window[name]) {
+		for(const name of candidates) {
+			if(window[name]) {
 				try { Chart.register(window[name]); console.log('Registered zoom plugin:', name); return; } catch(e) { console.warn('zoom register failed for', name, e); }
 			}
 		}
@@ -250,7 +303,7 @@ const chart = new Chart(ctx, {
 			}
 		}, onClick: (e) => {
 			const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
-			if (points.length) {
+			if(points.length) {
 				const url = chart.data.datasets[0].data[points[0].index].url;
 				window.open(url, '_blank');
 			}
@@ -267,10 +320,10 @@ document.getElementById('toggleTrend').addEventListener('change', function(e) {
 
 // Reset Zoom button handler (calls plugin API if available)
 const resetBtn = document.getElementById('resetZoomBtn');
-if (resetBtn) {
+if(resetBtn) {
 	resetBtn.addEventListener('click', function() {
 		try {
-			if (chart && typeof chart.resetZoom === 'function') {
+			if(chart && typeof chart.resetZoom === 'function') {
 				chart.resetZoom();
 			} else {
 				console.warn('resetZoom not available; zoom plugin may not be registered.');
@@ -283,7 +336,7 @@ if (resetBtn) {
 
 function sortTable(th, colIndex) {
 	const table = th.closest("table");
-	if (!table || !table.tBodies.length) return;
+	if(!table || !table.tBodies.length) return;
 
 	const tbody = table.tBodies[0];
 	const rows = Array.from(tbody.rows);
@@ -301,7 +354,7 @@ function sortTable(th, colIndex) {
 		let x = a.cells[colIndex]?.innerText.trim() || "";
 		let y = b.cells[colIndex]?.innerText.trim() || "";
 
-		if (isNumeric) {
+		if(isNumeric) {
 			x = Date.parse(x) || 0;
 			y = Date.parse(y) || 0;
 		} else {
@@ -309,8 +362,8 @@ function sortTable(th, colIndex) {
 			y = y.toLowerCase();
 		}
 
-		if (x < y) return asc ? -1 : 1;
-		if (x > y) return asc ? 1 : -1;
+		if(x < y) return asc ? -1 : 1;
+		if(x > y) return asc ? 1 : -1;
 		return 0;
 	});
 
@@ -319,11 +372,11 @@ function sortTable(th, colIndex) {
 
 	// Update arrows
 	const headers = table.tHead.rows[0].cells;
-	for (let i = 0; i < headers.length; i++) {
+	for(let i = 0; i < headers.length; i++) {
 		const arrow = headers[i].querySelector(".arrow");
-		if (!arrow) continue;
+		if(!arrow) continue;
 
-		if (i === colIndex) {
+		if(i === colIndex) {
 			arrow.textContent = asc ? "▲" : "▼";
 			arrow.classList.add("active");
 		} else {
@@ -341,14 +394,14 @@ function sortTable(th, colIndex) {
 // The table has been set up sorted in ascending order on the filename; reflect that in the GUI
 document.addEventListener("DOMContentLoaded", () => {
 	const table = document.querySelector("table");
-	if (!table) return;
+	if(!table) return;
 
 	const headers = table.tHead.rows[0].cells;
-	for (let i = 0; i < headers.length; i++) {
+	for(let i = 0; i < headers.length; i++) {
 		const arrow = headers[i].querySelector(".arrow");
-		if (!arrow) continue;
+		if(!arrow) continue;
 
-		if (i === 0) {
+		if(i === 0) {
 			arrow.textContent = "▲";
 			arrow.classList.add("active");
 		} else {
@@ -361,7 +414,7 @@ document.addEventListener("DOMContentLoaded", () => {
 document.addEventListener("DOMContentLoaded", () => {
 	document.querySelectorAll("canvas.sparkline").forEach(canvas => {
 		const raw = canvas.getAttribute("data-points");
-		if (!raw) return;
+		if(!raw) return;
 		const points = raw.split(",").map(v => parseFloat(v));
 
 		new Chart(canvas.getContext("2d"), {
@@ -409,43 +462,82 @@ function refresh(){
 </script>
 
 <p><center>Use mouse wheel or pinch to zoom; drag to pan</center></p>
+<p>No issues active on <a href="https://rt.cpan.org/Public/Dist/Display.html?Name=CGI-Lingua">RT</a></p>
+<h2>CPAN Testers Failures for CGI-Lingua 0.80</h2>
+<h3>Failure Summary (all reports)</h3>
+<ul>
+<li><b>Perl 5.42.x</b>: 6 failures</li>
+<li><b>linux</b>: 4 failures</li>
+<li><b>5.42 / openbsd</b>: 2 failures</li>
+</ul>
+<h3>Likely Root Causes</h3>
+<table class="root-causes">
+<thead>
+<tr>
+	<th>Cause</th>
+	<th>Confidence</th>
+	<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+
+<tr class="high">
+	<td halign="center"><strong>Locale-sensitive behavior (de_AT)</strong></td>
+	<td halign="center">Strong (100%)</td>
+	<td halign="center"><ul><li>2/2 failures with LANG=de_AT</li><li>English locales show fewer or no failures</li></ul></td>
+</tr>
+
+<tr class="low">
+	<td halign="center"><strong>Scattered failures (no clear version or OS pattern)</strong></td>
+	<td halign="center">Weak (40%)</td>
+	<td halign="center"><ul><li>Failures and passes both seen on 3 common Perl series</li><li>Possible causes: flaky tests, optional dependency differences, or CGI environment assumptions</li><li>Review test output from failing reports for specific error messages</li></ul></td>
+</tr>
+
+</tbody>
+</table>
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 	const toggleFail = document.getElementById('toggleFail');
 	const toggleUnknown = document.getElementById('toggleUnknown');
+	const toggleNA = document.getElementById('toggleNA');
 	const toggleNew = document.getElementById('toggleNew');
 
 	function update() {
-		if (toggleFail) {
-			document.querySelectorAll('tr.cpan-fail')
-				.forEach(r => r.style.display = toggleFail.checked ? '' : 'none');
-		}
-		if (toggleUnknown) {
-			document.querySelectorAll('tr.cpan-unknown')
-				.forEach(r => r.style.display = toggleUnknown.checked ? '' : 'none');
-		}
-		if (toggleNew) {
-			document.querySelectorAll('tr').forEach(row => {
-				const cell = row.querySelector('.new-failure');
-				if (!cell) return;
-				row.style.display = toggleNew.checked ? '' : 'none';
-			});
-		}
+		document.querySelectorAll('tr').forEach(row => {
+			// Skip header rows
+			if(row.querySelector('th')) return;
+
+			// Determine row status
+			const isFail = row.classList.contains('cpan-fail');
+			const isUnknown = row.classList.contains('cpan-unknown');
+			const isNA = row.classList.contains('cpan-na');
+			const isNew = !!row.querySelector('.new-failure');
+
+			// Decide whether to show the row
+			let show = true;
+
+			if(toggleFail && !toggleFail.checked && isFail) show = false;
+			if(toggleUnknown && !toggleUnknown.checked && isUnknown) show = false;
+			if(toggleNA && !toggleNA.checked && isNA) show = false;
+			if(toggleNew && toggleNew.checked && !isNew) show = false;
+
+			row.style.display = show ? '' : 'none';
+		});
 	}
 
-	[toggleFail, toggleUnknown, toggleNew].forEach(cb => {
-		if (cb) cb.addEventListener('change', update);
+	[toggleFail, toggleUnknown, toggleNA, toggleNew].forEach(cb => {
+		if(cb) cb.addEventListener('change', update);
 	});
 
 	update();
 });
 document.addEventListener("DOMContentLoaded", () => {
 	const th = document.querySelector("table.sortable-table th");
-	if (th) sortTable(th, 0);
+	if(th) sortTable(th, 0);
 });
 </script>
 
-<h2>CPAN Testers Failures for CGI-Lingua 0.80</h2>
 <p><em>Showing one failure per OS/Perl combination.</em></p>
 <div style="margin-bottom: 0.5em;">
 	<label>
@@ -455,6 +547,10 @@ document.addEventListener("DOMContentLoaded", () => {
 	<label style="margin-left: 1em;">
 		<input type="checkbox" id="toggleUnknown">
 		UNKNOWN
+	</label>
+	<label style="margin-left: 1em;">
+		<input type="checkbox" id="toggleNA">
+		NA
 	</label>
 	<label style="margin-left: 1em;">
 		<input type="checkbox" id="toggleNew">
@@ -477,7 +573,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	<th class="sortable" onclick="sortTable(this, 3)">
 		<span class="label">Reporter</span> <span class="arrow">&#x25B2;</span>
 	</th>
-	<th class="sortable" onclick="sortTable(this, 4)">
+	<th class="sortable" onclick="sortTable(this, 4)" title="Marks failures that did not occur in the previous release. The same OS, Perl version, architecture, and platform were passing before.">
 		<span class="label">New</span> <span class="arrow">&#x25B2;</span>
 	</th>
 	<th>Report</th>
@@ -485,31 +581,62 @@ document.addEventListener("DOMContentLoaded", () => {
 </thead>
 <tbody>
 
-<tr class="cpan-fail"><td>2025-12-17T19:31:00Z</td><td>darwin</td><td>5.40.2</td><td>Nigel Horne</td><td></td>
-				<td><a href="https://www.cpantesters.org/cpan/report/fc5875fc-db7e-11f0-9fd0-bbe45b74dd9b" target="_blank">View</a></td></tr>
-<tr class="cpan-fail"><td>2026-05-19T15:19:00Z</td><td>openbsd</td><td>5.42.2</td><td>Nigel Horne</td><td></td>
-				<td><a href="https://www.cpantesters.org/cpan/report/23852b36-5396-11f1-9c7d-dcedbe20fae5" target="_blank">View</a></td></tr>
 <tr class="cpan-fail"><td>2025-12-17T19:14:00Z</td><td>linux</td><td>5.34.0</td><td>Nigel Horne</td><td></td>
 				<td><a href="https://www.cpantesters.org/cpan/report/8edcc5a2-db7c-11f0-a1f3-b0421449eebf" target="_blank">View</a></td></tr>
-<tr class="cpan-fail"><td>2025-12-18T19:04:00Z</td><td>openbsd</td><td>5.42.0</td><td>Nigel Horne</td><td></td>
-				<td><a href="https://www.cpantesters.org/cpan/report/6a353a22-dc44-11f0-8514-fe5513a37e81" target="_blank">View</a></td></tr>
-<tr class="cpan-fail"><td>2026-04-30T04:26:00Z</td><td>cygwin</td><td>5.40.3</td><td>Peter John Acklam (PJACKLAM)</td><td></td>
-				<td><a href="https://www.cpantesters.org/cpan/report/92fad80e-6d2b-1014-824d-daec877fb1c4" target="_blank">View</a></td></tr>
-<tr class="cpan-fail"><td>2026-06-07T10:21:00Z</td><td>linux</td><td>5.42.2</td><td>gregor herrmann</td><td></td>
-				<td><a href="https://www.cpantesters.org/cpan/report/a1ad5cb8-625a-11f1-850d-b7c82f883195" target="_blank">View</a></td></tr>
+<tr class="cpan-fail"><td>2025-12-17T19:31:00Z</td><td>darwin</td><td>5.40.2</td><td>Nigel Horne</td><td></td>
+				<td><a href="https://www.cpantesters.org/cpan/report/fc5875fc-db7e-11f0-9fd0-bbe45b74dd9b" target="_blank">View</a></td></tr>
 <tr class="cpan-fail"><td>2026-01-01T18:20:00Z</td><td>linux</td><td>5.40.0</td><td>Nigel Horne</td><td></td>
 				<td><a href="https://www.cpantesters.org/cpan/report/8ecbfcea-e73e-11f0-8e4e-e33d5c5e7496" target="_blank">View</a></td></tr>
-<tr class="cpan-fail"><td>2025-12-17T21:09:00Z</td><td>linux</td><td>5.42.0</td><td>gregor herrmann</td><td></td>
-				<td><a href="https://www.cpantesters.org/cpan/report/b33961e8-db8c-11f0-87f9-b6a3e061201d" target="_blank">View</a></td></tr>
+<tr class="cpan-fail"><td>2026-05-19T15:19:00Z</td><td>openbsd</td><td>5.42.2</td><td>Nigel Horne</td><td></td>
+				<td><a href="https://www.cpantesters.org/cpan/report/23852b36-5396-11f1-9c7d-dcedbe20fae5" target="_blank">View</a></td></tr>
 <tr class="cpan-fail"><td>2026-01-05T22:19:00Z</td><td>solaris</td><td>5.42.0</td><td>Nigel Horne</td><td></td>
 				<td><a href="https://www.cpantesters.org/cpan/report/965da672-ea84-11f0-800a-8718c312ac97" target="_blank">View</a></td></tr>
 <tr class="cpan-fail"><td>2026-01-25T00:45:00Z</td><td>darwin</td><td>5.42.0</td><td>Nigel Horne</td><td></td>
 				<td><a href="https://www.cpantesters.org/cpan/report/31df27f4-f987-11f0-b74a-82c74d78ae4d" target="_blank">View</a></td></tr>
+<tr class="cpan-fail"><td>2025-12-18T19:04:00Z</td><td>openbsd</td><td>5.42.0</td><td>Nigel Horne</td><td></td>
+				<td><a href="https://www.cpantesters.org/cpan/report/6a353a22-dc44-11f0-8514-fe5513a37e81" target="_blank">View</a></td></tr>
+<tr class="cpan-fail"><td>2025-12-17T21:09:00Z</td><td>linux</td><td>5.42.0</td><td>gregor herrmann</td><td></td>
+				<td><a href="https://www.cpantesters.org/cpan/report/b33961e8-db8c-11f0-87f9-b6a3e061201d" target="_blank">View</a></td></tr>
+<tr class="cpan-fail"><td>2026-06-07T10:21:00Z</td><td>linux</td><td>5.42.2</td><td>gregor herrmann</td><td></td>
+				<td><a href="https://www.cpantesters.org/cpan/report/a1ad5cb8-625a-11f1-850d-b7c82f883195" target="_blank">View</a></td></tr>
+<tr class="cpan-fail"><td>2026-04-30T04:26:00Z</td><td>cygwin</td><td>5.40.3</td><td>Peter John Acklam (PJACKLAM)</td><td></td>
+				<td><a href="https://www.cpantesters.org/cpan/report/92fad80e-6d2b-1014-824d-daec877fb1c4" target="_blank">View</a></td></tr>
 </tbody></table>
+<h2>Mutation Report</h2>
+<h3>Mutation Summary</h3>
+<ul>
+<li><b>Score</b>: 56.30%</li>
+<li><b>Total</b>: 254</li>
+<li><b>Killed</b>: 
+143
+</li>
+<li><b>Survived</b>: 
+111
+</li>
+</ul>
+<h3>Mutation Files</h3>
+
+<table border='1' cellpadding='5'>
+
+<tr><th>File</th><th>Total</th><th>Killed</th><th>Survivors</th><th>Skipped</th><th>Score%</th><th>Complexity</th><th title="TER1=Statement, TER2=Branch, TER3=LCSAJ Path">TER1 / TER2 / TER3</th></tr>
+
+<tr class="low"><td><a href="mutation_html/lib/CGI/Lingua.pm.html" title="View mutation line by line" target="_blank">lib/CGI/Lingua.pm</a> <a href="https://github.com/nigelhorne/CGI-Lingua/blob/0094f7c9593cace1dc87226bf4301631cdd4c7b8/lib/CGI/Lingua.pm" class="icon-link" title="View source on GitHub">&#128269;</a></td><td>254</td><td>143</td><td>111</td><td>0</td><td><span class="coverage-badge badge-bad" title="Needs improvement">56.3%</span></td><td><span class="coverage-badge badge-bad" title="Needs improvement">263</span></td><td><span class="coverage-badge badge-warn" title="Moderate">72.8%</span> / <span class="coverage-badge badge-bad" title="Needs improvement">61.7%</span> / <span class="coverage-badge badge-warn" title="Moderate">88.5%</span></td></tr>
+</table>
+
+<h2>Structural Coverage (Approximate)</h2>
+<div class='summary'>
+Statement Coverage: 72.85% (491 / 674)<br>
+Branch Coverage: 61.72% (258 / 418)<br>
+<em>Approximate LCSAJ derived from branch and statement coverage.</em>
+</div>
+<h2>Executive Summary</h2>
+<div class='summary'>
+Tests execute 72.85% of the code but detect only 56.30% of injected faults — consider adding targeted tests to kill surviving mutants.
+</div>
 <footer>
 	<p>Project: <a href="https://github.com/nigelhorne/CGI-Lingua">CGI-Lingua</a></p>
-	<p><em>Last updated: 2026-06-12 11:22:35 - <a href="https://github.com/nigelhorne/CGI-Lingua/commit/27ee17bb3b7a3eb8ee874060e4dce5ffe1b9975e">commit <code>27ee17b</code></a></em></p>
+	<p><em>Last updated: 2026-06-12 14:58:50 - <a href="https://github.com/nigelhorne/CGI-Lingua/commit/0094f7c9593cace1dc87226bf4301631cdd4c7b8">commit <code>0094f7c</code></a></em></p>
+	<p style="float: right; font-size: 0.85em; color: #999;">Powered by <a href="https://metacpan.org/dist/App-Test-Generator">App::Test::Generator 0.38</a></p>
 </footer>
-
 </body>
 </html>
