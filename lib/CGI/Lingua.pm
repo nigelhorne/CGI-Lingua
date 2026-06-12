@@ -1481,7 +1481,7 @@ sub time_zone {
 		}
 	} else {
 		# Local connection — read from /etc/timezone or DateTime::TimeZone
-		if(open(my $fin, '<', '/etc/timezone')) {
+		if(CORE::open(my $fin, '<', '/etc/timezone')) {
 			my $tz = <$fin>;
 			chomp $tz;
 			$self->{_timezone} = $tz;
@@ -1610,6 +1610,7 @@ sub _log
 	return unless ref($self) && scalar(@messages);
 
 	my $text = join('', grep defined, @messages);
+	return unless length($text);
 	push @{$self->{'messages'}}, { level => $level, message => $text };
 
 	if(my $logger = $self->{'logger'}) {

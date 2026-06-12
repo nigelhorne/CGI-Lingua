@@ -8,6 +8,8 @@ Revision history for CGI-Lingua
 	- Logger validation now only checks blessed objects before Object::Configure; non-blessed values (arrayrefs, hashrefs) pass through for Object::Configure to convert, fixing t/logger.t regression
 	- Fix cache->remove() key in country(): was remove($ip) but the entry was stored under the namespaced key "CGI::Lingua:country:<ip>", leaving numeric-poisoned entries in the cache permanently
 	- Wrap JSON::Parse::parse_json() in eval{} in country() and time_zone(): a malformed response from geoplugin or ip-api.com previously propagated an uncaught die to the caller
+	- Use CORE::open in time_zone() local path: autodie suppressed the fallback to DateTime::TimeZone::Local on hosts without /etc/timezone (e.g. macOS)
+	- Add length($text) guard to _log(): a single undef argument passed the scalar(@messages) check but produced an empty string that was pushed to the messages array
 
 	[ Enhancement ]
 	- Latest testing dashboard
@@ -26,6 +28,7 @@ Revision history for CGI-Lingua
 	- Add t/unit.t: black-box subtests driven strictly by POD API contracts (62 subtests)
 	- Add t/integration.t: end-to-end tests covering multi-method coherence, priority negotiation, cache DESTROY→thaw, concurrent object isolation, clone behaviour, spy-verified network routing, and optional-dependency fallback (27 subtests)
 	- Add t/edge_cases.t: hostile, pathological, boundary, and security subtests; exposed the cache-removal key bug and the uncaught JSON parse die (48 subtests)
+	- Add t/extended_tests.t: coverage-gap subtests targeting uncovered branches in _resolve_country_via_whois, _find_language_from_ip, _resolve_sublanguage_match, time_zone, locale, _log, and DESTROY (54 subtests)
 	- Fix t/function.t: _log test now injects spy logger directly to bypass Object::Configure
 	- Fix t/function.t: _warn test clears Object::Configure logger to exercise Carp path
 	- Fix t/function.t: locale() subtest now calls locale() and asserts return value
