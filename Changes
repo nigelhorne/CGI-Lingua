@@ -5,6 +5,9 @@ Revision history for CGI-Lingua
 	- Latest testing dashboard
 	- Added sanity testing for the supported argument
 
+	[ Tests ]
+	- Replace Test::MockModule with Test::Mockingbird in t/30-basics.t
+
 	[ Security ]
 	- Validate and untaint HTTP_ACCEPT_LANGUAGE before use (taint-mode compliance)
 	- Validate GEOIP_COUNTRY_CODE and HTTP_CF_IPCOUNTRY against ISO 3166-1 alpha-2 format before use
