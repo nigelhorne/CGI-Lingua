@@ -6,11 +6,6 @@
 # Strategy: every subtest actively tries to break, inject, overflow, or
 # subvert the module.  Inputs are chosen specifically to probe the validation
 # and sanitisation layer rather than the happy path.
-#
-# NOTE: one test (Section 5, cache-key bug) confirms a real defect: the
-# cache->remove() call uses the bare IP as the key rather than the full
-# namespaced key, leaving a poisoned numeric-country entry in place.
-# The module is patched accordingly and the fixed behaviour is asserted.
 
 use strict;
 use warnings;
@@ -486,15 +481,6 @@ subtest 'HTTP_CF_IPCOUNTRY: SQL injection payload is rejected with warning' => s
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # SECTION 5: Cache corruption and the cache-removal key bug
-#
-# BUG: When country() detects a numeric value in the cache it calls
-#   $self->{_cache}->remove($ip)
-# but the cache was populated with key
-#   $CACHE_NS . "country:$ip"  (e.g. "CGI::Lingua:country:8.8.8.8")
-# The removal therefore silently no-ops: the poisoned entry persists and the
-# next call will again find the numeric value, triggering the same warn loop.
-#
-# Fix: change  ->remove($ip)  to  ->remove($CACHE_NS . "country:$ip").
 # ═══════════════════════════════════════════════════════════════════════════════
 
 subtest 'cache: numeric country code triggers warning' => sub {

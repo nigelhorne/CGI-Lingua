@@ -460,7 +460,7 @@ sub _find_language
 		$self->_debug(
 			"language wanted: $http_accept_language, "
 			. 'languages supported: '
-			. join(', ', @{$self->{_supported}})
+			. join(', ', @{$self->{_supported}} // '')
 		);
 
 		# Normalise the deprecated en-uk tag that some browsers send
