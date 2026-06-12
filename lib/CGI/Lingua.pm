@@ -161,20 +161,20 @@ sub new
 
 	# Normalise supported / supported_languages alias
 	$params->{'supported'} ||= $params->{'supported_languages'};
-	if(!defined($params->{supported})) {
+	if(defined($params->{supported})) {
+		# Validate supported type/length
+		if(ref($params->{supported})) {
+			if(ref($params->{supported}) ne 'ARRAY') {
+				Carp::croak('List of supported languages must be an array ref');
+			}
+		} elsif((length($params->{supported}) < 2) || (length($params->{supported}) > 5)) {
+			Carp::croak('Supported languages must be the short code');
+		}
+	} else {
 		if(my $logger = $params->{'logger'}) {
 			$logger->error('You must give a list of supported languages');
 		}
 		Carp::croak('You must give a list of supported languages');
-	}
-
-	# Validate supported type/length
-	if(ref($params->{supported})) {
-		if(ref($params->{supported}) ne 'ARRAY') {
-			Carp::croak('List of supported languages must be an array ref');
-		}
-	} elsif((length($params->{supported}) < 2) || (length($params->{supported}) > 5)) {
-		Carp::croak('Supported languages must be the short code');
 	}
 
 	my $cache = $params->{cache};
