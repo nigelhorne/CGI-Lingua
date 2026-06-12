@@ -19,3 +19,6 @@ nytprof.out
 *.bs
 t/online.enabled
 *.swp
+
+\.claude
+CLAUDE.md

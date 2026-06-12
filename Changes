@@ -1,8 +1,15 @@
 Revision history for CGI-Lingua
 
 0.81
-	Latest testing dashboard
-	Added sanity testing for the supported argument
+	[ Enhancement ]
+	- Latest testing dashboard
+	- Added sanity testing for the supported argument
+
+	[ Security ]
+	- Validate and untaint HTTP_ACCEPT_LANGUAGE before use (taint-mode compliance)
+	- Validate GEOIP_COUNTRY_CODE and HTTP_CF_IPCOUNTRY against ISO 3166-1 alpha-2 format before use
+	- Validate and untaint REMOTE_ADDR via regex capture before passing to geo-lookup modules
+	- Replace string eval with block eval for dynamic loading of Geo::IP and Geo::IPfree
 
 0.80	Wed Dec 17 07:44:05 EST 2025
 	Added a couple of test prereqs (RT#171642)

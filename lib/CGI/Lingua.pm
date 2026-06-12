@@ -898,11 +898,16 @@ sub _what_language {
 		}
 	}
 
-	if(my $rc = $ENV{'HTTP_ACCEPT_LANGUAGE'}) {
-		if(ref($self)) {
-			return $self->{_what_language} = $rc;
+	if(my $raw_lang = $ENV{'HTTP_ACCEPT_LANGUAGE'}) {
+		if($raw_lang =~ /^([A-Za-z0-9\-,;=.*\s]{1,256})$/a) {
+			my $rc = $1;	# untainted
+			if(ref($self)) {
+				return $self->{_what_language} = $rc;
+			}
+			return $rc;
+		} elsif(ref($self)) {
+			$self->_warn({ warning => 'HTTP_ACCEPT_LANGUAGE contains invalid characters; ignoring' });
 		}
-		return $rc;
 	}
 
 	if(defined($ENV{'LANG'})) {
@@ -941,18 +946,36 @@ sub country {
 
 	# mod_geoip
 	if(defined($ENV{'GEOIP_COUNTRY_CODE'})) {
-		$self->{_country} = lc($ENV{'GEOIP_COUNTRY_CODE'});
-		return $self->{_country};
+		if($ENV{'GEOIP_COUNTRY_CODE'} =~ /^([A-Z]{2})$/a) {
+			$self->{_country} = lc($1);
+			return $self->{_country};
+		} else {
+			$self->_warn({ warning => 'GEOIP_COUNTRY_CODE contains an invalid country code; ignoring' });
+		}
 	}
 	if(($ENV{'HTTP_CF_IPCOUNTRY'}) && ($ENV{'HTTP_CF_IPCOUNTRY'} ne 'XX')) {
-		# Hosted by Cloudfare
-		$self->{_country} = lc($ENV{'HTTP_CF_IPCOUNTRY'});
-		return $self->{_country};
+		# Hosted by Cloudflare
+		if($ENV{'HTTP_CF_IPCOUNTRY'} =~ /^([A-Z]{2})$/a) {
+			$self->{_country} = lc($1);
+			return $self->{_country};
+		} else {
+			$self->_warn({ warning => 'HTTP_CF_IPCOUNTRY contains an invalid country code; ignoring' });
+		}
 	}
 
-	my $ip = $ENV{'REMOTE_ADDR'};
+	my $raw_ip = $ENV{'REMOTE_ADDR'};
 
-	return unless(defined($ip));
+	return unless(defined($raw_ip));
+
+	my $ip;
+	if($raw_ip =~ /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/a) {
+		$ip = $1;	# untainted IPv4
+	} elsif($raw_ip =~ /^([0-9a-fA-F:]{2,39})$/a) {
+		$ip = $1;	# untainted IPv6
+	} else {
+		$self->_warn({ warning => "$raw_ip isn't a valid IP address" });
+		return;
+	}
 
 	require Data::Validate::IP;
 	Data::Validate::IP->import();
@@ -1025,9 +1048,7 @@ sub country {
 		#	see https://github.com/bricas/geo-ipfree/issues/10
 		if(!defined($self->{_country}) && ($ip ne '45.128.139.41')) {
 			if($self->{_have_geoipfree} == -1) {
-				# Don't use 'eval { use ... ' as recommended by Perlcritic
-				# See https://www.cpantesters.org/cpan/report/6db47260-389e-11ec-bc66-57723b537541
-				eval 'require Geo::IPfree';
+				eval { require Geo::IPfree };
 				unless($@) {
 					Geo::IPfree::IP->import();
 					$self->{_have_geoipfree} = 1;
@@ -1164,9 +1185,7 @@ sub _load_geoip
 	# For Windows, see http://www.cpantesters.org/cpan/report/54117bd0-6eaf-1014-8029-ee20cb952333
 	if((($^O eq 'MSWin32') && (-r 'c:/GeoIP/GeoIP.dat')) ||
 	   ((-r '/usr/local/share/GeoIP/GeoIP.dat') || (-r '/usr/share/GeoIP/GeoIP.dat'))) {
-		# Don't use 'eval { use ... ' as recommended by Perlcritic
-		# See https://www.cpantesters.org/cpan/report/6db47260-389e-11ec-bc66-57723b537541
-		eval 'require Geo::IP';
+		eval { require Geo::IP };
 		unless($@) {
 			Geo::IP->import();
 			$self->{_have_geoip} = 1;
