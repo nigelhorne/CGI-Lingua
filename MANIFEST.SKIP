@@ -69,3 +69,6 @@
 CGI-.*
 t/online.enabled
 typescript
+mutation.json
+CLAUDE.md
+\.claude

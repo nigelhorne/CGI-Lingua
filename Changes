@@ -1,18 +1,32 @@
 Revision history for CGI-Lingua
 
 0.81
+	[ Bug Fixes ]
+	- Fix ref() parenthesisation bug in new() that broke cache lookups for arrayref-supported
+	- Normalise _warn() to always extract message via Params::Get; plain-string calls no longer silently lose arguments when no logger is set
+	- _code2language() and _code2countryname() now return the computed value explicitly rather than the result of cache->set(), which is not guaranteed across all CHI drivers
+
 	[ Enhancement ]
 	- Latest testing dashboard
 	- Added sanity testing for the supported argument
+	- Decompose _find_language() into focused helper methods for readability and testability
+	- Add Readonly constants for all magic strings and sentinel values
+	- Add use autodie :file
+	- Add =head1 LIMITATIONS POD section
+	- Add API SPECIFICATION, MESSAGES, FORMAL SPECIFICATION sections to public method POD
+	- Add Purpose/Entry/Exit/Side-Effects comment headers to all private methods
 
 	[ Tests ]
 	- Replace Test::MockModule with Test::Mockingbird in t/30-basics.t
+	- Add t/locales.t: geographic (GB/US/FR/DE/CN) and POSIX locale independence tests
 
 	[ Security ]
 	- Validate and untaint HTTP_ACCEPT_LANGUAGE before use (taint-mode compliance)
 	- Validate GEOIP_COUNTRY_CODE and HTTP_CF_IPCOUNTRY against ISO 3166-1 alpha-2 format before use
 	- Validate and untaint REMOTE_ADDR via regex capture before passing to geo-lookup modules
 	- Replace string eval with block eval for dynamic loading of Geo::IP and Geo::IPfree
+	- Apply ISO 3166-1 alpha-2 validation to GEOIP_COUNTRY_CODE in locale() to match country()
+	- Validate and untaint REMOTE_ADDR in time_zone() before URL construction
 
 0.80	Wed Dec 17 07:44:05 EST 2025
 	Added a couple of test prereqs (RT#171642)
