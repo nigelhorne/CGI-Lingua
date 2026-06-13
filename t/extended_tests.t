@@ -677,30 +677,40 @@ subtest 'time_zone: malformed JSON from ip-api.com warns but does not crash' => 
 };
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SECTION 8: time_zone() croak when neither LWP variant is installed
+# SECTION 8: time_zone() graceful degradation when neither LWP variant is installed
 # ═══════════════════════════════════════════════════════════════════════════════
 
-subtest 'time_zone: croaks with documented message when LWP absent' => sub {
+subtest 'time_zone: warns and returns undef when neither LWP variant present' => sub {
 	# When both LWP::Simple::WithCache and LWP::Simple are unavailable AND
-	# Geo::IP is absent, time_zone() must croak with the documented message.
+	# Geo::IP is absent, time_zone() must warn and return undef (graceful
+	# degradation — it no longer croaks, which would kill the entire CGI request).
 	local %ENV = (REMOTE_ADDR => $IP{PUBLIC});
 
 	my $l = _obj([$LANG{EN}]);
 	$l->{_have_geoip} = $GEO_ABSENT;
 
-	# Block both LWP variants by making the eval{}s fail.
-	# The easiest way is to mock the LWP::Simple::WithCache require result to fail
-	# (this is platform-dependent; skip if LWP is genuinely absent to avoid
-	# breaking the rest of the suite).
+	# This branch is only reachable when both LWP variants are genuinely absent;
+	# we cannot mock require() away, so skip when either is installed.
 	SKIP: {
-		skip 'LWP::Simple::WithCache IS installed — croak branch not reachable without it', 1
+		skip 'LWP::Simple::WithCache IS installed — no-LWP branch not reachable', 1
 			if $HAS_LWP;
-		skip 'LWP::Simple is installed — croak branch not reachable without it', 1
+		skip 'LWP::Simple is installed — no-LWP branch not reachable', 1
 			if eval { require LWP::Simple; 1 };
 
-		throws_ok { $l->time_zone() }
-			qr/LWP::Simple::WithCache or LWP::Simple/,
-			'time_zone() croaks with documented message when no LWP present';
+		my @warnings;
+		Test::Mockingbird::mock('CGI::Lingua', '_warn',
+			sub { push @warnings, $_[1] });
+
+		my $tz;
+		lives_ok { $tz = $l->time_zone() }
+			'time_zone() does not croak when no LWP present';
+		ok(!defined $tz,
+			'time_zone() returns undef when no LWP present');
+		ok((grep { (ref $_ ? ($_->{warning} // '') : ($_ // '')) =~ /LWP/ } @warnings),
+			'time_zone() warns about missing LWP');
+
+		Test::Mockingbird::restore_all();
+		_block_network();
 	}
 };
 
