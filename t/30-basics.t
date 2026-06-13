@@ -20,9 +20,13 @@ my $mock_env = {
 
 my $cache = CHI->new(driver => 'Memory', global => 1);
 
+# Pre-require LWP::Simple::WithCache before mocking so the lazy require inside
+# time_zone() does not overwrite the mock (CLAUDE.md: "Pre-require before mocking").
+{ local $SIG{__WARN__} = sub {}; eval { require LWP::Simple::WithCache } }
+
 # Mock IP geolocation responses
 Test::Mockingbird::mock('IP::Country::Fast', 'inet_atocc', sub { 'US' });
-Test::Mockingbird::mock('LWP::Simple::WithCache', 'get', sub { '{ "timezone": "America/New_York" }' });
+{ local $SIG{__WARN__} = sub {}; Test::Mockingbird::mock('LWP::Simple::WithCache', 'get', sub { '{ "timezone": "America/New_York" }' }) }
 
 # Basic language detection
 subtest 'Language Detection' => sub {
@@ -136,7 +140,7 @@ subtest 'Locale Detection' => sub {
 
 		ok(!defined $lingua->locale(), 'Undefined for invalid country code');
 	};
-	Test::Mockingbird::restore_all();
+	{ local $SIG{__WARN__} = sub {}; Test::Mockingbird::restore_all() }
 };
 
 subtest 'IPv6 Handling' => sub {
