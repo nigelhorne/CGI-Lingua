@@ -147,7 +147,7 @@ subtest 'IPv6 Handling' => sub {
 	my $ipv6_public = '2001:db8::1';	# Test documentation IP
 	my $ipv6_private = 'fd00::1';	# ULA private IP
 	my $ipv6_loopback = '::1';
-	my $ipv6_v4mapped = '::ffff:192.0.2.1';
+	my $ipv6_v4mapped = '::ffff:8.8.8.8';	# Google DNS — public, not TEST-NET-1
 
 	# Mock IP::Country for IPv6
 	Test::Mockingbird::mock('IP::Country::Fast', 'inet_atocc', sub {

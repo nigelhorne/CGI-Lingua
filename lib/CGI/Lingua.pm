@@ -1045,8 +1045,8 @@ sub country {
 	my $ip;
 	if($raw_ip =~ /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/a) {
 		$ip = $1;    # untainted IPv4
-	} elsif($raw_ip =~ /^([0-9a-fA-F:]{2,39})$/a) {
-		$ip = $1;    # untainted IPv6
+	} elsif($raw_ip =~ /^([0-9a-fA-F:]{2,39}|[0-9a-fA-F:]{2,30}:(?:\d{1,3}\.){3}\d{1,3})$/a) {
+		$ip = $1;    # untainted IPv6, including mixed notation (e.g. ::ffff:192.0.2.1)
 	} else {
 		$self->_warn({ warning => "$raw_ip isn't a valid IP address" });
 		return;
@@ -1059,6 +1059,8 @@ sub country {
 		$self->_debug("$ip isn't IPv4. Is it IPv6?");
 		if($ip eq '::1') {
 			$ip = '127.0.0.1';    # normalise loopback
+		} elsif($ip =~ /^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/i) {
+			$ip = $1;             # normalise IPv4-mapped IPv6 (::ffff:a.b.c.d) to plain IPv4
 		} elsif(!is_ipv6($ip)) {
 			$self->_warn({ warning => "$ip isn't a valid IP address" });
 			return;
