@@ -297,7 +297,7 @@ This means that if you support languages at a lower priority, it may be missed.
 
 # SEE ALSO
 
-- [Test Dashboard](https://nigelhorne.github.io/CGI-Info/coverage/)
+- [Test Dashboard](https://nigelhorne.github.io/CGI-Lingua/coverage/)
 - VWF - Versatile Web Framework [https://github.com/nigelhorne/vwf](https://github.com/nigelhorne/vwf)
 - [HTTP::BrowserDetect](https://metacpan.org/pod/HTTP%3A%3ABrowserDetect)
 - [I18N::AcceptLanguage](https://metacpan.org/pod/I18N%3A%3AAcceptLanguage)

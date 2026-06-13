@@ -1741,7 +1741,7 @@ This means that if you support languages at a lower priority, it may be missed.
 
 =over 4
 
-=item * L<Test Dashboard|https://nigelhorne.github.io/CGI-Info/coverage/>
+=item * L<Test Dashboard|https://nigelhorne.github.io/CGI-Lingua/coverage/>
 
 =item * VWF - Versatile Web Framework L<https://github.com/nigelhorne/vwf>
 
