@@ -12,6 +12,9 @@
 # require guard naturally sets _have_ipcountry = GEO_ABSENT throughout this
 # file.  Subtests that exercise the "IP::Country present" code path inject the
 # sentinel and mock directly after construction, bypassing the guard.
+# Geo::IP and Geo::IPfree are NOT globally excluded — Section 9 tests both the
+# "present" path (via _inject_geoip / _inject_geoipfree) and the "absent" path
+# (by setting the sentinels to GEO_ABSENT explicitly on the object).
 
 use strict;
 use warnings;
@@ -91,6 +94,30 @@ sub _inject_ipcountry {
 	$l->{_ipcountry}      = bless {}, 'IP::Country::Fast';
 	$l->{_have_geoip}     = 0;     # GEO_ABSENT
 	$l->{_have_geoipfree} = 0;     # GEO_ABSENT
+}
+
+# Simulate "Geo::IP present" — bypasses the lazy-require + db-file guard in
+# _load_geoip() by injecting sentinels directly after construction.
+sub _inject_geoip {
+	my ($l, $cc) = @_;
+	eval { require Geo::IP };      # pre-require so mock is not overwritten on first load
+	Test::Mockingbird::mock('Geo::IP', 'country_code_by_addr', sub { $cc });
+	$l->{_have_ipcountry} = 0;     # GEO_ABSENT
+	$l->{_have_geoip}     = 1;     # GEO_PRESENT
+	$l->{_geoip}          = bless {}, 'Geo::IP';
+	$l->{_have_geoipfree} = 0;     # GEO_ABSENT
+}
+
+# Simulate "Geo::IPfree present" — bypasses the lazy-require guard.
+sub _inject_geoipfree {
+	my ($l, $cc) = @_;
+	eval { require Geo::IPfree };  # pre-require so mock is not overwritten on first load
+	# LookUp returns a list; the module takes element [0] as the country code.
+	Test::Mockingbird::mock('Geo::IPfree', 'LookUp', sub { return ($cc) });
+	$l->{_have_ipcountry} = 0;     # GEO_ABSENT
+	$l->{_have_geoip}     = 0;     # GEO_ABSENT
+	$l->{_have_geoipfree} = 1;     # GEO_PRESENT
+	$l->{_geoipfree}      = bless {}, 'Geo::IPfree';
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -275,11 +302,16 @@ subtest 'method ordering: language() result stable across multiple calls' => sub
 subtest 'IP fallback: dont_use_ip suppresses country-based language detection' => sub {
 	# With dont_use_ip, no IP lookup is made regardless of REMOTE_ADDR.
 	# language() must return Unknown when Accept-Language is also absent.
+	# country() remains callable — dont_use_ip does not disable it.
+	# Explicitly set all local geo module sentinels to GEO_ABSENT so the result
+	# is deterministic regardless of which modules are installed on the machine.
 	local %ENV = (REMOTE_ADDR => $IP{PUBLIC});
 	delete local $ENV{HTTP_ACCEPT_LANGUAGE};
 	delete local $ENV{LANG};
 
 	my $l = _obj([$LANG{EN}], dont_use_ip => 1);
+	$l->{_have_geoip}     = 0;    # GEO_ABSENT — force "no Geo::IP" path
+	$l->{_have_geoipfree} = 0;    # GEO_ABSENT — force "no Geo::IPfree" path
 	is($l->language(), 'Unknown', 'dont_use_ip: language() returns Unknown with no header');
 	ok(!defined $l->country(),    'dont_use_ip does not prevent country() call itself');
 };
@@ -511,11 +543,13 @@ subtest 'spy: LWP::Simple::WithCache::get called when IP::Country is absent (geo
 };
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# SECTION 9: Optional dependency degradation (Test::Without::Module)
+# SECTION 9: Optional dependency degradation
 #
-# Test::Without::Module qw(IP::Country) is declared at file scope.  Every
-# eval { require IP::Country } inside CGI::Lingua therefore fails, which
-# exercises the graceful fallback code paths.
+# IP::Country is blocked file-wide via Test::Without::Module.  For Geo::IP and
+# Geo::IPfree the sentinel-injection helpers (_inject_geoip, _inject_geoipfree)
+# cover the "present" path; explicit GEO_ABSENT injection covers the "absent"
+# path.  Together these four subtests walk the full fallback chain:
+#   IP::Country → Geo::IP → Geo::IPfree → geoplugin → Whois
 # ═══════════════════════════════════════════════════════════════════════════════
 
 subtest 'optional: IP::Country absent — country() falls through to geoplugin JSON' => sub {
@@ -541,6 +575,34 @@ subtest 'optional: IP::Country absent — country() falls through to geoplugin J
 		{ local $SIG{__WARN__} = sub {}; Test::Mockingbird::restore_all() }
 		_block_network();
 	}
+};
+
+subtest 'optional: Geo::IP resolves country when IP::Country absent' => sub {
+	# Strategy: inject Geo::IP as the active resolver (IP::Country is blocked
+	# file-wide).  Verifies the IP::Country → Geo::IP fallback step.
+	local %ENV = (REMOTE_ADDR => $IP{US});
+
+	my $l = _obj([$LANG{EN}]);
+	_inject_geoip($l, 'US');
+
+	is($l->country(), 'us', 'country() returns us via Geo::IP when IP::Country absent');
+
+	{ local $SIG{__WARN__} = sub {}; Test::Mockingbird::restore_all() }
+	_block_network();
+};
+
+subtest 'optional: Geo::IPfree resolves country when Geo::IP also absent' => sub {
+	# Strategy: inject Geo::IPfree with Geo::IP explicitly absent.
+	# Verifies the Geo::IP → Geo::IPfree fallback step.
+	local %ENV = (REMOTE_ADDR => $IP{GB});
+
+	my $l = _obj([$LANG{EN}]);
+	_inject_geoipfree($l, 'GB');
+
+	is($l->country(), 'gb', 'country() returns gb via Geo::IPfree when Geo::IP absent');
+
+	{ local $SIG{__WARN__} = sub {}; Test::Mockingbird::restore_all() }
+	_block_network();
 };
 
 subtest 'optional: IP::Country absent + geoplugin fails — Whois is attempted' => sub {
