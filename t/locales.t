@@ -87,24 +87,35 @@ subtest 'Case insensitivity — EN-GB' => sub {
 	Test::Mockingbird::restore_all();
 };
 
-# Concurrent instances must not share state through the cache or globals
+# Concurrent instances must not share state through the cache or globals.
+# country() reads $ENV{REMOTE_ADDR} lazily at call time, so we must keep the
+# correct REMOTE_ADDR in scope when calling country() on each object.  Both
+# objects are kept alive simultaneously (declared in the outer scope) to verify
+# true concurrent isolation — neither touches the other's _country field.
 subtest 'Concurrent instances do not share state' => sub {
 	Test::Mockingbird::mock('IP::Country::Fast', 'inet_atocc', sub {
 		my ($self_mock, $ip) = @_;
-		# Simulate different countries for different IPs
 		return $ip =~ /^8\.8/ ? 'US' : 'FR';
 	});
 
 	local %ENV = (HTTP_ACCEPT_LANGUAGE => 'en');
 
-	# Create both objects while REMOTE_ADDR differs
-	local $ENV{REMOTE_ADDR} = '8.8.8.8';
-	my $us = CGI::Lingua->new(supported => ['en', 'fr']);
+	# Create and immediately resolve each object while its REMOTE_ADDR is live.
+	# $us and $fr are declared in the outer scope so both remain alive together.
+	my ($us, $us_cc);
+	{ local $ENV{REMOTE_ADDR} = '8.8.8.8';
+	  $us    = CGI::Lingua->new(supported => ['en', 'fr']);
+	  $us_cc = $us->country(); }
 
-	local $ENV{REMOTE_ADDR} = '90.0.0.1';
-	my $fr = CGI::Lingua->new(supported => ['en', 'fr']);
+	my ($fr, $fr_cc);
+	{ local $ENV{REMOTE_ADDR} = '90.0.0.1';
+	  $fr    = CGI::Lingua->new(supported => ['en', 'fr']);
+	  $fr_cc = $fr->country(); }
 
-	isnt($us->country(), $fr->country(), 'Different IPs resolve to different countries');
+	# Both objects are live here — verify they hold independent state.
+	is($us_cc,  'us', 'US IP resolves to us');
+	is($fr_cc,  'fr', 'FR IP resolves to fr');
+	isnt($us_cc, $fr_cc, 'Different IPs resolve to different countries');
 	Test::Mockingbird::restore_all();
 };
 
