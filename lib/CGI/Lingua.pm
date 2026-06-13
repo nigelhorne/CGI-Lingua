@@ -482,7 +482,7 @@ sub _find_language
 				__PACKAGE__, ': ', __LINE__,
 				": couldn't honour HTTP_ACCEPT_LANGUAGE=$http_accept_language,"
 				. ' supported languages are: '
-				. join(',', @{$self->{supported}})
+				. join(',', @{$self->{_supported}})
 			);
 		}
 
@@ -761,8 +761,9 @@ sub _resolve_sublanguage_match
 
 		if(defined($from_cache)) {
 			$self->_debug("$variety is in cache as $from_cache");
+			# Cache stores "countryname=langcode" (e.g. "United Kingdom=en").
+			# Splitting on = gives the country name as the first field.
 			($language_name) = split(/=/, $from_cache);
-			$language_name = $self->_code2countryname($variety);
 		} else {
 			my $db = Locale::Object::DB->new();
 			my @results = @{$db->lookup(
@@ -787,10 +788,14 @@ sub _resolve_sublanguage_match
 			$self->{_sublanguage} = $language_name;
 			$self->_debug('variety name ', $self->{_sublanguage});
 			if($self->{_cache} && !defined($from_cache)) {
-				$self->_debug("Set $variety to $self->{_slanguage}=$self->{_slanguage_code_alpha2}");
+				# Store "countryname=langcode" so future cache hits return the country
+				# name in the first field.  Previously this stored the language name
+				# ("English=en" for en-gb) which was wrong — the cache-hit branch
+				# split on = and used the first field as the sublanguage (country) name.
+				$self->_debug("Set variety:$variety to $language_name=$self->{_slanguage_code_alpha2}");
 				$self->{_cache}->set(
 					$CACHE_NS . "variety:$variety",
-					"$self->{_slanguage}=$self->{_slanguage_code_alpha2}",
+					"$language_name=$self->{_slanguage_code_alpha2}",
 					$CACHE_TTL_LONG
 				);
 			}
@@ -972,11 +977,20 @@ sub _what_language {
 	}
 
 	if(defined($ENV{'LANG'})) {
-		# Running locally (debug mode) — derive from system locale
-		if(ref($self)) {
-			return $self->{_what_language} = $ENV{'LANG'};
+		# Running locally (debug mode) — derive from system locale.
+		# Apply the same untainting discipline as HTTP_ACCEPT_LANGUAGE: only
+		# alphanumeric, hyphen, underscore, and dot are legitimate in a POSIX
+		# locale name (e.g. "en_US.UTF-8", "de_DE", "ja").  Anything else is
+		# either malformed or an injection attempt; discard it silently.
+		if($ENV{'LANG'} =~ /^([A-Za-z0-9_.\-]{1,$ACCEPT_LANG_MAX})$/a) {
+			my $rc = $1;    # untainted
+			if(ref($self)) {
+				return $self->{_what_language} = $rc;
+			}
+			return $rc;
+		} elsif(ref($self)) {
+			$self->_warn({ warning => 'LANG contains invalid characters; ignoring' });
 		}
-		return $ENV{'LANG'};
 	}
 	return;
 }
@@ -993,7 +1007,8 @@ caching capability of CGI::Lingua.
 =head3 API SPECIFICATION
 
     Input:  none beyond $self
-    Returns: Str (2 lowercase chars) | 'Unknown' | undef
+    Returns: Str (2 lowercase chars) | undef
+      'Unknown' is only returned in the Baidu-EU special case via _handle_eu_country.
 
 =head3 MESSAGES
 
@@ -1280,7 +1295,7 @@ sub _handle_eu_country
 	if(subnet_matcher($BAIDU_SUBNET)->($ip)) {
 		$self->{_country} = 'cn';
 	} else {
-		$self->_info({ warning => "$ip has country of eu" });
+		$self->_info("$ip has country of eu");
 		$self->{_country} = 'Unknown';
 	}
 }
@@ -1420,7 +1435,8 @@ CGI::Lingua will make use of that, otherwise it will use L<ip-api.com>
 =head3 MESSAGES
 
     "Couldn't determine the timezone"
-    "You must have LWP::Simple::WithCache or LWP::Simple installed to connect to ip-api.com"
+    "LWP::Simple::WithCache and LWP::Simple are both absent; cannot contact ip-api.com"
+      Returns undef rather than croaking; install either LWP variant to enable ip-api lookups.
 
 =cut
 
@@ -1437,11 +1453,12 @@ sub time_zone {
 	my $raw_ip = $ENV{'REMOTE_ADDR'};
 
 	if(defined $raw_ip) {
-		# Untaint before any external use — mirrors the country() pattern
+		# Untaint before any external use — kept in sync with country()'s pattern,
+		# including the mixed-notation branch for ::ffff:a.b.c.d addresses.
 		my $ip;
 		if($raw_ip =~ /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/a) {
 			$ip = $1;
-		} elsif($raw_ip =~ /^([0-9a-fA-F:]{2,39})$/a) {
+		} elsif($raw_ip =~ /^([0-9a-fA-F:]{2,39}|[0-9a-fA-F:]{2,30}:(?:\d{1,3}\.){3}\d{1,3})$/a) {
 			$ip = $1;
 		} else {
 			$self->_warn({ warning => "$raw_ip isn't a valid IP address" });
@@ -1475,10 +1492,9 @@ sub time_zone {
 					$self->_warn({ warning => "ip-api.com returned unparseable JSON: $@" }) if $@;
 				}
 			} else {
-				if(my $logger = $self->{'logger'}) {
-					$logger->error('You must have LWP::Simple::WithCache installed to connect to ip-api.com');
-				}
-				Carp::croak('You must have LWP::Simple::WithCache or LWP::Simple installed to connect to ip-api.com');
+				# Neither LWP variant is available — degrade gracefully rather than
+				# killing the entire request with a croak; caller can check for undef.
+				$self->_warn({ warning => 'LWP::Simple::WithCache and LWP::Simple are both absent; cannot contact ip-api.com' });
 			}
 		}
 	} else {
@@ -1685,6 +1701,13 @@ The C<_*> private methods are currently accessible from outside the package.
 C<Sub::Private> should be added to enforce encapsulation once white-box tests
 are updated to call only the public API.
 
+=item * B<IPv4-mapped IPv6 addresses are normalised to IPv4>
+
+C<REMOTE_ADDR> values in the form C<::ffff:a.b.c.d> (RFC 4291 section 2.5.5)
+are silently rewritten to the embedded C<a.b.c.d> IPv4 address before any
+geo-lookup.  This is correct for country detection purposes but means the raw
+address string is not preserved in cache keys or log messages.
+
 =item * B<EU country code is irresolvable (with one exception)>
 
 IP addresses that Whois reports as country C<EU> are mapped to C<'Unknown'>
@@ -1701,8 +1724,9 @@ Nigel Horne, C<< <njh at nigelhorne.com> >>
 
 Please report any bugs or feature requests to the author.
 
-If HTTP_ACCEPT_LANGUAGE is 3 characters, e.g., es-419,
-sublanguage() returns undef.
+If C<HTTP_ACCEPT_LANGUAGE> contains a sub-tag with a 3-digit UN M.49 region
+code (e.g. C<es-419> for Latin American Spanish), C<sublanguage()> returns
+C<undef> because ISO 3166-1 does not define numeric codes.
 
 Please report any bugs or feature requests to C<bug-cgi-lingua at rt.cpan.org>,
 or through the web interface at
@@ -1710,7 +1734,7 @@ L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=CGI-Lingua>.
 I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
 
-Uses L<I18N::Acceptlanguage> to find the highest priority accepted language.
+Uses L<I18N::AcceptLanguage> to find the highest priority accepted language.
 This means that if you support languages at a lower priority, it may be missed.
 
 =head1 SEE ALSO
@@ -1723,7 +1747,7 @@ This means that if you support languages at a lower priority, it may be missed.
 
 =item * L<HTTP::BrowserDetect>
 
-=item * L<I18N::AcceptLangauge>
+=item * L<I18N::AcceptLanguage>
 
 =item * L<Locale::Country>
 

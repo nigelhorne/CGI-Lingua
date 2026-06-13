@@ -179,7 +179,8 @@ caching capability of CGI::Lingua.
 ### API SPECIFICATION
 
     Input:  none beyond $self
-    Returns: Str (2 lowercase chars) | 'Unknown' | undef
+    Returns: Str (2 lowercase chars) | undef
+      'Unknown' is only returned in the Baidu-EU special case via _handle_eu_country.
 
 ### MESSAGES
 
@@ -221,7 +222,8 @@ CGI::Lingua will make use of that, otherwise it will use [ip-api.com](https://me
 ### MESSAGES
 
     "Couldn't determine the timezone"
-    "You must have LWP::Simple::WithCache or LWP::Simple installed to connect to ip-api.com"
+    "LWP::Simple::WithCache and LWP::Simple are both absent; cannot contact ip-api.com"
+      Returns undef rather than croaking; install either LWP variant to enable ip-api lookups.
 
 # LIMITATIONS
 
@@ -259,6 +261,13 @@ CGI::Lingua will make use of that, otherwise it will use [ip-api.com](https://me
     `Sub::Private` should be added to enforce encapsulation once white-box tests
     are updated to call only the public API.
 
+- **IPv4-mapped IPv6 addresses are normalised to IPv4**
+
+    `REMOTE_ADDR` values in the form `::ffff:a.b.c.d` (RFC 4291 section 2.5.5)
+    are silently rewritten to the embedded `a.b.c.d` IPv4 address before any
+    geo-lookup.  This is correct for country detection purposes but means the raw
+    address string is not preserved in cache keys or log messages.
+
 - **EU country code is irresolvable (with one exception)**
 
     IP addresses that Whois reports as country `EU` are mapped to `'Unknown'`
@@ -273,8 +282,9 @@ Nigel Horne, `<njh at nigelhorne.com>`
 
 Please report any bugs or feature requests to the author.
 
-If HTTP\_ACCEPT\_LANGUAGE is 3 characters, e.g., es-419,
-sublanguage() returns undef.
+If `HTTP_ACCEPT_LANGUAGE` contains a sub-tag with a 3-digit UN M.49 region
+code (e.g. `es-419` for Latin American Spanish), `sublanguage()` returns
+`undef` because ISO 3166-1 does not define numeric codes.
 
 Please report any bugs or feature requests to `bug-cgi-lingua at rt.cpan.org`,
 or through the web interface at
@@ -282,7 +292,7 @@ or through the web interface at
 I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
 
-Uses [I18N::Acceptlanguage](https://metacpan.org/pod/I18N%3A%3AAcceptlanguage) to find the highest priority accepted language.
+Uses [I18N::AcceptLanguage](https://metacpan.org/pod/I18N%3A%3AAcceptLanguage) to find the highest priority accepted language.
 This means that if you support languages at a lower priority, it may be missed.
 
 # SEE ALSO
@@ -290,7 +300,7 @@ This means that if you support languages at a lower priority, it may be missed.
 - [Test Dashboard](https://nigelhorne.github.io/CGI-Info/coverage/)
 - VWF - Versatile Web Framework [https://github.com/nigelhorne/vwf](https://github.com/nigelhorne/vwf)
 - [HTTP::BrowserDetect](https://metacpan.org/pod/HTTP%3A%3ABrowserDetect)
-- [I18N::AcceptLangauge](https://metacpan.org/pod/I18N%3A%3AAcceptLangauge)
+- [I18N::AcceptLanguage](https://metacpan.org/pod/I18N%3A%3AAcceptLanguage)
 - [Locale::Country](https://metacpan.org/pod/Locale%3A%3ACountry)
 
 # SUPPORT

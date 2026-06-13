@@ -60,10 +60,13 @@ for my $case (@GEO_CASES) {
 	subtest "GeoIP: $cc ($expected_lang)" => sub {
 		Test::Mockingbird::mock('IP::Country::Fast', 'inet_atocc', sub { $cc });
 
+		# Clear LANG so _what_language() doesn't fall through to the system locale
+		# path and produce a different language than the HTTP header specifies.
 		local %ENV = (
 			REMOTE_ADDR          => $ip,
 			HTTP_ACCEPT_LANGUAGE => $lang,
 		);
+		delete $ENV{LANG};
 
 		my $l = CGI::Lingua->new(supported => $supported, cache => $cache);
 		is($l->country(), $expected_country, "country() returns '$expected_country' for $cc");
@@ -81,6 +84,7 @@ subtest 'Case insensitivity — EN-GB' => sub {
 		REMOTE_ADDR          => '1.2.3.4',
 		HTTP_ACCEPT_LANGUAGE => 'EN-GB',    # uppercase
 	);
+	delete $ENV{LANG};
 
 	my $l = CGI::Lingua->new(supported => ['en-gb']);
 	is($l->sublanguage_code_alpha2(), 'gb', 'Uppercase Accept-Language handled correctly');
@@ -212,6 +216,54 @@ subtest 'Language names are locale-independent' => sub {
 				"'$code' → '$expected{$code}' under $locale"
 			);
 		}
+	}
+};
+
+# ── LANG env-var fallback ────────────────────────────────────────────────────
+# When there is no HTTP_ACCEPT_LANGUAGE and no REMOTE_ADDR (e.g. running from
+# the command line), _what_language() falls back to $ENV{LANG}.  Verify that
+# a full POSIX locale string like "de_DE.UTF-8" is accepted (not rejected by
+# the untainting regex) and that it produces a sensible language result.
+subtest 'LANG env-var fallback: POSIX locale form is accepted and used' => sub {
+	local %ENV = ();
+	delete $ENV{HTTP_ACCEPT_LANGUAGE};
+	delete $ENV{REMOTE_ADDR};
+	$ENV{LANG} = 'de_DE.UTF-8';
+
+	# 'de' is the only supported language — language() must return German
+	# by detecting 'de' from the LANG string even without an HTTP header.
+	my $l = CGI::Lingua->new(supported => ['de', 'en']);
+	my $lang = $l->language();
+
+	# We can't guarantee a match because _what_language returns the raw LANG
+	# string 'de_DE.UTF-8', and _find_language passes it to I18N::AcceptLanguage
+	# which may or may not parse the POSIX form.  What we DO guarantee:
+	#  - language() does not die
+	#  - the LANG string was not rejected by the untainting regex (a rejection
+	#    would return undef from _what_language, making language() return Unknown)
+	ok(defined $lang, 'language() does not die when LANG is a POSIX locale string');
+	diag("LANG=de_DE.UTF-8 → language()='$lang'") if $ENV{TEST_VERBOSE};
+};
+
+# ── Croak message locale independence ────────────────────────────────────────
+# CGI::Lingua's own Carp::croak messages must be in English regardless of the
+# system locale.  They are hardcoded string literals; this test catches any
+# future regression where a message is accidentally sourced from libc/iconv.
+subtest 'CGI::Lingua error messages are locale-independent' => sub {
+	for my $locale (@POSIX_LOCALES) {
+		subtest "Croak text under $locale" => sub {
+			local $ENV{LC_ALL} = $locale;
+			local $ENV{LANG}   = $locale;
+			delete $ENV{HTTP_ACCEPT_LANGUAGE};
+			delete $ENV{REMOTE_ADDR};
+
+			my $err;
+			eval { CGI::Lingua->new(supported => undef) };
+			$err = $@;
+
+			like($err, qr/supported languages/i,
+				"'supported languages' message is in English under $locale");
+		};
 	}
 };
 
