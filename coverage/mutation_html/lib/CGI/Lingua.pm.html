@@ -246,7 +246,7 @@ pre details.mutant-details ul {
 <strong>Structural Coverage (Approximate)</strong><p>
 TER1 (Statement): 84.75%<br>
 TER2 (Branch): 76.05%<br>
-TER3 (LCSAJ): 95.9% (140/146)<br>
+TER3 (LCSAJ): 97.1% (66/68)<br>
 Approximate LCSAJ segments: 431<br>
 </div>
 
@@ -418,7 +418,7 @@ Approximate LCSAJ segments: 431<br>
 </span><span class="">  126: 
 </span><span class="">  127: sub new
 </span><span class="">  128: {
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">129 → 133 → 150</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">129 → 133 → 0</span></span>  129: 	my $class = shift;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">129 → 133 → 150</span></span>  129: 	my $class = shift;
 </span><span class="">  130: 	my $params = Params::Get::get_params(&#39;supported&#39;, @_);
 </span><span class="">  131: 
 </span><span class="">  132: 	# Handle ::new() misuse
@@ -439,7 +439,7 @@ Approximate LCSAJ segments: 431<br>
 </span><span class="">  147: 	# Validate blessed logger objects before Object::Configure runs.
 </span><span class="">  148: 	# Non-blessed values (arrayrefs, hashrefs) are valid config forms that
 </span><span class="">  149: 	# Object::Configure knows how to convert into a Log::Abstraction instance.
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">150 → 150 → 160</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">150 → 150 → 0</span></span>  150: 	if(defined $params-&gt;{&#39;logger&#39;} &amp;&amp; blessed($params-&gt;{&#39;logger&#39;})) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">150 → 150 → 160</span></span>  150: 	if(defined $params-&gt;{&#39;logger&#39;} &amp;&amp; blessed($params-&gt;{&#39;logger&#39;})) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic.">  151: 		unless(
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="">  152: 			$params-&gt;{&#39;logger&#39;}-&gt;can(&#39;warn&#39;)
 </span><span class="">  153: 			&amp;&amp; $params-&gt;{&#39;logger&#39;}-&gt;can(&#39;info&#39;)
@@ -449,7 +449,7 @@ Approximate LCSAJ segments: 431<br>
 </span><span class="">  157: 		}
 </span><span class="">  158: 	}
 </span><span class="">  159: 
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">160 → 164 → 180</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">160 → 164 → 0</span></span>  160: 	$params = Object::Configure::configure($class, $params);
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">160 → 164 → 180</span></span>  160: 	$params = Object::Configure::configure($class, $params);
 </span><span class="">  161: 
 </span><span class="">  162: 	# Normalise supported / supported_languages alias
 </span><span class="">  163: 	$params-&gt;{&#39;supported&#39;} ||= $params-&gt;{&#39;supported_languages&#39;};
@@ -469,7 +469,7 @@ Approximate LCSAJ segments: 431<br>
 </span><span class="">  177: 		Carp::croak(&#39;You must give a list of supported languages&#39;);
 </span><span class="">  178: 	}
 </span><span class="">  179: 
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">180 → 184 → 206</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">180 → 184 → 0</span></span>  180: 	my $cache = $params-&gt;{cache};
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">180 → 184 → 206</span></span>  180: 	my $cache = $params-&gt;{cache};
 </span><span class="">  181: 	my $info  = $params-&gt;{info};
 </span><span class="">  182: 
 </span><span class="">  183: 	# Try to restore a frozen state from the cache before doing any work
@@ -495,7 +495,7 @@ Approximate LCSAJ segments: 431<br>
 </span><p> <b> Mutants (Total: 2, Killed: 2, Survived: 0)</b><p><span class="">  203: 		}
 </span><span class="">  204: 	}
 </span><span class="">  205: 
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot-uncovered">●</span><span class="lcsaj-tip-text">[NOT COVERED] 206 → 206 → 0</span></span>  206: 	return bless {
+</span><span class="">  206: 	return bless {
 </span><span class="">  207: 		%{$params},
 </span><span class="">  208: 		_supported =&gt; ref($params-&gt;{supported}) ? $params-&gt;{supported} : [ $params-&gt;{&#39;supported&#39;} ],
 </span><span class="">  209: 		_cache           =&gt; $cache,
@@ -519,7 +519,7 @@ Approximate LCSAJ segments: 431<br>
 </span><span class="">  227: # Exit:         A plain string key of the form &quot;ip/lang/lang1/lang2/...&quot;
 </span><span class="">  228: sub _build_cache_key
 </span><span class="">  229: {
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">230 → 237 → 248</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">230 → 237 → 0</span></span>  230: 	my ($addr, $params, $class, $info) = @_;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">230 → 237 → 248</span></span>  230: 	my ($addr, $params, $class, $info) = @_;
 </span><span class="">  231: 
 </span><span class="">  232: 	my $key = &quot;$addr/&quot;;
 </span><span class="">  233: 
@@ -537,18 +537,18 @@ Approximate LCSAJ segments: 431<br>
 </span><span class="">  245: 	# Result: arrayref-supported always fell through to the else branch and
 </span><span class="">  246: 	# stringified to &#39;ARRAY(0x...)&#39; &acirc;&#128;&#148; a different address every request &acirc;&#128;&#148;
 </span><span class="">  247: 	# making cache lookups in new() permanently fail.
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">248 → 248 → 254</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">248 → 248 → 0</span></span>  248: 	if(ref($params-&gt;{&#39;supported&#39;}) eq &#39;ARRAY&#39;) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">248 → 248 → 254</span></span>  248: 	if(ref($params-&gt;{&#39;supported&#39;}) eq &#39;ARRAY&#39;) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="">  249: 		$key .= join(&#39;/&#39;, @{$params-&gt;{supported}});
 </span><span class="">  250: 	} else {
 </span><span class="">  251: 		$key .= $params-&gt;{&#39;supported&#39;};
 </span><span class="">  252: 	}
 </span><span class="">  253: 
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">254 → 254 → 0</span></span>  254: 	return $key;
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic.">  254: 	return $key;
 </span><p> <b> Mutants (Total: 2, Killed: 2, Survived: 0)</b><p><span class="">  255: }
 </span><span class="">  256: 
 </span><span class="">  257: # Some of the information takes a long time to work out, so cache what we can
 </span><span class="">  258: sub DESTROY {
-</span><span class="survived-1 tooltip" data-tooltip="Mutation survived. Add targeted tests to validate this branch."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">259 → 259 → 262</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">259 → 259 → 0</span></span>  259: 	if(defined($^V) &amp;&amp; ($^V ge &#39;v5.14.0&#39;)) {
+</span><span class="survived-1 tooltip" data-tooltip="Mutation survived. Add targeted tests to validate this branch."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">259 → 259 → 262</span></span>  259: 	if(defined($^V) &amp;&amp; ($^V ge &#39;v5.14.0&#39;)) {
 </span>
 					<details class="mutant-details">
 					<summary>Mutants (Total: 1, Killed: 0, Survived: 1)</summary>
@@ -557,7 +557,7 @@ Approximate LCSAJ segments: 431<br>
 </li></ul></details>
 <span class="">  260: 		return if ${^GLOBAL_PHASE} eq &#39;DESTRUCT&#39;;
 </span><span class="">  261: 	}
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">262 → 294 → 0</span></span>  262: 	return unless $ENV{&#39;REMOTE_ADDR&#39;};
+</span><span class="">  262: 	return unless $ENV{&#39;REMOTE_ADDR&#39;};
 </span><span class="">  263: 
 </span><span class="">  264: 	my $self = shift;
 </span><span class="">  265: 	return unless ref($self);
@@ -746,7 +746,7 @@ Approximate LCSAJ segments: 431<br>
 </span><span class="">  448: # Side Effects: Populates _rlanguage, _sublanguage, *_code_alpha2 fields.
 </span><span class="">  449: sub _find_language
 </span><span class="">  450: {
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">451 → 459 → 512</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">451 → 459 → 0</span></span>  451: 	my $self = shift;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">451 → 459 → 512</span></span>  451: 	my $self = shift;
 </span><span class="">  452: 
 </span><span class="">  453: 	$self-&gt;_trace(&#39;Entered _find_language&#39;);
 </span><span class="">  454: 
@@ -844,7 +844,7 @@ is( func(VALUE_AT_BOUNDARY), EXPECTED, &#39;Test boundary behaviour&#39; );
 </span><span class="">  509: 		$self-&gt;{_slanguage} = &#39;Unknown&#39;;
 </span><span class="">  510: 	}
 </span><span class="">  511: 
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">512 → 515 → 0</span></span>  512: 	return if $self-&gt;{_dont_use_ip};
+</span><span class="">  512: 	return if $self-&gt;{_dont_use_ip};
 </span><span class="">  513: 
 </span><span class="">  514: 	# Fall back to the official language of the visitor&#39;s country
 </span><span class="">  515: 	$self-&gt;_find_language_from_ip($http_accept_language);
@@ -858,7 +858,7 @@ is( func(VALUE_AT_BOUNDARY), EXPECTED, &#39;Test boundary behaviour&#39; );
 </span><span class="">  523: # Side Effects: Logs debug messages.
 </span><span class="">  524: sub _accept_language_match
 </span><span class="">  525: {
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">526 → 538 → 543</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">526 → 538 → 0</span></span>  526: 	my ($self, $http_accept_language) = @_;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">526 → 538 → 543</span></span>  526: 	my ($self, $http_accept_language) = @_;
 </span><span class="">  527: 
 </span><span class="">  528: 	# Suppress I18N::AcceptLanguage&#39;s uninitialized-value warnings (RT 74338)
 </span><span class="">  529: 	local $SIG{__WARN__} = sub {
@@ -875,19 +875,19 @@ is( func(VALUE_AT_BOUNDARY), EXPECTED, &#39;Test boundary behaviour&#39; );
 </span><span class="">  540: 		undef $l;
 </span><span class="">  541: 	}
 </span><span class="">  542: 
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">543 → 544 → 549</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">543 → 544 → 0</span></span>  543: 	my $requested_sublanguage;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">543 → 544 → 549</span></span>  543: 	my $requested_sublanguage;
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic.">  544: 	if(!$l) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="">  545: 		# First fallback: scan for xx-yy pairs, try base language xx
 </span><span class="">  546: 		($l, $requested_sublanguage) =
 </span><span class="">  547: 			$self-&gt;_scan_sublanguage_pairs($i18n, $http_accept_language);
 </span><span class="">  548: 	}
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">549 → 549 → 555</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">549 → 549 → 0</span></span>  549: 	if(!$l) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">549 → 549 → 555</span></span>  549: 	if(!$l) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="">  550: 		# Second fallback: scan plain tokens without sublanguages
 </span><span class="">  551: 		$l = $self-&gt;_scan_plain_tokens($i18n, $http_accept_language);
 </span><span class="">  552: 		undef $requested_sublanguage if $l;
 </span><span class="">  553: 	}
 </span><span class="">  554: 
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">555 → 555 → 0</span></span>  555: 	return ($l, $requested_sublanguage);
+</span><span class="">  555: 	return ($l, $requested_sublanguage);
 </span><span class="">  556: }
 </span><span class="">  557: 
 </span><span class="">  558: # &acirc;&#148;&#128;&acirc;&#148;&#128; _scan_sublanguage_pairs &acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;
@@ -898,7 +898,7 @@ is( func(VALUE_AT_BOUNDARY), EXPECTED, &#39;Test boundary behaviour&#39; );
 </span><span class="">  563: # Side Effects: Debug logging.
 </span><span class="">  564: sub _scan_sublanguage_pairs
 </span><span class="">  565: {
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">566 → 569 → 577</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">566 → 569 → 0</span></span>  566: 	my ($self, $i18n, $header) = @_;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">566 → 569 → 577</span></span>  566: 	my ($self, $i18n, $header) = @_;
 </span><span class="">  567: 
 </span><span class="">  568: 	$self-&gt;_debug(__PACKAGE__, &#39;: &#39;, __LINE__, &quot;: look through $header for alternatives&quot;);
 </span><span class="">  569: 	while($header =~ /(..)\-(..)/g) {
@@ -909,7 +909,7 @@ is( func(VALUE_AT_BOUNDARY), EXPECTED, &#39;Test boundary behaviour&#39; );
 </span><span class="">  574: 			return ($base, $sub);
 </span><span class="">  575: 		}
 </span><span class="">  576: 	}
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">577 → 577 → 0</span></span>  577: 	return (undef, undef);
+</span><span class="">  577: 	return (undef, undef);
 </span><span class="">  578: }
 </span><span class="">  579: 
 </span><span class="">  580: # &acirc;&#148;&#128;&acirc;&#148;&#128; _scan_plain_tokens &acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;
@@ -920,7 +920,7 @@ is( func(VALUE_AT_BOUNDARY), EXPECTED, &#39;Test boundary behaviour&#39; );
 </span><span class="">  585: # Side Effects: Debug logging.
 </span><span class="">  586: sub _scan_plain_tokens
 </span><span class="">  587: {
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">588 → 591 → 600</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">588 → 591 → 0</span></span>  588: 	my ($self, $i18n, $header) = @_;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">588 → 591 → 600</span></span>  588: 	my ($self, $i18n, $header) = @_;
 </span><span class="">  589: 
 </span><span class="">  590: 	$self-&gt;_debug(__PACKAGE__, &#39;: &#39;, __LINE__, &quot;: look harder through $header for alternatives&quot;);
 </span><span class="">  591: 	foreach my $possible(split(/,/, $header)) {
@@ -932,7 +932,7 @@ is( func(VALUE_AT_BOUNDARY), EXPECTED, &#39;Test boundary behaviour&#39; );
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic.">  597: 			return $possible;
 </span><p> <b> Mutants (Total: 2, Killed: 2, Survived: 0)</b><p><span class="">  598: 		}
 </span><span class="">  599: 	}
-</span><span class="survived-2 tooltip" data-tooltip="Boolean logic mutation survived. Add tests covering both true and false paths. Return value mutation survived. Add tests asserting exact return values."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">600 → 600 → 0</span></span>  600: 	return undef;
+</span><span class="survived-2 tooltip" data-tooltip="Boolean logic mutation survived. Add tests covering both true and false paths. Return value mutation survived. Add tests asserting exact return values.">  600: 	return undef;
 </span>
 					<details class="mutant-details">
 					<summary>Mutants (Total: 2, Killed: 0, Survived: 2)</summary>
@@ -965,7 +965,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class="">  609: # Side Effects: Mutates $self-&gt;{_slanguage}, _rlanguage, _sublanguage, etc.
 </span><span class="">  610: sub _resolve_match
 </span><span class="">  611: {
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">612 → 616 → 623</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">612 → 616 → 0</span></span>  612: 	my ($self, $l, $requested_sublanguage, $http_accept_language) = @_;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">612 → 616 → 623</span></span>  612: 	my ($self, $l, $requested_sublanguage, $http_accept_language) = @_;
 </span><span class="">  613: 
 </span><span class="">  614: 	$self-&gt;_debug(&quot;l: $l&quot;);
 </span><span class="">  615: 
@@ -997,7 +997,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 								</div>
 							</li></ul></details>
 <span class="">  622: 	}
-</span><span class="survived-2 tooltip" data-tooltip="Return value mutation survived. Add tests asserting exact return values. Boolean logic mutation survived. Add tests covering both true and false paths."><span class="lcsaj-tip"><span class="lcsaj-dot-uncovered">●</span><span class="lcsaj-tip-text">[NOT COVERED] 623 → 623 → 0</span></span>  623: 	return 0;
+</span><span class="survived-2 tooltip" data-tooltip="Return value mutation survived. Add tests asserting exact return values. Boolean logic mutation survived. Add tests covering both true and false paths.">  623: 	return 0;
 </span>
 					<details class="mutant-details">
 					<summary>Mutants (Total: 2, Killed: 0, Survived: 2)</summary>
@@ -1030,7 +1030,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class="">  632: # Side Effects: Mutates slanguage, rlanguage, slanguage_code_alpha2.
 </span><span class="">  633: sub _resolve_base_match
 </span><span class="">  634: {
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">635 → 646 → 655</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">635 → 646 → 0</span></span>  635: 	my ($self, $l, $requested_sublanguage, $header) = @_;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">635 → 646 → 655</span></span>  635: 	my ($self, $l, $requested_sublanguage, $header) = @_;
 </span><span class="">  636: 
 </span><span class="">  637: 	$self-&gt;{_slanguage} = $self-&gt;_code2language($l);
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic.">  638: 	return 0 unless $self-&gt;{_slanguage};
@@ -1050,7 +1050,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class="">  652: 		$self-&gt;_info($@) if $@;
 </span><span class="">  653: 	}
 </span><span class="">  654: 
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">655 → 655 → 664</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">655 → 655 → 0</span></span>  655: 	if($sl) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">655 → 655 → 664</span></span>  655: 	if($sl) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="">  656: 		$self-&gt;{_rlanguage} .= &#39; (&#39; . $sl-&gt;name() . &#39;)&#39;;
 </span><span class="">  657: 	} elsif($requested_sublanguage) {
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic.">  658: 		if(my $c = $self-&gt;_code2countryname($requested_sublanguage)) {
@@ -1059,7 +1059,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class="">  661: 			$self-&gt;{_rlanguage} .= &quot; (Unknown: $requested_sublanguage)&quot;;
 </span><span class="">  662: 		}
 </span><span class="">  663: 	}
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">664 → 664 → 0</span></span>  664: 	return 1;
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic.">  664: 	return 1;
 </span><p> <b> Mutants (Total: 2, Killed: 2, Survived: 0)</b><p><span class="">  665: }
 </span><span class="">  666: 
 </span><span class="">  667: # &acirc;&#148;&#128;&acirc;&#148;&#128; _resolve_sublanguage_match &acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;
@@ -1072,7 +1072,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class="">  674: #               writes to cache.
 </span><span class="">  675: sub _resolve_sublanguage_match
 </span><span class="">  676: {
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">677 → 683 → 738</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">677 → 683 → 0</span></span>  677: 	my ($self, $l, $alpha2, $variety, $header) = @_;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">677 → 683 → 738</span></span>  677: 	my ($self, $l, $alpha2, $variety, $header) = @_;
 </span><span class="">  678: 
 </span><span class="">  679: 	my $i18n    = I18N::AcceptLanguage-&gt;new(strict =&gt; 1);
 </span><span class="">  680: 	my $accepts = $i18n-&gt;accepts($l, $self-&gt;{_supported});
@@ -1180,7 +1180,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class="">  728: 						$CACHE_TTL_LONG
 </span><span class="">  729: 					) if $self-&gt;{_cache};
 </span><span class="">  730: 				}
-</span><span class="survived-2 tooltip" data-tooltip="Boolean logic mutation survived. Add tests covering both true and false paths. Return value mutation survived. Add tests asserting exact return values.">  731: 				return 1;
+</span><span class="survived-2 tooltip" data-tooltip="Return value mutation survived. Add tests asserting exact return values. Boolean logic mutation survived. Add tests covering both true and false paths.">  731: 				return 1;
 </span>
 					<details class="mutant-details">
 					<summary>Mutants (Total: 2, Killed: 0, Survived: 2)</summary>
@@ -1208,7 +1208,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class="">  735: 
 </span><span class="">  736: 	# Accepts returned something but we couldn&#39;t resolve a language name &acirc;&#128;&#148;
 </span><span class="">  737: 	# try harder using the variety code directly
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">738 → 748 → 805</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">738 → 748 → 0</span></span>  738: 	$self-&gt;{_rlanguage} = $self-&gt;_code2language($alpha2);
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">738 → 748 → 805</span></span>  738: 	$self-&gt;{_rlanguage} = $self-&gt;_code2language($alpha2);
 </span><span class="">  739: 	$self-&gt;_debug(&quot;_rlanguage: $self-&gt;{_rlanguage}&quot;);
 </span><span class="">  740: 
 </span><span class="survived-2 tooltip" data-tooltip="Return value mutation survived. Add tests asserting exact return values. Boolean logic mutation survived. Add tests covering both true and false paths.">  741: 	return 0 unless $accepts;
@@ -1296,10 +1296,10 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class="">  802: 		}
 </span><span class="">  803: 	}
 </span><span class="">  804: 
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">805 → 805 → 810</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">805 → 805 → 0</span></span>  805: 	if(defined($self-&gt;{_sublanguage})) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">805 → 805 → 810</span></span>  805: 	if(defined($self-&gt;{_sublanguage})) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="">  806: 		$self-&gt;{_rlanguage} = &quot;$self-&gt;{_slanguage} ($self-&gt;{_sublanguage})&quot;;
 </span><span class="">  807: 		$self-&gt;{_sublanguage_code_alpha2} = $variety;
-</span><span class="survived-2 tooltip" data-tooltip="Return value mutation survived. Add tests asserting exact return values. Boolean logic mutation survived. Add tests covering both true and false paths.">  808: 		return 1;
+</span><span class="survived-2 tooltip" data-tooltip="Boolean logic mutation survived. Add tests covering both true and false paths. Return value mutation survived. Add tests asserting exact return values.">  808: 		return 1;
 </span>
 					<details class="mutant-details">
 					<summary>Mutants (Total: 2, Killed: 0, Survived: 2)</summary>
@@ -1322,7 +1322,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 								</div>
 							</li></ul></details>
 <span class="">  809: 	}
-</span><span class="survived-2 tooltip" data-tooltip="Boolean logic mutation survived. Add tests covering both true and false paths. Return value mutation survived. Add tests asserting exact return values."><span class="lcsaj-tip"><span class="lcsaj-dot-uncovered">●</span><span class="lcsaj-tip-text">[NOT COVERED] 810 → 810 → 0</span></span>  810: 	return 0;
+</span><span class="survived-2 tooltip" data-tooltip="Boolean logic mutation survived. Add tests covering both true and false paths. Return value mutation survived. Add tests asserting exact return values.">  810: 	return 0;
 </span>
 					<details class="mutant-details">
 					<summary>Mutants (Total: 2, Killed: 0, Survived: 2)</summary>
@@ -1355,7 +1355,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class="">  819: # Side Effects: Calls country(); may write to cache.
 </span><span class="">  820: sub _find_language_from_ip
 </span><span class="">  821: {
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">822 → 827 → 834</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">822 → 827 → 0</span></span>  822: 	my ($self, $http_accept_language) = @_;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">822 → 827 → 834</span></span>  822: 	my ($self, $http_accept_language) = @_;
 </span><span class="">  823: 
 </span><span class="">  824: 	my $country = $self-&gt;country();
 </span><span class="">  825: 
@@ -1379,7 +1379,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class="">  831: 			$country = $1;
 </span><span class="">  832: 		}
 </span><span class="">  833: 	}
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">834 → 839 → 843</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">834 → 839 → 0</span></span>  834: 	return unless defined $country;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">834 → 839 → 843</span></span>  834: 	return unless defined $country;
 </span><span class="">  835: 
 </span><span class="">  836: 	$self-&gt;_debug(&quot;country: $country&quot;);
 </span><span class="">  837: 
@@ -1388,7 +1388,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="">  840: 		$from_cache = $self-&gt;{_cache}-&gt;get($CACHE_NS . &#39;language_name:&#39; . $country);
 </span><span class="">  841: 	}
 </span><span class="">  842: 
-</span><span class="survived-1 tooltip" data-tooltip="Mutation survived. Add targeted tests to validate this branch."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">843 → 843 → 858</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">843 → 843 → 0</span></span>  843: 	if($from_cache) {
+</span><span class="survived-1 tooltip" data-tooltip="Mutation survived. Add targeted tests to validate this branch."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">843 → 843 → 858</span></span>  843: 	if($from_cache) {
 </span>
 					<details class="mutant-details">
 					<summary>Mutants (Total: 1, Killed: 0, Survived: 1)</summary>
@@ -1415,7 +1415,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class="">  855: 		}
 </span><span class="">  856: 	}
 </span><span class="">  857: 
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">858 → 861 → 865</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">858 → 861 → 0</span></span>  858: 	my $ip = $ENV{&#39;REMOTE_ADDR&#39;};
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">858 → 861 → 865</span></span>  858: 	my $ip = $ENV{&#39;REMOTE_ADDR&#39;};
 </span><span class="">  859: 	return unless $language_name;
 </span><span class="">  860: 
 </span><span class="survived-1 tooltip" data-tooltip="Mutation survived. Add targeted tests to validate this branch.">  861: 	if((!defined($self-&gt;{_rlanguage})) || ($self-&gt;{_rlanguage} eq &#39;Unknown&#39;)) {
@@ -1428,7 +1428,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 <span class="">  862: 		$self-&gt;{_rlanguage} = $language_name;
 </span><span class="">  863: 	}
 </span><span class="">  864: 
-</span><span class="survived-1 tooltip" data-tooltip="Mutation survived. Add targeted tests to validate this branch."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">865 → 865 → 910</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">865 → 865 → 0</span></span>  865: 	unless((exists $self-&gt;{_slanguage}) &amp;&amp; ($self-&gt;{_slanguage} ne &#39;Unknown&#39;)) {
+</span><span class="survived-1 tooltip" data-tooltip="Mutation survived. Add targeted tests to validate this branch."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">865 → 865 → 910</span></span>  865: 	unless((exists $self-&gt;{_slanguage}) &amp;&amp; ($self-&gt;{_slanguage} ne &#39;Unknown&#39;)) {
 </span>
 					<details class="mutant-details">
 					<summary>Mutants (Total: 1, Killed: 0, Survived: 1)</summary>
@@ -1579,7 +1579,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class="">  947: # Exit:         A validated language string, or undef if nothing available.
 </span><span class="">  948: # Side Effects: Caches result in $self-&gt;{_what_language} on object calls.
 </span><span class="">  949: sub _what_language {
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">950 → 952 → 966</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">950 → 952 → 0</span></span>  950: 	my $self = $_[0];
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">950 → 952 → 966</span></span>  950: 	my $self = $_[0];
 </span><span class="">  951: 
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic.">  952: 	if(ref($self)) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="">  953: 		$self-&gt;_trace(&#39;Entered _what_language&#39;);
@@ -1595,7 +1595,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class="">  963: 		}
 </span><span class="">  964: 	}
 </span><span class="">  965: 
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">966 → 966 → 979</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">966 → 966 → 0</span></span>  966: 	if(my $raw_lang = $ENV{&#39;HTTP_ACCEPT_LANGUAGE&#39;}) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">966 → 966 → 979</span></span>  966: 	if(my $raw_lang = $ENV{&#39;HTTP_ACCEPT_LANGUAGE&#39;}) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="">  967: 		# Validate and untaint &acirc;&#128;&#148; RFC 7231 &Acirc;&sect;5.3.5 character set plus * wildcard
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic.">  968: 		if($raw_lang =~ /^([A-Za-z0-9\-,;=.*\s]{1,$ACCEPT_LANG_MAX})$/a) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="">  969: 			my $rc = $1;    # untainted
@@ -1608,7 +1608,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class="">  976: 		}
 </span><span class="">  977: 	}
 </span><span class="">  978: 
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">979 → 979 → 995</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">979 → 979 → 0</span></span>  979: 	if(defined($ENV{&#39;LANG&#39;})) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">979 → 979 → 995</span></span>  979: 	if(defined($ENV{&#39;LANG&#39;})) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="">  980: 		# Running locally (debug mode) &acirc;&#128;&#148; derive from system locale.
 </span><span class="">  981: 		# Apply the same untainting discipline as HTTP_ACCEPT_LANGUAGE: only
 </span><span class="">  982: 		# alphanumeric, hyphen, underscore, and dot are legitimate in a POSIX
@@ -1651,7 +1651,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class="">  992: 			$self-&gt;_warn({ warning =&gt; &#39;LANG contains invalid characters; ignoring&#39; });
 </span><span class="">  993: 		}
 </span><span class="">  994: 	}
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">995 → 995 → 0</span></span>  995: 	return;
+</span><span class="">  995: 	return;
 </span><span class="">  996: }
 </span><span class="">  997: 
 </span><span class="">  998: =head2 country
@@ -1682,7 +1682,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1023: =cut
 </span><span class=""> 1024: 
 </span><span class=""> 1025: sub country {
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1026 → 1031 → 1037</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1026 → 1031 → 0</span></span> 1026: 	my $self = shift;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1026 → 1031 → 1037</span></span> 1026: 	my $self = shift;
 </span><span class=""> 1027: 
 </span><span class=""> 1028: 	$self-&gt;_trace(__PACKAGE__, &#39;: Entered country()&#39;);
 </span><span class=""> 1029: 
@@ -1693,7 +1693,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><p> <b> Mutants (Total: 2, Killed: 2, Survived: 0)</b><p><span class=""> 1034: 	}
 </span><span class=""> 1035: 
 </span><span class=""> 1036: 	# mod_geoip: validate against ISO 3166-1 alpha-2 before trusting
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1037 → 1037 → 1047</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1037 → 1037 → 0</span></span> 1037: 	if(defined($ENV{&#39;GEOIP_COUNTRY_CODE&#39;})) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1037 → 1037 → 1047</span></span> 1037: 	if(defined($ENV{&#39;GEOIP_COUNTRY_CODE&#39;})) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1038: 		if($ENV{&#39;GEOIP_COUNTRY_CODE&#39;} =~ /^([A-Z]{2})$/a) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class=""> 1039: 			$self-&gt;{_country} = lc($1);
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1040: 			return $self-&gt;{_country};
@@ -1703,7 +1703,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1044: 	}
 </span><span class=""> 1045: 
 </span><span class=""> 1046: 	# Cloudflare: &#39;XX&#39; means Cloudflare couldn&#39;t determine country &acirc;&#128;&#148; skip it
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1047 → 1047 → 1056</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1047 → 1047 → 0</span></span> 1047: 	if(($ENV{&#39;HTTP_CF_IPCOUNTRY&#39;}) &amp;&amp; ($ENV{&#39;HTTP_CF_IPCOUNTRY&#39;} ne &#39;XX&#39;)) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1047 → 1047 → 1056</span></span> 1047: 	if(($ENV{&#39;HTTP_CF_IPCOUNTRY&#39;}) &amp;&amp; ($ENV{&#39;HTTP_CF_IPCOUNTRY&#39;} ne &#39;XX&#39;)) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1048: 		if($ENV{&#39;HTTP_CF_IPCOUNTRY&#39;} =~ /^([A-Z]{2})$/a) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class=""> 1049: 			$self-&gt;{_country} = lc($1);
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1050: 			return $self-&gt;{_country};
@@ -1712,7 +1712,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1053: 		}
 </span><span class=""> 1054: 	}
 </span><span class=""> 1055: 
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1056 → 1061 → 1070</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1056 → 1061 → 0</span></span> 1056: 	my $raw_ip = $ENV{&#39;REMOTE_ADDR&#39;};
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1056 → 1061 → 1070</span></span> 1056: 	my $raw_ip = $ENV{&#39;REMOTE_ADDR&#39;};
 </span><span class=""> 1057: 	return unless defined $raw_ip;
 </span><span class=""> 1058: 
 </span><span class=""> 1059: 	# Validate and untaint the IP address before passing to any geo module
@@ -1726,7 +1726,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1067: 		return;
 </span><span class=""> 1068: 	}
 </span><span class=""> 1069: 
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1070 → 1073 → 1084</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1070 → 1073 → 0</span></span> 1070: 	require Data::Validate::IP;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1070 → 1073 → 1084</span></span> 1070: 	require Data::Validate::IP;
 </span><span class=""> 1071: 	Data::Validate::IP-&gt;import();
 </span><span class=""> 1072: 
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1073: 	if(!is_ipv4($ip)) {
@@ -1746,17 +1746,17 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1081: 			return;
 </span><span class=""> 1082: 		}
 </span><span class=""> 1083: 	}
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1084 → 1084 → 1088</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1084 → 1084 → 0</span></span> 1084: 	if(is_private_ip($ip)) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1084 → 1084 → 1088</span></span> 1084: 	if(is_private_ip($ip)) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class=""> 1085: 		$self-&gt;_debug(&quot;Can&#39;t determine country from LAN connection $ip&quot;);
 </span><span class=""> 1086: 		return;
 </span><span class=""> 1087: 	}
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1088 → 1088 → 1094</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1088 → 1088 → 0</span></span> 1088: 	if(is_loopback_ip($ip)) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1088 → 1088 → 1094</span></span> 1088: 	if(is_loopback_ip($ip)) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class=""> 1089: 		$self-&gt;_debug(&quot;Can&#39;t determine country from loopback connection $ip&quot;);
 </span><span class=""> 1090: 		return;
 </span><span class=""> 1091: 	}
 </span><span class=""> 1092: 
 </span><span class=""> 1093: 	# Cache look-up &acirc;&#128;&#148; skip for LAN/loopback (already returned above)
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1094 → 1094 → 1110</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1094 → 1094 → 0</span></span> 1094: 	if($self-&gt;{_cache}) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1094 → 1094 → 1110</span></span> 1094: 	if($self-&gt;{_cache}) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class=""> 1095: 		$self-&gt;{_country} = $self-&gt;{_cache}-&gt;get($CACHE_NS . &quot;country:$ip&quot;);
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1096: 		if(defined($self-&gt;{_country})) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1097: 			if($self-&gt;{_country} !~ /\D/) {
@@ -1772,7 +1772,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1107: 	}
 </span><span class=""> 1108: 
 </span><span class=""> 1109: 	# Try IP::Country first (fastest, local database)
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1110 → 1110 → 1119</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1110 → 1110 → 0</span></span> 1110: 	if($self-&gt;{_have_ipcountry} == $GEO_UNKNOWN) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1110 → 1110 → 1119</span></span> 1110: 	if($self-&gt;{_have_ipcountry} == $GEO_UNKNOWN) {
 </span><p> <b> Mutants (Total: 2, Killed: 2, Survived: 0)</b><p><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1111: 		if(eval { require IP::Country }) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class=""> 1112: 			IP::Country-&gt;import();
 </span><span class=""> 1113: 			$self-&gt;{_have_ipcountry} = $GEO_PRESENT;
@@ -1781,7 +1781,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1116: 			$self-&gt;{_have_ipcountry} = $GEO_ABSENT;
 </span><span class=""> 1117: 		}
 </span><span class=""> 1118: 	}
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1119 → 1121 → 1131</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1119 → 1121 → 0</span></span> 1119: 	$self-&gt;_debug(&quot;have_ipcountry $self-&gt;{_have_ipcountry}&quot;);
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1119 → 1121 → 1131</span></span> 1119: 	$self-&gt;_debug(&quot;have_ipcountry $self-&gt;{_have_ipcountry}&quot;);
 </span><span class=""> 1120: 
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1121: 	if($self-&gt;{_have_ipcountry}) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class=""> 1122: 		$self-&gt;{_country} = $self-&gt;{_ipcountry}-&gt;inet_atocc($ip);
@@ -1793,7 +1793,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1128: 	}
 </span><span class=""> 1129: 
 </span><span class=""> 1130: 	# Try Geo::IP if IP::Country gave nothing
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1131 → 1131 → 1160</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1131 → 1131 → 0</span></span> 1131: 	unless(defined($self-&gt;{_country})) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1131 → 1131 → 1160</span></span> 1131: 	unless(defined($self-&gt;{_country})) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1132: 		if($self-&gt;{_have_geoip} == $GEO_UNKNOWN) {
 </span><p> <b> Mutants (Total: 2, Killed: 2, Survived: 0)</b><p><span class=""> 1133: 			$self-&gt;_load_geoip();
 </span><span class=""> 1134: 		}
@@ -1828,12 +1828,12 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1157: 	}
 </span><span class=""> 1158: 
 </span><span class=""> 1159: 	# &#39;eu&#39; is not a real country &acirc;&#128;&#148; discard
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1160 → 1160 → 1165</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1160 → 1160 → 0</span></span> 1160: 	if($self-&gt;{_country} &amp;&amp; ($self-&gt;{_country} eq &#39;eu&#39;)) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1160 → 1160 → 1165</span></span> 1160: 	if($self-&gt;{_country} &amp;&amp; ($self-&gt;{_country} eq &#39;eu&#39;)) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class=""> 1161: 		delete $self-&gt;{_country};
 </span><span class=""> 1162: 	}
 </span><span class=""> 1163: 
 </span><span class=""> 1164: 	# Remote JSON lookup via geoplugin
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1165 → 1165 → 1178</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1165 → 1165 → 0</span></span> 1165: 	if((!$self-&gt;{_country}) &amp;&amp;
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1165 → 1165 → 1178</span></span> 1165: 	if((!$self-&gt;{_country}) &amp;&amp;
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class=""> 1166: 	   (eval { require LWP::Simple::WithCache; require JSON::Parse })) {
 </span><span class=""> 1167: 		$self-&gt;_debug(&quot;Look up $ip on geoplugin&quot;);
 </span><span class=""> 1168: 		LWP::Simple::WithCache-&gt;import();
@@ -1852,12 +1852,12 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1175: 	}
 </span><span class=""> 1176: 
 </span><span class=""> 1177: 	# Last resort: Whois
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1178 → 1178 → 1183</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1178 → 1178 → 0</span></span> 1178: 	unless($self-&gt;{_country}) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1178 → 1178 → 1183</span></span> 1178: 	unless($self-&gt;{_country}) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class=""> 1179: 		$self-&gt;_resolve_country_via_whois($ip);
 </span><span class=""> 1180: 	}
 </span><span class=""> 1181: 
 </span><span class=""> 1182: 	# Sanitise and normalise whatever we found
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1183 → 1183 → 1211</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1183 → 1183 → 0</span></span> 1183: 	if($self-&gt;{_country}) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1183 → 1183 → 1211</span></span> 1183: 	if($self-&gt;{_country}) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1184: 		if($self-&gt;{_country} !~ /\D/) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class=""> 1185: 			$self-&gt;_warn({ warning =&gt; &#39;IP matches to a numeric country&#39; });
 </span><span class=""> 1186: 			delete $self-&gt;{_country};
@@ -1885,7 +1885,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1208: 		}
 </span><span class=""> 1209: 	}
 </span><span class=""> 1210: 
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1211 → 1211 → 0</span></span> 1211: 	return $self-&gt;{_country};
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1211: 	return $self-&gt;{_country};
 </span><p> <b> Mutants (Total: 2, Killed: 2, Survived: 0)</b><p><span class=""> 1212: }
 </span><span class=""> 1213: 
 </span><span class=""> 1214: # &acirc;&#148;&#128;&acirc;&#148;&#128; _resolve_country_via_whois &acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;
@@ -1895,7 +1895,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1218: # Side Effects: Network I/O; logs debug messages.
 </span><span class=""> 1219: sub _resolve_country_via_whois
 </span><span class=""> 1220: {
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1221 → 1235 → 1251</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1221 → 1235 → 0</span></span> 1221: 	my ($self, $ip) = @_;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1221 → 1235 → 1251</span></span> 1221: 	my ($self, $ip) = @_;
 </span><span class=""> 1222: 
 </span><span class=""> 1223: 	$self-&gt;_debug(&quot;Look up $ip on Whois&quot;);
 </span><span class=""> 1224: 
@@ -1925,7 +1925,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1248: 		}
 </span><span class=""> 1249: 	}
 </span><span class=""> 1250: 
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1251 → 1251 → 1261</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1251 → 1251 → 0</span></span> 1251: 	if($self-&gt;{_country}) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1251 → 1251 → 1261</span></span> 1251: 	if($self-&gt;{_country}) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class=""> 1252: 		$self-&gt;_debug(&quot;Found $ip on Net::Whois::IP as &quot;, $self-&gt;{_country});
 </span><span class=""> 1253: 		# Strip carriage returns (e.g. 190.24.1.122) and trailing comments
 </span><span class=""> 1254: 		$self-&gt;{_country} =~ s/[\r\n]//g;
@@ -1935,7 +1935,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1258: 		return;
 </span><span class=""> 1259: 	}
 </span><span class=""> 1260: 
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1261 → 1268 → 1273</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1261 → 1268 → 0</span></span> 1261: 	$self-&gt;_debug(&quot;Look up $ip on IANA&quot;);
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1261 → 1268 → 1273</span></span> 1261: 	$self-&gt;_debug(&quot;Look up $ip on IANA&quot;);
 </span><span class=""> 1262: 
 </span><span class=""> 1263: 	require Net::Whois::IANA;
 </span><span class=""> 1264: 	Net::Whois::IANA-&gt;import();
@@ -1985,7 +1985,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1308: # Side Effects: Requires Geo::IP; opens GeoIP.dat.
 </span><span class=""> 1309: sub _load_geoip
 </span><span class=""> 1310: {
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1311 → 1321 → 1326</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1311 → 1321 → 0</span></span> 1311: 	my $self = shift;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1311 → 1321 → 1326</span></span> 1311: 	my $self = shift;
 </span><span class=""> 1312: 
 </span><span class=""> 1313: 	# Check for the database file before even trying to load the module
 </span><span class=""> 1314: 	# (avoids noisy errors on Windows &acirc;&#128;&#148; CPANTESTERS report 54117bd0)
@@ -2006,7 +2006,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1323: 		return;
 </span><span class=""> 1324: 	}
 </span><span class=""> 1325: 
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot-uncovered">●</span><span class="lcsaj-tip-text">[NOT COVERED] 1326 → 1327 → 1332</span></span><span class="lcsaj-tip"><span class="lcsaj-dot-uncovered">●</span><span class="lcsaj-tip-text">[NOT COVERED] 1326 → 1327 → 0</span></span> 1326: 	eval { require Geo::IP };
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot-uncovered">●</span><span class="lcsaj-tip-text">[NOT COVERED] 1326 → 1327 → 1332</span></span> 1326: 	eval { require Geo::IP };
 </span><span class="survived-1 tooltip" data-tooltip="Mutation survived. Add targeted tests to validate this branch."> 1327: 	if($@) {
 </span>
 					<details class="mutant-details">
@@ -2053,7 +2053,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1358: =cut
 </span><span class=""> 1359: 
 </span><span class=""> 1360: sub locale {
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1361 → 1368 → 1394</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1361 → 1368 → 0</span></span> 1361: 	my $self = shift;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1361 → 1368 → 1394</span></span> 1361: 	my $self = shift;
 </span><span class=""> 1362: 
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1363: 	return $self-&gt;{_locale} if $self-&gt;{_locale};
 </span><p> <b> Mutants (Total: 2, Killed: 2, Survived: 0)</b><p><span class=""> 1364: 
@@ -2131,7 +2131,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1391: 	}
 </span><span class=""> 1392: 
 </span><span class=""> 1393: 	# Third try: IP address
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1394 → 1395 → 1412</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1394 → 1395 → 0</span></span> 1394: 	my $country = $self-&gt;country();
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1394 → 1395 → 1412</span></span> 1394: 	my $country = $self-&gt;country();
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1395: 	if($country) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class=""> 1396: 		$country =~ s/[\r\n]//g;
 </span><span class=""> 1397: 		my $c;
@@ -2161,7 +2161,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1409: 
 </span><span class=""> 1410: 	# Fourth try: mod_geoip env var &acirc;&#128;&#148; apply the same ISO 3166-1 validation
 </span><span class=""> 1411: 	# used in country() to guard against spoofed or malformed values
-</span><span class="survived-1 tooltip" data-tooltip="Mutation survived. Add targeted tests to validate this branch."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1412 → 1412 → 1420</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1412 → 1412 → 0</span></span> 1412: 	if(defined($ENV{&#39;GEOIP_COUNTRY_CODE&#39;})) {
+</span><span class="survived-1 tooltip" data-tooltip="Mutation survived. Add targeted tests to validate this branch."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1412 → 1412 → 1420</span></span> 1412: 	if(defined($ENV{&#39;GEOIP_COUNTRY_CODE&#39;})) {
 </span>
 					<details class="mutant-details">
 					<summary>Mutants (Total: 1, Killed: 0, Survived: 1)</summary>
@@ -2177,7 +2177,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 				<li><b>COND_INV_1414_4: Invert condition if to unless</b><br>MEDIUM: Add tests asserting both true and false outcomes
 </li></ul></details>
 <span class=""> 1415: 				$self-&gt;{_locale} = $c;
-</span><span class="survived-2 tooltip" data-tooltip="Boolean logic mutation survived. Add tests covering both true and false paths. Return value mutation survived. Add tests asserting exact return values."> 1416: 				return $c;
+</span><span class="survived-2 tooltip" data-tooltip="Return value mutation survived. Add tests asserting exact return values. Boolean logic mutation survived. Add tests covering both true and false paths."> 1416: 				return $c;
 </span>
 					<details class="mutant-details">
 					<summary>Mutants (Total: 2, Killed: 0, Survived: 2)</summary>
@@ -2202,7 +2202,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 <span class=""> 1417: 			}
 </span><span class=""> 1418: 		}
 </span><span class=""> 1419: 	}
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1420 → 1420 → 0</span></span> 1420: 	return undef;
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1420: 	return undef;
 </span><p> <b> Mutants (Total: 2, Killed: 2, Survived: 0)</b><p><span class=""> 1421: }
 </span><span class=""> 1422: 
 </span><span class=""> 1423: =head2 time_zone
@@ -2226,7 +2226,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1441: =cut
 </span><span class=""> 1442: 
 </span><span class=""> 1443: sub time_zone {
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1444 → 1448 → 1453</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1444 → 1448 → 0</span></span> 1444: 	my $self = shift;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1444 → 1448 → 1453</span></span> 1444: 	my $self = shift;
 </span><span class=""> 1445: 
 </span><span class=""> 1446: 	$self-&gt;_trace(&#39;Entered time_zone&#39;);
 </span><span class=""> 1447: 
@@ -2235,7 +2235,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1450: 		return $self-&gt;{_timezone};
 </span><p> <b> Mutants (Total: 2, Killed: 2, Survived: 0)</b><p><span class=""> 1451: 	}
 </span><span class=""> 1452: 
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1453 → 1455 → 1511</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1453 → 1455 → 0</span></span> 1453: 	my $raw_ip = $ENV{&#39;REMOTE_ADDR&#39;};
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1453 → 1455 → 1511</span></span> 1453: 	my $raw_ip = $ENV{&#39;REMOTE_ADDR&#39;};
 </span><span class=""> 1454: 
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1455: 	if(defined $raw_ip) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class=""> 1456: 		# Untaint before any external use &acirc;&#128;&#148; kept in sync with country()&#39;s pattern,
@@ -2317,7 +2317,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1508: 		}
 </span><span class=""> 1509: 	}
 </span><span class=""> 1510: 
-</span><span class="survived-1 tooltip" data-tooltip="Mutation survived. Add targeted tests to validate this branch."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1511 → 1511 → 1514</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1511 → 1511 → 0</span></span> 1511: 	unless(defined($self-&gt;{_timezone})) {
+</span><span class="survived-1 tooltip" data-tooltip="Mutation survived. Add targeted tests to validate this branch."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1511 → 1511 → 1514</span></span> 1511: 	unless(defined($self-&gt;{_timezone})) {
 </span>
 					<details class="mutant-details">
 					<summary>Mutants (Total: 1, Killed: 0, Survived: 1)</summary>
@@ -2326,7 +2326,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </li></ul></details>
 <span class=""> 1512: 		$self-&gt;_warn({ warning =&gt; &quot;Couldn&#39;t determine the timezone&quot; });
 </span><span class=""> 1513: 	}
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1514 → 1514 → 0</span></span> 1514: 	return $self-&gt;{_timezone};
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1514: 	return $self-&gt;{_timezone};
 </span><p> <b> Mutants (Total: 2, Killed: 2, Survived: 0)</b><p><span class=""> 1515: }
 </span><span class=""> 1516: 
 </span><span class=""> 1517: # &acirc;&#148;&#128;&acirc;&#148;&#128; _code2language &acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;
@@ -2337,7 +2337,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1522: # Side Effects: Reads/writes cache.
 </span><span class=""> 1523: sub _code2language
 </span><span class=""> 1524: {
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1525 → 1528 → 1534</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1525 → 1528 → 0</span></span> 1525: 	my ($self, $code) = @_;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1525 → 1528 → 1534</span></span> 1525: 	my ($self, $code) = @_;
 </span><span class=""> 1526: 
 </span><span class=""> 1527: 	return unless $code;
 </span><span class="survived-1 tooltip" data-tooltip="Mutation survived. Add targeted tests to validate this branch."> 1528: 	if(defined($self-&gt;{_country})) {
@@ -2352,23 +2352,23 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1531: 		$self-&gt;_debug(&quot;_code2language $code&quot;);
 </span><span class=""> 1532: 	}
 </span><span class=""> 1533: 
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1534 → 1534 → 1538</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1534 → 1534 → 0</span></span> 1534: 	unless($self-&gt;{_cache}) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1534 → 1534 → 1538</span></span> 1534: 	unless($self-&gt;{_cache}) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class=""> 1535: 		return Locale::Language::code2language($code);
 </span><span class=""> 1536: 	}
 </span><span class=""> 1537: 
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1538 → 1538 → 1545</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1538 → 1538 → 0</span></span> 1538: 	if(my $from_cache = $self-&gt;{_cache}-&gt;get($CACHE_NS . &quot;code2language:$code&quot;)) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1538 → 1538 → 1545</span></span> 1538: 	if(my $from_cache = $self-&gt;{_cache}-&gt;get($CACHE_NS . &quot;code2language:$code&quot;)) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class=""> 1539: 		$self-&gt;_trace(&quot;_code2language found in cache $from_cache&quot;);
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1540: 		return $from_cache;
 </span><p> <b> Mutants (Total: 2, Killed: 2, Survived: 0)</b><p><span class=""> 1541: 	}
 </span><span class=""> 1542: 
 </span><span class=""> 1543: 	# Compute, cache, then return the value separately &acirc;&#128;&#148;
 </span><span class=""> 1544: 	# CHI-&gt;set() is not guaranteed to return the stored value across all drivers
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1545 → 1547 → 1550</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1545 → 1547 → 0</span></span> 1545: 	$self-&gt;_trace(&#39;_code2language not in cache, storing&#39;);
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1545 → 1547 → 1550</span></span> 1545: 	$self-&gt;_trace(&#39;_code2language not in cache, storing&#39;);
 </span><span class=""> 1546: 	my $name = Locale::Language::code2language($code);
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1547: 	if(defined $name) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class=""> 1548: 		$self-&gt;{_cache}-&gt;set($CACHE_NS . &quot;code2language:$code&quot;, $name, $CACHE_TTL_LONG);
 </span><span class=""> 1549: 	}
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1550 → 1550 → 0</span></span> 1550: 	return $name;
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1550: 	return $name;
 </span><p> <b> Mutants (Total: 2, Killed: 2, Survived: 0)</b><p><span class=""> 1551: }
 </span><span class=""> 1552: 
 </span><span class=""> 1553: # &acirc;&#148;&#128;&acirc;&#148;&#128; _code2country &acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;&acirc;&#148;&#128;
@@ -2379,7 +2379,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1558: # Side Effects: None beyond the Locale::Object::Country look-up.
 </span><span class=""> 1559: sub _code2country
 </span><span class=""> 1560: {
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1561 → 1564 → 1570</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1561 → 1564 → 0</span></span> 1561: 	my ($self, $code) = @_;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1561 → 1564 → 1570</span></span> 1561: 	my ($self, $code) = @_;
 </span><span class=""> 1562: 
 </span><span class=""> 1563: 	return unless $code;
 </span><span class="survived-1 tooltip" data-tooltip="Mutation survived. Add targeted tests to validate this branch."> 1564: 	if($self-&gt;{_country}) {
@@ -2394,7 +2394,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1567: 		$self-&gt;_trace(&quot;&gt;_code2country $code&quot;);
 </span><span class=""> 1568: 	}
 </span><span class=""> 1569: 
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1570 → 1579 → 0</span></span> 1570: 	my $rc;
+</span><span class=""> 1570: 	my $rc;
 </span><span class=""> 1571: 	{
 </span><span class=""> 1572: 		# Scope the signal handler tightly &acirc;&#128;&#148; only suppress the one known-harmless warning
 </span><span class=""> 1573: 		local $SIG{__WARN__} = sub {
@@ -2414,7 +2414,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1587: # Side Effects: Reads/writes cache.
 </span><span class=""> 1588: sub _code2countryname
 </span><span class=""> 1589: {
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1590 → 1595 → 1600</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1590 → 1595 → 0</span></span> 1590: 	my ($self, $code) = @_;
+</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1590 → 1595 → 1600</span></span> 1590: 	my ($self, $code) = @_;
 </span><span class=""> 1591: 
 </span><span class=""> 1592: 	return unless $code;
 </span><span class=""> 1593: 	$self-&gt;_trace(&quot;&gt;_code2countryname $code&quot;);
@@ -2424,12 +2424,12 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1597: 		return defined($country) ? $country-&gt;name : undef;
 </span><span class=""> 1598: 	}
 </span><span class=""> 1599: 
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1600 → 1600 → 1605</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1600 → 1600 → 0</span></span> 1600: 	if(my $from_cache = $self-&gt;{_cache}-&gt;get($CACHE_NS . &quot;code2countryname:$code&quot;)) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1600 → 1600 → 1605</span></span> 1600: 	if(my $from_cache = $self-&gt;{_cache}-&gt;get($CACHE_NS . &quot;code2countryname:$code&quot;)) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class=""> 1601: 		$self-&gt;_trace(&quot;_code2countryname found in cache $from_cache&quot;);
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1602: 		return $from_cache;
 </span><p> <b> Mutants (Total: 2, Killed: 2, Survived: 0)</b><p><span class=""> 1603: 	}
 </span><span class=""> 1604: 
-</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1605 → 1605 → 1613</span></span><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1605 → 1605 → 0</span></span> 1605: 	if(my $country = $self-&gt;_code2country($code)) {
+</span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1605 → 1605 → 1613</span></span> 1605: 	if(my $country = $self-&gt;_code2country($code)) {
 </span><p> <b> Mutants (Total: 1, Killed: 1, Survived: 0)</b><p><span class=""> 1606: 		$self-&gt;_debug(&#39;_code2countryname not in cache, storing&#39;);
 </span><span class=""> 1607: 		my $name = $country-&gt;name();
 </span><span class=""> 1608: 		$self-&gt;_trace(&#39;&lt;_code2countryname &#39;, $name);
@@ -2437,7 +2437,7 @@ is( func(INPUT), EXPECTED, &#39;Verify correct return value&#39; );
 </span><span class=""> 1610: 		$self-&gt;{_cache}-&gt;set($CACHE_NS . &quot;code2countryname:$code&quot;, $name, $CACHE_TTL_LONG);
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1611: 		return $name;
 </span><p> <b> Mutants (Total: 2, Killed: 2, Survived: 0)</b><p><span class=""> 1612: 	}
-</span><span class=""><span class="lcsaj-tip"><span class="lcsaj-dot">●</span><span class="lcsaj-tip-text">1613 → 1614 → 0</span></span> 1613: 	$self-&gt;_trace(&#39;&lt;_code2countryname undef&#39;);
+</span><span class=""> 1613: 	$self-&gt;_trace(&#39;&lt;_code2countryname undef&#39;);
 </span><span class="killed tooltip" data-tooltip="Mutations here were killed. Tests are effectively covering this logic."> 1614: 	return undef;
 </span><p> <b> Mutants (Total: 2, Killed: 2, Survived: 0)</b><p><span class=""> 1615: }
 </span><span class=""> 1616: 
