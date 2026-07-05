@@ -1,5 +1,3 @@
-# Changelog: fix ref()-parenthesisation bug breaking arrayref-supported cache keys; add Readonly constants; normalise _warn() to hashref API; decompose _find_language() into focused helpers; validate GEOIP_COUNTRY_CODE in locale(); untaint REMOTE_ADDR in time_zone(); separate cache->set() from return value in _code2language()/_code2countryname(); add =head1 LIMITATIONS; add Sub::Private; use autodie :file.
-
 package CGI::Lingua;
 
 use warnings;
@@ -20,7 +18,7 @@ use Class::Autouse qw{
 	I18N::LangTags::Detect
 };
 
-our $VERSION = '0.80';
+our $VERSION = '0.81';
 
 # ── Module-level constants ───────────────────────────────────────────────────
 # Gathering magic strings here makes behavioural changes one-edit operations.

@@ -1,6 +1,6 @@
 Revision history for CGI-Lingua
 
-0.81
+0.81	Sun Jul  5 09:04:51 EDT 2026
 	[ Bug Fixes ]
 	- Fix ref() parenthesisation bug in new() that broke cache lookups for arrayref-supported
 	- Normalise _warn() to always accept a hashref { warning => ... }; plain-string calls silently lost the message when no logger was set
