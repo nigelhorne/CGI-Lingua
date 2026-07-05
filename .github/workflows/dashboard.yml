@@ -112,6 +112,7 @@ jobs:
           fi
 
       - name: Save updated mutation results
+        if: github.event_name == 'workflow_run'
         run: |
           git config user.name "GitHub Actions"
           git config user.email "github-actions@github.com"
@@ -124,24 +125,34 @@ jobs:
           fi
 
       - name: Add new coverage snapshot to archive
+        if: github.event_name != 'pull_request'
         run: |
           mkdir -p coverage_history
           TIMESTAMP=$(date +%Y-%m-%d)
           SHA=$(git rev-parse --short HEAD)
-          cp cover_html/cover.json "coverage_history/${TIMESTAMP}-${SHA}.json"
+          if [ -f cover_html/cover.json ]; then
+            cp cover_html/cover.json "coverage_history/${TIMESTAMP}-${SHA}.json"
+          else
+            echo "cover_html/cover.json not found, skipping snapshot"
+          fi
           echo "SNAPSHOT_TIMESTAMP=${TIMESTAMP}" >> $GITHUB_ENV
           echo "SNAPSHOT_SHA=${SHA}" >> $GITHUB_ENV
-          find cover_db cover_html coverage -print
 
       - name: Save coverage snapshot archive
+        if: github.event_name != 'pull_request'
         run: |
           git config user.name "GitHub Actions"
           git config user.email "github-actions@github.com"
           git add coverage_history/
-          git commit -m "Add coverage snapshot for ${SNAPSHOT_TIMESTAMP} (${SNAPSHOT_SHA})" || echo "No changes to commit"
-          git push origin HEAD:${{ github.ref_name }}
+          if git diff --cached --quiet; then
+            echo "No coverage snapshot changes to commit"
+          else
+            git commit -m "Add coverage snapshot for ${SNAPSHOT_TIMESTAMP} (${SNAPSHOT_SHA})"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
 
       - name: Save generated mutant test stubs
+        if: github.event_name != 'pull_request'
         run: |
           git config user.name "GitHub Actions"
           git config user.email "github-actions@github.com"

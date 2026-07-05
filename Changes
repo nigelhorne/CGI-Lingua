@@ -25,6 +25,7 @@ Revision history for CGI-Lingua
 	- time_zone(): IPv6 untainting regex lacked mixed-notation support (same fix as country())
 	- time_zone(): Carp::croak when both LWP::Simple::WithCache and LWP::Simple were absent
 	  killed the entire CGI request; demoted to _warn + return undef for graceful degradation
+	- Fix https://github.com/nigelhorne/CGI-Lingua/issues/38
 
 	[ Enhancement ]
 	- Latest testing dashboard
