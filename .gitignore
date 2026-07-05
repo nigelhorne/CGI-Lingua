@@ -45,3 +45,5 @@ inc/
 
 \.claude
 CLAUDE.md
+
+t/online.enabled

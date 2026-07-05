@@ -40,7 +40,7 @@ jobs:
       NO_NETWORK_TESTING: 1
       NONINTERACTIVE_TESTING: 1
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v6
 
       - name: Setup Perl
         uses: shogo82148/actions-setup-perl@v1
@@ -48,7 +48,7 @@ jobs:
           perl-version: ${{ matrix.perl }}
 
       - name: Cache CPAN modules
-        uses: actions/cache@v6
+        uses: actions/cache@v5
         with:
           path: ~/perl5
           key: ${{ runner.os }}-${{ matrix.perl }}-${{ hashFiles('cpanfile') }}
