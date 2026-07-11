@@ -871,9 +871,11 @@ subtest '_warn: without logger appends to messages and carps' => sub {
 	my $l = _basic_obj();
 	$l->{logger} = undef;    # force the Carp::carp code path
 	my @carp_msgs;
-	Test::Mockingbird::mock('Carp', 'carp', sub { push @carp_msgs, $_[0] });
+	# carp is now imported into CGI::Lingua at compile time (use Carp qw(carp)),
+	# so we must mock CGI::Lingua::carp — mocking Carp::carp would miss it.
+	Test::Mockingbird::mock('CGI::Lingua', 'carp', sub { push @carp_msgs, $_[0] });
 	$l->_warn({ warning => 'carp test' });
-	ok((grep { /carp test/ } @carp_msgs), 'Carp::carp called with message text');
+	ok((grep { /carp test/ } @carp_msgs), 'CGI::Lingua::carp called with message text');
 	ok((grep { $_->{message} =~ /carp test/ } @{$l->{messages}}), 'Message recorded internally');
 	Test::Mockingbird::restore_all();
 };

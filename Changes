@@ -2,6 +2,14 @@ Revision history for CGI-Lingua
 
 0.82
 	[ Enhancement ]
+	- Add explicit use Carp qw(croak carp); remove Carp from Class::Autouse so
+	  croak/carp are resolved at compile time rather than lazy-loaded at runtime
+	- Expand use autodie from qw(:file) to qw(:all) for fuller fatal-error coverage
+	- plural_category(): croak on undef $n rather than silently treating it as 0
+	- Change return undef to bare return in _scan_plain_tokens, locale(), and
+	  _code2countryname (perlcritic ProhibitExplicitReturnUndef)
+	- _what_language(): use defined() check for cached value to guard against a
+	  falsy language tag silently bypassing the cache
 	- Add is_rtl(): returns 1 when the negotiated language uses a right-to-left
 	  script (Arabic, Hebrew, Persian, Urdu, Yiddish, Dhivehi, Pashto, Sindhi,
 	  Uyghur, Kurdish)
@@ -16,6 +24,9 @@ Revision history for CGI-Lingua
 	  honour browser-declared priorities; removes the documented LIMITATION
 
 	[ Tests ]
+	- Fix t/function.t and t/extended_tests.t: mock CGI::Lingua::carp instead of
+	  Carp::carp in _warn subtests — importing carp at compile time makes the
+	  Carp:: namespace mock ineffective post-import
 	- Update t/function.t: adapt _scan_sublanguage_pairs and _scan_plain_tokens subtests to
 	  pass _sorted_tokens() arrayref instead of raw header string; add _sorted_tokens subtests
 	  (sorted order, q-value stripping, empty header); add subtests for is_rtl(),

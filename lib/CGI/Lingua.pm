@@ -2,15 +2,15 @@ package CGI::Lingua;
 
 use warnings;
 use strict;
-use autodie qw(:file);
+use autodie qw(:all);
 
+use Carp qw(croak carp);
 use Object::Configure 0.14;
 use Params::Get 0.13;
 use Readonly;
 use Scalar::Util qw(blessed);
 use Storable;
 use Class::Autouse qw{
-	Carp
 	Locale::Language
 	Locale::Object::Country
 	Locale::Object::DB
@@ -43,7 +43,7 @@ CGI::Lingua - Create a multilingual web page
 
 =head1 VERSION
 
-Version 0.80
+Version 0.81
 
 =cut
 
@@ -135,7 +135,7 @@ sub new
 			if(my $logger = $params->{'logger'}) {
 				$logger->error(__PACKAGE__ . ' use ->new() not ::new() to instantiate');
 			}
-			Carp::croak(__PACKAGE__ . ' use ->new() not ::new() to instantiate');
+			croak(__PACKAGE__ . ' use ->new() not ::new() to instantiate');
 		}
 		$class = __PACKAGE__;
 	} elsif(ref($class)) {
@@ -153,7 +153,7 @@ sub new
 			&& $params->{'logger'}->can('info')
 			&& $params->{'logger'}->can('error')
 		) {
-			Carp::croak('Logger must be a blessed object with warn/info/error methods');
+			croak('Logger must be a blessed object with warn/info/error methods');
 		}
 	}
 
@@ -165,16 +165,16 @@ sub new
 		# Validate supported type/length
 		if(ref($params->{supported})) {
 			if(ref($params->{supported}) ne 'ARRAY') {
-				Carp::croak('List of supported languages must be an array ref');
+				croak('List of supported languages must be an array ref');
 			}
 		} elsif((length($params->{supported}) < 2) || (length($params->{supported}) > 5)) {
-			Carp::croak('Supported languages must be the short code');
+			croak('Supported languages must be the short code');
 		}
 	} else {
 		if(my $logger = $params->{'logger'}) {
 			$logger->error('You must give a list of supported languages');
 		}
-		Carp::croak('You must give a list of supported languages');
+		croak('You must give a list of supported languages');
 	}
 
 	my $cache = $params->{cache};
@@ -625,7 +625,7 @@ sub _scan_plain_tokens
 			return $tag;
 		}
 	}
-	return undef;
+	return;
 }
 
 # ── _resolve_match ────────────────────────────────────────────────────────
@@ -979,7 +979,7 @@ sub _what_language {
 
 	if(ref($self)) {
 		$self->_trace('Entered _what_language');
-		if($self->{_what_language}) {
+		if(defined($self->{_what_language})) {
 			$self->_trace('_what_language: returning cached value: ', $self->{_what_language});
 			return $self->{_what_language};
 		}
@@ -1445,7 +1445,7 @@ sub locale {
 			}
 		}
 	}
-	return undef;
+	return;
 }
 
 =head2 time_zone
@@ -1742,6 +1742,7 @@ my %PLURAL_RULES = (
 sub plural_category
 {
 	my ($self, $n) = @_;
+	croak('plural_category: $n must be defined') unless defined $n;
 	my $code = $self->language_code_alpha2() // return 'other';
 	my $rule = $PLURAL_RULES{$code} // sub { int($_[0]) == 1 ? 'one' : 'other' };
 	return $rule->($n);
@@ -1895,7 +1896,7 @@ sub _code2countryname
 		return $name;
 	}
 	$self->_trace('<_code2countryname undef');
-	return undef;
+	return;
 }
 
 # ── _log ──────────────────────────────────────────────────────────────────
@@ -1931,7 +1932,7 @@ sub _trace  { my $self = shift; $self->_log('trace',  @_) }
 #               All callers MUST use this structured form — plain-string calls
 #               silently lose the message when no logger is configured.
 # Exit:         void
-# Side Effects: Calls logger->warn() or Carp::carp().
+# Side Effects: Calls logger->warn() or carp().
 sub _warn
 {
 	my $self = shift;
@@ -1943,7 +1944,7 @@ sub _warn
 		my $params = Params::Get::get_params('warning', @_);
 		my $msg    = $params->{'warning'} // join('', grep defined, @_);
 		$self->_log('warn', $msg);
-		Carp::carp($msg);
+		carp($msg);
 	}
 }
 
@@ -2030,6 +2031,8 @@ This means that if you support languages at a lower priority, it may be missed.
 =head1 SEE ALSO
 
 =over 4
+
+=item * L<Configure an Object at Runtime|Object::Configure>
 
 =item * L<Test Dashboard|https://nigelhorne.github.io/CGI-Lingua/coverage/>
 

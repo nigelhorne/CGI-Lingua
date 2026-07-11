@@ -16,7 +16,7 @@ CGI::Lingua - Create a multilingual web page
 
 # VERSION
 
-Version 0.80
+Version 0.81
 
 # SYNOPSIS
 
@@ -365,6 +365,7 @@ This means that if you support languages at a lower priority, it may be missed.
 
 # SEE ALSO
 
+- [Configure an Object at Runtime](https://metacpan.org/pod/Object%3A%3AConfigure)
 - [Test Dashboard](https://nigelhorne.github.io/CGI-Lingua/coverage/)
 - VWF - Versatile Web Framework [https://github.com/nigelhorne/vwf](https://github.com/nigelhorne/vwf)
 - [HTTP::BrowserDetect](https://metacpan.org/pod/HTTP%3A%3ABrowserDetect)
