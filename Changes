@@ -24,6 +24,10 @@ Revision history for CGI-Lingua
 	  honour browser-declared priorities; removes the documented LIMITATION
 
 	[ Tests ]
+	- Fix t/carp.t: replace Test::Carp does_croak_that_matches with throws_ok —
+	  Test::Carp intercepts Carp::croak at runtime but use Carp qw(croak) imports
+	  the symbol into CGI::Lingua at compile time, making the interception miss;
+	  throws_ok catches any exception via eval regardless of owning package
 	- Fix t/function.t and t/extended_tests.t: mock CGI::Lingua::carp instead of
 	  Carp::carp in _warn subtests — importing carp at compile time makes the
 	  Carp:: namespace mock ineffective post-import
