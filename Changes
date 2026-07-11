@@ -24,6 +24,10 @@ Revision history for CGI-Lingua
 	  honour browser-declared priorities; removes the documented LIMITATION
 
 	[ Tests ]
+	- Fix t/rt131607.t: time_zone() degrades gracefully (warns + returns undef)
+	  when both LWP variants are absent; replace eval+die+like(croak pattern)
+	  with is($t, undef, ...) to match the actual contract, see
+	  https://www.cpantesters.org/cpan/report/9d32fb26-7d57-11f1-afd9-04246e8775ea
 	- Fix t/carp.t: replace Test::Carp does_croak_that_matches with throws_ok —
 	  Test::Carp intercepts Carp::croak at runtime but use Carp qw(croak) imports
 	  the symbol into CGI::Lingua at compile time, making the interception miss;
