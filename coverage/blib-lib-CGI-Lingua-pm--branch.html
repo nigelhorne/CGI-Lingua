@@ -20,7 +20,7 @@ https://pjcj.net
 <h1>Branch Coverage</h1>
 <table>
 <tr><td class="h" align="right">File:</td><td align="left">blib/lib/CGI/Lingua.pm</td></tr>
-<tr><td class="h" align="right">Coverage:</td><td align="left" class="c1">76.0%</td></tr>
+<tr><td class="h" align="right">Coverage:</td><td align="left" class="c1">75.9%</td></tr>
 </table>
 <div><br/></div>
 <table>
@@ -132,7 +132,7 @@ https://pjcj.net
 <tr><td class="h"><a id="L961">961</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">/^(.+)-/ ? :</td></tr>
 <tr><td class="h"><a id="L963">963</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (exists $base_languages{$language_string})</td></tr>
 <tr><td class="h"><a id="L980">980</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (ref $self)</td></tr>
-<tr><td class="h"><a id="L982">982</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_what_language&#39;})</td></tr>
+<tr><td class="h"><a id="L982">982</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $self-&gt;{&#39;_what_language&#39;})</td></tr>
 <tr><td class="h"><a id="L986">986</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $info = $self-&gt;{&#39;_info&#39;})</td></tr>
 <tr><td class="h"><a id="L987">987</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (my $rc = $info-&gt;lang)</td></tr>
 <tr><td class="h"><a id="L994">994</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $raw_lang = $ENV{&#39;HTTP_ACCEPT_LANGUAGE&#39;})</td></tr>
@@ -251,28 +251,29 @@ require JSON::Parse
 <tr><td class="h"><a id="L1539">1539</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless (defined $self-&gt;{&#39;_timezone&#39;})</td></tr>
 <tr><td class="h"><a id="L1561">1561</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">$RTL_LANGS{$self-&gt;language_code_alpha2 // &#39;&#39;} ? :</td></tr>
 <tr><td class="h"><a id="L1579">1579</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">$self-&gt;is_rtl ? :</td></tr>
-<tr><td class="h"><a id="L1746">1746</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">int $_[0] == 1 ? :</td></tr>
-<tr><td class="h"><a id="L1783">1783</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless defined $dir</td></tr>
-<tr><td class="h"><a id="L1788">1788</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if (my $sub = $self-&gt;sublanguage_code_alpha2)</td></tr>
-<tr><td class="h"><a id="L1791">1791</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if defined $self-&gt;language_code_alpha2</td></tr>
-<tr><td class="h"><a id="L1796">1796</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if -e $path</td></tr>
-<tr><td class="h"><a id="L1811">1811</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless $code</td></tr>
-<tr><td class="h"><a id="L1812">1812</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $self-&gt;{&#39;_country&#39;}) { }</td></tr>
-<tr><td class="h"><a id="L1818">1818</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ($self-&gt;{&#39;_cache&#39;})</td></tr>
-<tr><td class="h"><a id="L1822">1822</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $from_cache = $self-&gt;{&#39;_cache&#39;}-&gt;get($CACHE_NS . &quot;code2language:$code&quot;))</td></tr>
-<tr><td class="h"><a id="L1831">1831</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $name)</td></tr>
-<tr><td class="h"><a id="L1847">1847</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless $code</td></tr>
-<tr><td class="h"><a id="L1848">1848</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;}) { }</td></tr>
-<tr><td class="h"><a id="L1858">1858</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">unless $_[0] =~ /No result found in country table/</td></tr>
-<tr><td class="h"><a id="L1876">1876</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless $code</td></tr>
-<tr><td class="h"><a id="L1879">1879</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ($self-&gt;{&#39;_cache&#39;})</td></tr>
-<tr><td class="h"><a id="L1881">1881</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">defined $country ? :</td></tr>
-<tr><td class="h"><a id="L1884">1884</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $from_cache = $self-&gt;{&#39;_cache&#39;}-&gt;get($CACHE_NS . &quot;code2countryname:$code&quot;))</td></tr>
-<tr><td class="h"><a id="L1889">1889</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $country = $self-&gt;_code2country($code))</td></tr>
-<tr><td class="h"><a id="L1912">1912</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ref $self and scalar @messages</td></tr>
-<tr><td class="h"><a id="L1915">1915</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless length $text</td></tr>
-<tr><td class="h"><a id="L1918">1918</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $logger = $self-&gt;{&#39;logger&#39;})</td></tr>
-<tr><td class="h"><a id="L1938">1938</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $self-&gt;{&#39;logger&#39;}) { }</td></tr>
+<tr><td class="h"><a id="L1745">1745</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">unless defined $n</td></tr>
+<tr><td class="h"><a id="L1747">1747</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">int $_[0] == 1 ? :</td></tr>
+<tr><td class="h"><a id="L1784">1784</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless defined $dir</td></tr>
+<tr><td class="h"><a id="L1789">1789</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if (my $sub = $self-&gt;sublanguage_code_alpha2)</td></tr>
+<tr><td class="h"><a id="L1792">1792</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if defined $self-&gt;language_code_alpha2</td></tr>
+<tr><td class="h"><a id="L1797">1797</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if -e $path</td></tr>
+<tr><td class="h"><a id="L1812">1812</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless $code</td></tr>
+<tr><td class="h"><a id="L1813">1813</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $self-&gt;{&#39;_country&#39;}) { }</td></tr>
+<tr><td class="h"><a id="L1819">1819</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ($self-&gt;{&#39;_cache&#39;})</td></tr>
+<tr><td class="h"><a id="L1823">1823</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $from_cache = $self-&gt;{&#39;_cache&#39;}-&gt;get($CACHE_NS . &quot;code2language:$code&quot;))</td></tr>
+<tr><td class="h"><a id="L1832">1832</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $name)</td></tr>
+<tr><td class="h"><a id="L1848">1848</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless $code</td></tr>
+<tr><td class="h"><a id="L1849">1849</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;}) { }</td></tr>
+<tr><td class="h"><a id="L1859">1859</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">unless $_[0] =~ /No result found in country table/</td></tr>
+<tr><td class="h"><a id="L1877">1877</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless $code</td></tr>
+<tr><td class="h"><a id="L1880">1880</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ($self-&gt;{&#39;_cache&#39;})</td></tr>
+<tr><td class="h"><a id="L1882">1882</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">defined $country ? :</td></tr>
+<tr><td class="h"><a id="L1885">1885</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $from_cache = $self-&gt;{&#39;_cache&#39;}-&gt;get($CACHE_NS . &quot;code2countryname:$code&quot;))</td></tr>
+<tr><td class="h"><a id="L1890">1890</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $country = $self-&gt;_code2country($code))</td></tr>
+<tr><td class="h"><a id="L1913">1913</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ref $self and scalar @messages</td></tr>
+<tr><td class="h"><a id="L1916">1916</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless length $text</td></tr>
+<tr><td class="h"><a id="L1919">1919</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $logger = $self-&gt;{&#39;logger&#39;})</td></tr>
+<tr><td class="h"><a id="L1939">1939</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $self-&gt;{&#39;logger&#39;}) { }</td></tr>
 </table>
 </body>
 </html>
