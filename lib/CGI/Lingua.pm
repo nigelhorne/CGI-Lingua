@@ -18,7 +18,7 @@ use Class::Autouse qw{
 	I18N::LangTags::Detect
 };
 
-our $VERSION = '0.81';
+our $VERSION = '0.82';
 
 # ── Module-level constants ───────────────────────────────────────────────────
 # Gathering magic strings here makes behavioural changes one-edit operations.
@@ -35,7 +35,7 @@ Readonly my $GEO_UNKNOWN         => -1;               # geo-module sentinel: not
 Readonly my $GEO_ABSENT          =>  0;               # geo-module sentinel: unavailable
 Readonly my $GEO_PRESENT         =>  1;               # geo-module sentinel: loaded OK
 Readonly my %RTL_LANGS           => (map { $_ => 1 }  # ISO 639-1 codes whose primary script is RTL
-    qw(ar dv fa he ku ps sd ug ur yi));
+	qw(ar dv fa he ku ps sd ug ur yi));
 
 =head1 NAME
 
@@ -43,7 +43,7 @@ CGI::Lingua - Create a multilingual web page
 
 =head1 VERSION
 
-Version 0.81
+Version 0.82
 
 =cut
 

@@ -1,6 +1,15 @@
 Revision history for CGI-Lingua
 
-0.82
+0.82	Sat Jul 11 20:41:15 UTC 2026
+	[ Distribution ]
+	- Move autodie from TEST_REQUIRES to PREREQ_PM — it is now a compile-time
+	  runtime dependency (use autodie qw(:all) in the module itself)
+	- Add Log::Abstraction to PREREQ_PM explicitly (runtime dep via Object::Configure)
+	- Remove ExtUtils::MakeMaker from PREREQ_PM (build tool, already in CONFIGURE_REQUIRES)
+	- Remove Test::Carp from TEST_REQUIRES (t/carp.t no longer uses it)
+	- Raise MIN_PERL_VERSION from 5.6.2 to 5.10.1 (autodie bundled into core from
+	  5.10.1; //= defined-or used throughout)
+
 	[ Bug Fixes ]
 	- Remove LWP::Simple::WithCache->import(), LWP::Simple->import(), and
 	  JSON::Parse->import() calls inside country() and time_zone(); these were
