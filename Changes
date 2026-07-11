@@ -28,6 +28,18 @@ Revision history for CGI-Lingua
 	- Fix https://github.com/nigelhorne/CGI-Lingua/issues/38
 
 	[ Enhancement ]
+	- Add is_rtl(): returns 1 when the negotiated language uses a right-to-left
+	  script (Arabic, Hebrew, Persian, Urdu, Yiddish, Dhivehi, Pashto, Sindhi,
+	  Uyghur, Kurdish)
+	- Add text_direction(): returns 'rtl' or 'ltr' for direct use as HTML dir attr
+	- Add plural_category($n): returns CLDR plural category (zero/one/two/few/many/other)
+	  for the negotiated language using embedded rules for ~70 languages
+	- Add translation_file($dir, $ext?): returns path to best matching translation
+	  file (e.g. en-gb.json) falling back to base language (en.json); default ext json
+	- Fix q-value priority in Accept-Language fallback passes: _scan_sublanguage_pairs
+	  and _scan_plain_tokens previously scanned left-to-right ignoring q= weights;
+	  new _sorted_tokens() helper pre-sorts tokens by q descending so both passes
+	  honour browser-declared priorities; removes the documented LIMITATION
 	- Latest testing dashboard
 	- Added sanity testing for the supported argument
 	- Decompose _find_language() into focused helper methods for readability and testability
@@ -59,6 +71,13 @@ Revision history for CGI-Lingua
 	- Fix t/locales.t: add delete $ENV{LANG} inside each GeoIP subtest local %ENV block;
 	  fix concurrent-instances subtest to call country() inside the correct REMOTE_ADDR scope;
 	  add LANG env-var fallback subtest; add croak message locale-independence subtest
+	- Update t/function.t: adapt _scan_sublanguage_pairs and _scan_plain_tokens subtests to
+	  pass _sorted_tokens() arrayref instead of raw header string; add _sorted_tokens subtests
+	  (sorted order, q-value stripping, empty header); add subtests for is_rtl(),
+	  text_direction(), plural_category() (English/Arabic/Russian/unknown fallback), and
+	  translation_file() (undef dir, missing file, json default, explicit ext, leading dot);
+	  extended from 92 to 110 subtests; fix grep-list-context operator precedence bug in
+	  'no q= suffix' assertion (message string was being included in grep's LIST argument)
 
 	[ Security ]
 	- Validate and untaint HTTP_ACCEPT_LANGUAGE before use (taint-mode compliance)

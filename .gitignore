@@ -43,7 +43,9 @@ inc/
 # cpanfile.snapshot should generally be ignored for library code, otherwise included
 # cpanfile.snapshot
 
+# Don't stash the output files
+t/tmp_*.t
+
+schemas/
 \.claude
 CLAUDE.md
-
-t/online.enabled
