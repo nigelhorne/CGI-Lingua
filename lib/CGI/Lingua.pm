@@ -1193,8 +1193,6 @@ sub country {
 	if((!$self->{_country}) &&
 	   (eval { require LWP::Simple::WithCache; require JSON::Parse })) {
 		$self->_debug("Look up $ip on geoplugin");
-		LWP::Simple::WithCache->import();
-		JSON::Parse->import();
 
 		if(my $data = LWP::Simple::WithCache::get("http://www.geoplugin.net/json.gp?ip=$ip")) {
 			eval { $self->{_country} = JSON::Parse::parse_json($data)->{'geoplugin_countryCode'} };
@@ -1503,8 +1501,6 @@ sub time_zone {
 		unless($self->{_timezone}) {
 			if(eval { require LWP::Simple::WithCache; require JSON::Parse }) {
 				$self->_debug("Look up $ip on ip-api.com");
-				LWP::Simple::WithCache->import();
-				JSON::Parse->import();
 
 				if(my $data = LWP::Simple::WithCache::get("http://ip-api.com/json/$ip")) {
 					eval { $self->{_timezone} = JSON::Parse::parse_json($data)->{'timezone'} };
@@ -1512,8 +1508,6 @@ sub time_zone {
 				}
 			} elsif(eval { require LWP::Simple; require JSON::Parse }) {
 				$self->_debug("Look up $ip on ip-api.com");
-				LWP::Simple->import();
-				JSON::Parse->import();
 
 				if(my $data = LWP::Simple::get("http://ip-api.com/json/$ip")) {
 					eval { $self->{_timezone} = JSON::Parse::parse_json($data)->{'timezone'} };

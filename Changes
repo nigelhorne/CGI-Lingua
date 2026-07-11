@@ -1,6 +1,14 @@
 Revision history for CGI-Lingua
 
 0.82
+	[ Bug Fixes ]
+	- Remove LWP::Simple::WithCache->import(), LWP::Simple->import(), and
+	  JSON::Parse->import() calls inside country() and time_zone(); these were
+	  unnecessary (fully-qualified function names are used throughout) and on some
+	  older versions of LWP::Simple::WithCache the import() reinstalls the real get
+	  in the symbol table, overwriting any mock/spy and causing real network calls
+	  during testing (fixes CPAN Testers failures for spy subtests in t/integration.t)
+
 	[ Enhancement ]
 	- Add explicit use Carp qw(croak carp); remove Carp from Class::Autouse so
 	  croak/carp are resolved at compile time rather than lazy-loaded at runtime
