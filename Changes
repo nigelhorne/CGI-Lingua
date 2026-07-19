@@ -1,5 +1,9 @@
 Revision history for CGI-Lingua
 
+0.83
+	[ Bug Fixes ]
+	- Bump minimum Params::Get - may further help https://github.com/nigelhorne/CGI-Lingua/issues/38
+
 0.82	Sat Jul 11 20:41:15 UTC 2026
 	[ Distribution ]
 	- Move autodie from TEST_REQUIRES to PREREQ_PM — it is now a compile-time

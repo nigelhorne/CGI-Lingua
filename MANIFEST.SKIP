@@ -74,3 +74,4 @@ mutation*
 CLAUDE.md
 \.claude
 \.circleci
+t/online.enabled

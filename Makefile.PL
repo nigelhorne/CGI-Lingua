@@ -126,7 +126,7 @@ WriteMakefile(
 	'Net::Whois::IP' => 0,
 	'NetAddr::IP' => 0,
 	'Object::Configure' => 0.14,
-	'Params::Get' => 0.13,
+	'Params::Get' => 0.15,	# 0.15 fast-path: unblessed hashref arg returned directly (not stored under default key)
 	'Readonly' => 0,
 	'Class::Load' => 0,
 	'CGI::Info' => 0.60, # For AUTOLOAD

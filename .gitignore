@@ -49,3 +49,4 @@ t/tmp_*.t
 schemas/
 \.claude
 CLAUDE.md
+t/online.enabled
