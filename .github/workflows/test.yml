@@ -25,14 +25,34 @@ jobs:
           - ubuntu-latest
           - windows-latest
         perl: ['5.42', '5.40', '5.38', '5.36', '5.34', '5.32', '5.30', '5.28', '5.22']
+
     name: Perl ${{ matrix.perl }} on ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
+
       - name: Setup perl
         uses: shogo82148/actions-setup-perl@v1
         with:
           perl-version: ${{ matrix.perl }}
+
       - run: perl -V
+
+      - name: Install MSYS2 + sqlite (Windows)
+        if: ${{ matrix.os == 'windows-latest' }}
+        shell: pwsh
+        run: |
+          choco install msys2 -y
+          choco install sqlite -y
+          refreshenv
+
+          # try common msys2 locations
+          $msys = 'C:\tools\msys64\usr\bin\bash.exe'
+          if (-Not (Test-Path $msys)) { $msys = 'C:\tools\msys2\usr\bin\bash.exe' }
+
+          # update msys2 and install mingw toolchain + sqlite dev files
+          & $msys -lc "pacman -Syu --noconfirm"
+          & $msys -lc "pacman -S --noconfirm mingw-w64-x86_64-toolchain mingw-w64-x86_64-sqlite3"
+
       - name: Install Dependencies
         env:
           AUTOMATED_TESTING: 1
@@ -43,6 +63,7 @@ jobs:
           # Locale::Object does not declear DBD::SQLite prerequisite
           cpanm -fiqn Locale::Object
           cpanm -iqn --skip-satisfied --installdeps --notest .
+
       - name: Make Module
         env:
           AUTOMATED_TESTING: 1
@@ -52,6 +73,7 @@ jobs:
           # find . -name build.log | xargs cat
           perl Makefile.PL
           make
+
       - name: Run Tests
         env:
           AUTOMATED_TESTING: 1

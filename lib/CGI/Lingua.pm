@@ -452,11 +452,6 @@ when you've asked for en-gb, or undef.
     Input:  none beyond $self
     Returns: Str (2 chars) | undef
 
-=head3 FORMAL SPECIFICATION
-
-    sublanguage_code_alpha2 : CGI::Lingua -> Str(2) | undef
-    result = variety_code(matched_supported_entry) | undef
-
 =cut
 
 sub sublanguage_code_alpha2 {
@@ -484,14 +479,6 @@ e.g. "English (United Kingdom)"
 
     Input:  none beyond $self
     Returns: Str - e.g. "English (United Kingdom)" or "Unknown"
-
-=head3 FORMAL SPECIFICATION
-
-    requested_language : CGI::Lingua -> Str
-    result = name(base) + " (" + name(variety) + ")"
-             when variety is known,
-           = name(base)   when no variety,
-           = 'Unknown'    when no language detected
 
 =cut
 
@@ -1121,13 +1108,6 @@ caching capability of CGI::Lingua.
     "cache contains a numeric country: N"
     "IP matches to a numeric country"
 
-=head3 FORMAL SPECIFICATION
-
-    country : CGI::Lingua -> Str(2,lowercase) | undef
-    -- 'Unknown' returned only in the EU/Baidu special case
-    result = lc(code) where code satisfies ISO 3166-1 alpha-2
-             | undef when IP is private, loopback, or unresolvable
-
 =head3 PSEUDOCODE
 
     1. Return cached _country if set
@@ -1500,16 +1480,6 @@ Returns a L<Locale::Object::Country> object.
     Input:  none beyond $self
     Returns: Locale::Object::Country | undef
 
-=head3 FORMAL SPECIFICATION
-
-    locale : CGI::Lingua -> Locale::Object::Country | undef
-    -- Best-guess detection; not guaranteed accurate.
-    result = first defined value from:
-        1. UA parenthetical language tag
-        2. HTTP::BrowserDetect country
-        3. country() IP lookup
-        4. GEOIP_COUNTRY_CODE env var
-
 =head3 PSEUDOCODE
 
     1. Return cached _locale immediately if already computed
@@ -1607,11 +1577,6 @@ CGI::Lingua will make use of that, otherwise it will use L<ip-api.com>
     "Couldn't determine the timezone"
     "LWP::Simple::WithCache and LWP::Simple are both absent; cannot contact ip-api.com"
       Returns undef rather than croaking; install either LWP variant to enable ip-api lookups.
-
-=head3 FORMAL SPECIFICATION
-
-    time_zone : CGI::Lingua -> Str | undef
-    result is an IANA timezone name (e.g. 'Europe/London') or undef
 
 =head3 PSEUDOCODE
 
@@ -1716,11 +1681,6 @@ Sindhi, Uyghur, and Kurdish.
     Input:  none beyond $self
     Returns: 1 | 0
 
-=head3 FORMAL SPECIFICATION
-
-    is_rtl : CGI::Lingua -> Bool
-    is_rtl(s) = (language_code_alpha2(s) in RTL_LANGS) ? 1 : 0
-
 =cut
 
 sub is_rtl
@@ -1744,11 +1704,6 @@ use as an HTML C<dir> attribute value.
 
     Input:  none beyond $self
     Returns: 'rtl' | 'ltr'
-
-=head3 FORMAL SPECIFICATION
-
-    text_direction : CGI::Lingua -> {'rtl', 'ltr'}
-    text_direction(s) = is_rtl(s) ? 'rtl' : 'ltr'
 
 =cut
 
@@ -1783,13 +1738,6 @@ For fractional numbers or full CLDR v42+ accuracy, use C<Locale::CLDR>.
 
     Input:  $n - non-negative integer (fractional values are truncated)
     Returns: Str - one of zero/one/two/few/many/other
-
-=head3 FORMAL SPECIFICATION
-
-    plural_category : CGI::Lingua x N -> PluralCategory
-    plural_category(s, n) = PLURAL_RULES[language_code_alpha2(s)](trunc(n))
-    -- Falls back to English rule (n=1 -> 'one'; else 'other')
-    -- when language_code_alpha2(s) is undef or not in the rules table.
 
 =cut
 
@@ -1980,13 +1928,6 @@ Returns C<undef> if no matching file exists.
 =head3 MESSAGES
 
     (none - returns undef silently when no file is found)
-
-=head3 FORMAL SPECIFICATION
-
-    translation_file : CGI::Lingua x Path x Ext -> Path | undef
-    translation_file(s, d, e) =
-      first p in [lang(s)-sublang(s), lang(s)] \ {undef}
-      such that exists file d/p.e
 
 =cut
 
@@ -2321,6 +2262,41 @@ L<http://deps.cpantesters.org/?module=CGI::Lingua>
     result = base_code(matched_supported_entry)
              when a supported language was matched, undef otherwise
 
+=head2 sublanguage_code_alpha2
+
+    sublanguage_code_alpha2 : CGI::Lingua -> Str(2) | undef
+    result = variety_code(matched_supported_entry) | undef
+
+=head2 requested_language
+
+    requested_language : CGI::Lingua -> Str
+    result = name(base) + " (" + name(variety) + ")"
+             when variety is known,
+           = name(base)   when no variety,
+           = 'Unknown'    when no language detected
+
+=head2 country
+
+    country : CGI::Lingua -> Str(2,lowercase) | undef
+    -- 'Unknown' returned only in the EU/Baidu special case
+    result = lc(code) where code satisfies ISO 3166-1 alpha-2
+             | undef when IP is private, loopback, or unresolvable
+
+=head2 locale
+
+    locale : CGI::Lingua -> Locale::Object::Country | undef
+    -- Best-guess detection; not guaranteed accurate.
+    result = first defined value from:
+        1. UA parenthetical language tag
+        2. HTTP::BrowserDetect country
+        3. country() IP lookup
+        4. GEOIP_COUNTRY_CODE env var
+
+=head2 time_zone
+
+    time_zone : CGI::Lingua -> Str | undef
+    result is an IANA timezone name (e.g. 'Europe/London') or undef
+
 =head2 is_rtl
 
     is_rtl : CGI::Lingua → Bool
@@ -2333,8 +2309,10 @@ L<http://deps.cpantesters.org/?module=CGI::Lingua>
 
 =head2 plural_category
 
-    plural_category : CGI::Lingua × ℕ → PluralCategory
-    plural_category(s, n) ≙ PLURAL_RULES[language_code_alpha2(s)](n)
+    plural_category : CGI::Lingua x N -> PluralCategory
+    plural_category(s, n) = PLURAL_RULES[language_code_alpha2(s)](trunc(n))
+    -- Falls back to English rule (n=1 -> 'one'; else 'other')
+    -- when language_code_alpha2(s) is undef or not in the rules table.
 
 =head2 translation_file
 

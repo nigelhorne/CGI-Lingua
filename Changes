@@ -24,6 +24,12 @@ Revision history for CGI-Lingua
 	  all public methods that were missing them: language, sublanguage, language_code_alpha2,
 	  sublanguage_code_alpha2, requested_language, country, locale, time_zone, is_rtl,
 	  text_direction, plural_category, translation_file
+	- Add t/cgi_security.t: 34 penetration subtests covering env-var injection
+	  (CRLF, null-byte, shell meta, overlength), country-code format enforcement,
+	  Whois/JSON API response injection, cache-key poisoning, IPv4-mapped IPv6
+	  normalisation, and translation_file() extension path-traversal; two confirmed
+	  findings documented as TODO (JSON countryCode and time_zone() format not
+	  validated after external fetch)
 
 0.82	Sat Jul 11 20:41:15 UTC 2026
 	[ Distribution ]
