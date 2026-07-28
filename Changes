@@ -2,6 +2,24 @@ Revision history for CGI-Lingua
 
 0.83
 	[ Security ]
+	- Replace Storable::nfreeze/thaw with JSON::PP encode/decode for cache
+	  serialisation in new() and DESTROY(); Storable::thaw can execute arbitrary
+	  Perl code via STORABLE_thaw hooks if an attacker writes a crafted blob to
+	  the cache backend (world-writable /tmp, unauthenticated Redis/Memcached),
+	  whereas JSON cannot execute code regardless of content
+	- locale(): validate and untaint HTTP_USER_AGENT before parsing — apply the
+	  same printable-ASCII + length-cap discipline as HTTP_ACCEPT_LANGUAGE; also
+	  validate the country code returned by HTTP::BrowserDetect against
+	  /^([A-Za-z]{2})$/ before passing to _code2country()
+	- translation_file(): reject $dir containing '..' or null bytes to prevent
+	  path-traversal attacks when callers pass user-controlled input as $dir
+	- _clean_country_code(): replace strip-then-return with a single anchored
+	  capture /^([A-Za-z]{2})\s*(?:#.*)?$/ that returns undef for any malformed
+	  value; callers in _resolve_country_via_whois() fall through to IANA on
+	  undef rather than propagating a malformed code string
+	- geoplugin.net URL changed from http:// to https:// to prevent MITM
+	  injection of plausible-but-wrong country codes; ip-api.com retains
+	  http:// because its free tier does not support TLS (paid plan required)
 	- country(): after lc() and legacy mappings, reject any result that is not
 	  exactly 2 lowercase ASCII letters (or the 'Unknown' EU sentinel from
 	  _handle_eu_country); guards against Whois CRLF injection leftovers

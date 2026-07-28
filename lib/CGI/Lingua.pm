@@ -9,7 +9,7 @@ use Object::Configure 0.14;
 use Params::Get 0.15;	# 0.15 fast-path: unblessed hashref returned directly
 use Readonly;
 use Scalar::Util qw(blessed);
-use Storable;
+use JSON::PP ();
 use Class::Autouse qw{
 	Locale::Language
 	Locale::Object::Country
@@ -31,6 +31,7 @@ Readonly my $BAIDU_SUBNET        => '185.10.104.0/22';# RT-86809: Baidu misrepor
 Readonly my $DEPRECATED_EN_UK    => 'en-uk';          # some browsers still send this
 Readonly my $CANONICAL_EN_GB     => 'en-gb';
 Readonly my $ACCEPT_LANG_MAX     => 256;              # max bytes we accept from the header
+Readonly my $UA_MAX              => 512;              # max bytes we accept from HTTP_USER_AGENT
 Readonly my $GEO_UNKNOWN         => -1;               # geo-module sentinel: not yet probed
 Readonly my $GEO_ABSENT          =>  0;               # geo-module sentinel: unavailable
 Readonly my $GEO_PRESENT         =>  1;               # geo-module sentinel: loaded OK
@@ -203,10 +204,21 @@ sub new
 	# Try to restore a frozen state from the cache before doing any work
 	if($cache && $ENV{'REMOTE_ADDR'}) {
 		my $key = _build_cache_key($ENV{'REMOTE_ADDR'}, $params, $class, $info);
-		if(my $rc = $cache->get($key)) {
-			$rc = Storable::thaw($rc);
-			# Re-inject transient/non-serialisable fields
-			$rc->{logger}           = $params->{'logger'};
+		if(my $frozen = $cache->get($key)) {
+			# JSON::PP is used in preference to Storable::thaw because Storable
+			# can execute arbitrary Perl code via STORABLE_thaw hooks if an
+			# attacker manages to write a crafted blob to the cache backend.
+			# JSON cannot execute code regardless of its content.
+			# If the blob is not valid JSON (e.g. a legacy Storable entry), the
+			# eval catches the error and we fall through to fresh construction.
+			my $rc = eval { JSON::PP::decode_json($frozen) };
+			unless(defined $rc && ref($rc) eq 'HASH') {
+				$rc = undef;    # stale or corrupt entry — rebuild below
+			}
+			if(defined $rc) {
+				bless $rc, $class;
+				# Re-inject transient/non-serialisable fields
+				$rc->{logger}           = $params->{'logger'};
 			$rc->{_syslog}          = $params->{syslog};
 			$rc->{_cache}           = $cache;
 			$rc->{_supported}       = $params->{supported};
@@ -216,10 +228,11 @@ sub new
 			$rc->{_have_geoipfree}  = $GEO_UNKNOWN;
 
 			# If lang= CGI param is active, the cached language choice may be stale
-			if(($rc->{_what_language} || $rc->{_rlanguage}) && $info && $info->lang()) {
-				delete @{$rc}{qw(_what_language _rlanguage _country)};
+				if(($rc->{_what_language} || $rc->{_rlanguage}) && $info && $info->lang()) {
+					delete @{$rc}{qw(_what_language _rlanguage _country)};
+				}
+				return $rc;
 			}
-			return $rc;
 		}
 	}
 
@@ -297,21 +310,23 @@ sub DESTROY {
 
 	$self->_debug("Storing self in cache as $key");
 
-	# Freeze only the computed state — not loggers, file handles, or
+	# Serialise only the computed state — not loggers, file handles, or
 	# geo-module objects (they are re-initialised on next construction).
-	my $copy = bless {
-		_slanguage              => $self->{_slanguage},
-		_slanguage_code_alpha2  => $self->{_slanguage_code_alpha2},
+	# JSON::PP is used instead of Storable so that a compromised cache backend
+	# cannot deliver a blob that executes code via STORABLE_thaw hooks.
+	my %state = (
+		_slanguage               => $self->{_slanguage},
+		_slanguage_code_alpha2   => $self->{_slanguage_code_alpha2},
 		_sublanguage_code_alpha2 => $self->{_sublanguage_code_alpha2},
-		_country                => $self->{_country},
-		_rlanguage              => $self->{_rlanguage},
-		_dont_use_ip            => $self->{_dont_use_ip},
-		_have_ipcountry         => $self->{_have_ipcountry},
-		_have_geoip             => $self->{_have_geoip},
-		_have_geoipfree         => $self->{_have_geoipfree},
-	}, ref($self);
+		_country                 => $self->{_country},
+		_rlanguage               => $self->{_rlanguage},
+		_dont_use_ip             => $self->{_dont_use_ip},
+		_have_ipcountry          => $self->{_have_ipcountry},
+		_have_geoip              => $self->{_have_geoip},
+		_have_geoipfree          => $self->{_have_geoipfree},
+	);
 
-	$cache->set($key, Storable::nfreeze($copy), $CACHE_TTL_LONG);
+	$cache->set($key, JSON::PP::encode_json(\%state), $CACHE_TTL_LONG);
 }
 
 =head2 language
@@ -1273,7 +1288,7 @@ sub country {
 	   (eval { require LWP::Simple::WithCache; require JSON::Parse })) {
 		$self->_debug("Look up $ip on geoplugin");
 
-		if(my $data = LWP::Simple::WithCache::get("http://www.geoplugin.net/json.gp?ip=$ip")) {
+		if(my $data = LWP::Simple::WithCache::get("https://www.geoplugin.net/json.gp?ip=$ip")) {
 			eval { $self->{_country} = JSON::Parse::parse_json($data)->{'geoplugin_countryCode'} };
 			$self->_warn({ warning => "geoplugin returned unparseable JSON: $@" }) if $@;
 		}
@@ -1367,7 +1382,10 @@ sub _resolve_country_via_whois
 	if($self->{_country}) {
 		$self->_debug("Found $ip on Net::Whois::IP as ", $self->{_country});
 		$self->{_country} = _clean_country_code($self->{_country});
-		return;
+		# _clean_country_code returns undef for malformed values (e.g. CRLF
+		# injection leftovers); if so, fall through to the IANA look-up.
+		return if defined $self->{_country};
+		delete $self->{_country};
 	}
 
 	$self->_debug("Look up $ip on IANA");
@@ -1384,6 +1402,7 @@ sub _resolve_country_via_whois
 
 	if($self->{_country}) {
 		$self->{_country} = _clean_country_code($self->{_country});
+		delete $self->{_country} unless defined $self->{_country};
 	}
 }
 
@@ -1398,10 +1417,14 @@ sub _clean_country_code
 {
 	my ($raw) = @_;
 	$raw =~ s/[\r\n]//g;
-	if($raw =~ /^(..)\s*#/) {
+	# Accept exactly 2 alpha chars, optionally followed by whitespace and a
+	# comment (e.g. "GB # United Kingdom").  Anything else (CRLF injection
+	# leftovers, embedded headers) returns undef so the caller can discard it
+	# rather than propagating a malformed string through the geo pipeline.
+	if($raw =~ /^([A-Za-z]{2})\s*(?:#.*)?$/) {
 		return $1;
 	}
-	return $raw;
+	return;
 }
 
 # ── _handle_eu_country ────────────────────────────────────────────────────
@@ -1506,7 +1529,17 @@ sub locale {
 
 	return $self->{_locale} if $self->{_locale};
 
-	my $agent = $ENV{'HTTP_USER_AGENT'};
+	# Validate and untaint HTTP_USER_AGENT before passing to any parser.
+	# The User-Agent header is attacker-controlled; apply the same discipline
+	# as HTTP_ACCEPT_LANGUAGE.  Printable ASCII (0x20-0x7e), bounded length.
+	my $agent;
+	if(defined(my $raw_agent = $ENV{'HTTP_USER_AGENT'})) {
+		if($raw_agent =~ /^([\x20-\x7e]{1,$UA_MAX})$/a) {
+			$agent = $1;    # untainted
+		} else {
+			$self->_warn({ warning => 'HTTP_USER_AGENT contains invalid characters or exceeds length limit; ignoring' });
+		}
+	}
 
 	# First try: parse the language tag from the User-Agent parenthetical
 	if(defined($agent) && ($agent =~ /\((.+)\)/)) {
@@ -1527,9 +1560,16 @@ sub locale {
 		if(eval { require HTTP::BrowserDetect }) {
 			HTTP::BrowserDetect->import();
 			my $browser = HTTP::BrowserDetect->new($agent);
-			if($browser && $browser->country() && (my $c = $self->_code2country($browser->country()))) {
-				$self->{_locale} = $c;
-				return $c;
+			# Validate country() result before use — the return value comes from
+			# the third-party module and is not yet untainted or range-checked.
+			if($browser) {
+				my $bc = $browser->country() // '';
+				if($bc =~ /^([A-Za-z]{2})$/a) {
+					if(my $c = $self->_code2country($1)) {
+						$self->{_locale} = $c;
+						return $c;
+					}
+				}
 			}
 		}
 	}
@@ -1955,6 +1995,16 @@ sub translation_file
 {
 	my ($self, $dir, $ext) = @_;
 	return unless defined $dir;
+
+	# Reject traversal attempts in the directory argument.  A real translation
+	# directory never needs '..', null bytes, or other shell metacharacters.
+	# The caller is responsible for not passing user-controlled data as $dir,
+	# but we guard here as a defence-in-depth measure.
+	if($dir =~ /\.\./ || $dir =~ /\x00/) {
+		$self->_warn({ warning => "translation_file: unsafe directory '$dir' rejected" });
+		return;
+	}
+
 	$ext //= 'json';
 	$ext =~ s/^\.//;    # accept '.json' or 'json'
 
