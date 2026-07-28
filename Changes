@@ -2,7 +2,28 @@ Revision history for CGI-Lingua
 
 0.83
 	[ Bug Fixes ]
-	- Bump minimum Params::Get - may further help https://github.com/nigelhorne/CGI-Lingua/issues/38
+	- Remove spurious ->import() after lazy require in _load_geoip() (Geo::IP->import()),
+	  country() (Geo::IPfree::IP->import()), and _resolve_country_via_whois()
+	  (Net::Whois::IP->import(), Net::Whois::IANA->import()): class methods and
+	  fully-qualified function calls work without import, and on some module versions
+	  the import() call reinstalls the real function in the symbol table, clobbering
+	  Test::Mockingbird mocks (mirrors the LWP::Simple::WithCache fix in 0.82)
+	- Replace 'require IP::Country' + IP::Country->import() with
+	  'require IP::Country::Fast' directly (the concrete class we actually instantiate)
+	- Extract _clean_country_code() helper to deduplicate the strip-carriage-return and
+	  strip-trailing-comment pattern repeated in _resolve_country_via_whois()
+	- Bump minimum Params::Get to 0.15 in both Makefile.PL and the module's use declaration
+	  (0.15 fast-path: unblessed hashref arg returned directly rather than stored under the
+	  default key; this determines which code path new({ logger => ... }) takes and was the
+	  root cause of the t/carp.t regression correlated with Params::Get 0.15)
+
+	[ Enhancement ]
+	- _warn(): call Params::Get::get_params once (was called twice, once per branch)
+	- Bump $VERSION to 0.83 and update POD Version line accordingly
+	- Add =head3 EXAMPLE, inline =head3 FORMAL SPECIFICATION, and =head3 PSEUDOCODE to
+	  all public methods that were missing them: language, sublanguage, language_code_alpha2,
+	  sublanguage_code_alpha2, requested_language, country, locale, time_zone, is_rtl,
+	  text_direction, plural_category, translation_file
 
 0.82	Sat Jul 11 20:41:15 UTC 2026
 	[ Distribution ]
