@@ -1302,6 +1302,16 @@ sub country {
 			if($self->{_country} && ($self->{_country} !~ /\D/)) {
 				$self->_warn({ warning => "cache contains a numeric country: $self->{_country}" });
 				delete $self->{_country};
+			} elsif($self->{_country} &&
+				$self->{_country} ne 'Unknown' &&
+				($self->{_country} !~ /^[a-z]{2}$/)) {
+				# Reject anything that is not exactly 2 lowercase ASCII letters,
+				# unless it is the 'Unknown' sentinel written by _handle_eu_country
+				# for EU addresses that do not map to a specific country.
+				# Guards against Whois CRLF injection leftovers ("gbx-header: evil")
+				# and XSS payloads in JSON API responses ("gb<script>...</script>").
+				$self->_warn({ warning => "Discarding malformed country code '$self->{_country}'" });
+				delete $self->{_country};
 			} elsif($self->{_country} && $self->{_cache}) {
 				$self->_debug("Set $ip to $self->{_country}");
 				$self->{_cache}->set(
@@ -1658,6 +1668,16 @@ sub time_zone {
 		}
 	}
 
+	# Validate the timezone string against a permissive but bounded IANA pattern.
+	# Rejects XSS payloads (e.g. "Europe/London<script>...") from hostile JSON
+	# responses while accepting all real IANA zone names (e.g. "America/New_York",
+	# "Etc/GMT+8", "UTC").
+	if(defined($self->{_timezone}) &&
+	   $self->{_timezone} !~ /^[A-Za-z][A-Za-z0-9_+\-\/]{0,50}$/) {
+		$self->_warn({ warning => "Discarding malformed timezone '$self->{_timezone}'" });
+		delete $self->{_timezone};
+	}
+
 	unless(defined($self->{_timezone})) {
 		$self->_warn({ warning => "Couldn't determine the timezone" });
 	}
@@ -1937,6 +1957,13 @@ sub translation_file
 	return unless defined $dir;
 	$ext //= 'json';
 	$ext =~ s/^\.//;    # accept '.json' or 'json'
+
+	# Reject extensions containing path-traversal sequences or shell metacharacters.
+	# Valid extensions are word characters and hyphens only (e.g. 'json', 'po', 'yml').
+	unless($ext =~ /^[A-Za-z0-9\-]+$/) {
+		$self->_warn({ warning => "translation_file: unsafe extension '$ext' rejected" });
+		return;
+	}
 
 	my @candidates;
 	if(my $sub = $self->sublanguage_code_alpha2()) {

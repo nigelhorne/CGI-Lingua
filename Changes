@@ -1,6 +1,19 @@
 Revision history for CGI-Lingua
 
 0.83
+	[ Security ]
+	- country(): after lc() and legacy mappings, reject any result that is not
+	  exactly 2 lowercase ASCII letters (or the 'Unknown' EU sentinel from
+	  _handle_eu_country); guards against Whois CRLF injection leftovers
+	  (e.g. "gbx-header: evil" produced by _clean_country_code stripping \n from
+	  "GB\nX-Header: evil") and XSS payloads in geoplugin JSON countryCode fields
+	- time_zone(): validate extracted timezone string against bounded IANA pattern
+	  /^[A-Za-z][A-Za-z0-9_+\-\/]{0,50}$/ before returning; discards XSS payloads
+	  from hostile ip-api.com JSON responses (e.g. "Europe/London<script>...")
+	- translation_file(): after stripping a leading dot from $ext, reject any
+	  extension not matching /^[A-Za-z0-9\-]+$/; prevents path-traversal attacks
+	  when callers pass user-controlled data as $ext (e.g. '../../../etc/passwd')
+
 	[ Bug Fixes ]
 	- Remove spurious ->import() after lazy require in _load_geoip() (Geo::IP->import()),
 	  country() (Geo::IPfree::IP->import()), and _resolve_country_via_whois()

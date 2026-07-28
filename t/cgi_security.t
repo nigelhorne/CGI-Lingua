@@ -409,20 +409,10 @@ subtest '_clean_country_code: CRLF + injected header does not propagate' => sub 
 	$l->{_have_geoip}     = 0;
 	$l->{_have_geoipfree} = 0;
 	my $cc = $l->country();
-	if(defined $cc) {
-		# FINDING: country() currently does NOT validate the final code length/format.
-		# A post-strip value like "gbx-header: evil" passes the /\D/ check and is
-		# returned to the caller.  A strict validation of /^[a-z]{2}$/ should be added.
-		# For now document the current state; the test below captures the ideal expectation.
-		TODO: {
-			local $TODO = 'country() does not yet validate post-strip code length: '
-				. 'see FINDING in cgi_security.t';
-			like($cc, qr/^[a-z]{2}$/,
-				'Country code must be exactly 2 lowercase alpha chars');
-		}
-	} else {
-		pass('country() returned undef — safe degradation');
-	}
+	# country() now validates the post-strip result against /^[a-z]{2}$/, so the
+	# CRLF-injected payload "gbx-header: evil" (after strip) is discarded.
+	ok(!defined $cc || $cc =~ /^[a-z]{2}$/,
+		'country() returns undef or valid 2-char code after CRLF Whois injection');
 	Test::Mockingbird::restore_all();
 	_block_network();
 };
@@ -454,13 +444,10 @@ subtest 'geoplugin JSON: XSS payload in countryCode is not returned as-is' => su
 	# The ideal fix: validate the countryCode field against /^[a-z]{2}$/ after
 	# extracting from JSON.  Until then, document with a TODO.
 	if(defined $cc) {
-		# FINDING: both assertions are TODO until country() validates the JSON field.
-		TODO: {
-			local $TODO = 'country() does not yet validate JSON-sourced countryCode: '
-				. 'see FINDING in cgi_security.t';
-			like($cc, qr/^[a-z]{2}$/, 'JSON countryCode must be 2 lowercase alpha chars');
-			unlike($cc, qr/<script>/i, 'XSS payload not returned verbatim as country code');
-		}
+		# country() now validates the JSON field against /^[a-z]{2}$/ — the hostile
+		# payload must be discarded, so $cc must be exactly 2 lowercase alpha chars.
+		like($cc, qr/^[a-z]{2}$/, 'JSON countryCode must be 2 lowercase alpha chars');
+		unlike($cc, qr/<script>/i, 'XSS payload not returned verbatim as country code');
 	} else {
 		pass('country() returned undef for hostile JSON — safe');
 	}
@@ -486,16 +473,12 @@ subtest 'ip-api JSON: XSS payload in timezone field is not returned as-is' => su
 
 	if(defined $tz) {
 		diag("time_zone() returned: $tz") if $ENV{TEST_VERBOSE};
-		# FINDING: time_zone() does not validate the timezone format.  A well-formed
-		# IANA name is "Region/City" (alpha + "/" + alpha).  No validation currently
-		# means an XSS payload is returned to the caller as-is.  Callers must HTML-
-		# escape the result before embedding in HTML output.
-		TODO: {
-			local $TODO = 'time_zone() does not yet validate IANA timezone format: '
-				. 'see FINDING in cgi_security.t';
-			unlike($tz, qr/<script>/i,
-				'XSS payload in timezone field should not be returned raw');
-		}
+		# time_zone() now validates against a bounded IANA pattern before returning;
+		# a hostile JSON payload must be discarded, so $tz must be undef or valid.
+		unlike($tz, qr/<script>/i,
+			'XSS payload in timezone field not returned after IANA validation');
+		like($tz, qr/^[A-Za-z][A-Za-z0-9_+\-\/]{0,50}$/,
+			'Returned timezone matches bounded IANA pattern');
 	} else {
 		pass('time_zone() returned undef for hostile JSON — safe');
 	}
@@ -621,17 +604,9 @@ subtest 'translation_file: traversal via $ext does not return a system file path
 	# path outside $dir.  The method only checks -e on the path; if the
 	# traversal target exists, it returns the traversal path to the caller.
 	# RECOMMENDATION: validate $ext against /^[A-Za-z0-9]+$/ before use.
-	if(defined $path) {
-		# If any path was returned, it must be inside $tmpdir.
-		TODO: {
-			local $TODO = 'translation_file() does not yet validate $ext for traversal: '
-				. 'see FINDING in cgi_security.t';
-			like($path, qr/\Q$tmpdir\E/,
-				'translation_file() path must remain inside $dir');
-		}
-	} else {
-		pass('translation_file() returned undef — file does not exist at traversal path');
-	}
+	# translation_file() now validates $ext against /^[A-Za-z0-9\-]+$/ and returns
+	# undef for traversal-containing extensions before any path is constructed.
+	ok(!defined $path, 'translation_file() rejects traversal-containing $ext');
 };
 
 # ── 16. Accept-Language wildcard and q-value edge cases ───────────────────────
