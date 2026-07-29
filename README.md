@@ -6,7 +6,7 @@ CGI-Lingua
 [![Coveralls Status](https://coveralls.io/repos/github/nigelhorne/CGI-Lingua/badge.svg?branch=master)](https://coveralls.io/github/nigelhorne/CGI-Lingua?branch=master)
 [![CPAN](https://img.shields.io/cpan/v/CGI-Lingua.svg)](http://search.cpan.org/~nhorne/CGI-Lingua/)
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/nigelhorne/cgi-lingua/test.yml?branch=master)
-![Perl Version](https://img.shields.io/badge/perl-5.8+-blue)
+![Perl Version](https://img.shields.io/badge/perl-5.10+-blue)
 [![Travis Status](https://travis-ci.org/nigelhorne/CGI-Lingua.svg?branch=master)](https://travis-ci.org/nigelhorne/CGI-Lingua)
 [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://x.com/intent/tweet?text=Information+about+the+CGI+Environment+#perl+#CGI&url=https://github.com/nigelhorne/cgi-lingua&via=nigelhorne)
 
@@ -16,7 +16,7 @@ CGI::Lingua - Create a multilingual web page
 
 # VERSION
 
-Version 0.82
+Version 0.83
 
 # SYNOPSIS
 
@@ -487,6 +487,17 @@ Returns `undef` if no matching file exists.
     IP addresses that Whois reports as country `EU` are mapped to `'Unknown'`
     unless they fall within Baidu's known subnet (RT-86809).  There is no ISO
     3166-1 country code for the European Union.
+
+- **country() does not cache undef results**
+
+    When `country()` cannot determine a country (private IPs, loopback,
+    unresolvable addresses), it returns `undef` without storing the result.  A
+    second call on the same object repeats the full validation pipeline.  This is
+    intentional: `country()` reads `REMOTE_ADDR` at call time rather than at
+    construction time, so caching `undef` would return a wrong answer if
+    `REMOTE_ADDR` changes between calls.  In practice this is rarely a problem
+    because `country()` is called once per request and CGI applications typically
+    create a fresh object per request.
 
 # AUTHOR
 

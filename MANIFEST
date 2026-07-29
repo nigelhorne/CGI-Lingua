@@ -1,3 +1,4 @@
+.tachikoma.yml
 Changes
 ignore.txt
 lib/CGI/Lingua.pm
@@ -18,6 +19,9 @@ t/cgi_security.t
 t/changes.t
 t/cloudflare.t
 t/comment-spelling.t
+t/conf/country.yml
+t/conf/language.yml
+t/conf/new.yml
 t/country.t
 t/coverage.t
 t/cr.t

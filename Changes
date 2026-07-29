@@ -1,6 +1,6 @@
 Revision history for CGI-Lingua
 
-0.83
+0.83	Tue Jul 28 20:30:23 EDT 2026
 	[ Security ]
 	- Replace Storable::nfreeze/thaw with JSON::PP encode/decode for cache
 	  serialisation in new() and DESTROY(); Storable::thaw can execute arbitrary
@@ -49,6 +49,15 @@ Revision history for CGI-Lingua
 	  root cause of the t/carp.t regression correlated with Params::Get 0.15)
 
 	[ Enhancement ]
+	- Declare JSON::PP (>= 2.27) as an explicit PREREQ_PM dependency; it was used
+	  for cache serialisation but not declared, causing install failures on Perl
+	  5.10.x and 5.12.x where JSON::PP is not yet bundled with core
+	- Makefile.PL: convert string eval ('require Module') to block eval
+	  ({ require Module; 1 }) for module-probe checks; string eval produces
+	  deprecation warnings on modern Perls and bypasses taint propagation
+	- LIMITATIONS: add note that country() does not cache undef results for
+	  private/loopback IPs; document the intentional reason (lazy REMOTE_ADDR
+	  read design); remove dangling inline FIXME reference
 	- _warn(): call Params::Get::get_params once (was called twice, once per branch)
 	- Bump $VERSION to 0.83 and update POD Version line accordingly
 	- Add =head3 EXAMPLE, inline =head3 FORMAL SPECIFICATION, and =head3 PSEUDOCODE to

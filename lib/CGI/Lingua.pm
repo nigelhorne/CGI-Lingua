@@ -5,7 +5,7 @@ use strict;
 use autodie qw(:all);
 
 use Carp qw(croak carp);
-use Object::Configure 0.14;
+use Object::Configure 0.23;
 use Params::Get 0.15;	# 0.15 fast-path: unblessed hashref returned directly
 use Readonly;
 use Scalar::Util qw(blessed);
@@ -18,7 +18,7 @@ use Class::Autouse qw{
 	I18N::LangTags::Detect
 };
 
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 
 # ── Module-level constants ───────────────────────────────────────────────────
 # Gathering magic strings here makes behavioural changes one-edit operations.
@@ -44,7 +44,7 @@ CGI::Lingua - Create a multilingual web page
 
 =head1 VERSION
 
-Version 0.82
+Version 0.83
 
 =cut
 
@@ -1146,7 +1146,11 @@ sub country {
 
 	$self->_trace(__PACKAGE__, ': Entered country()');
 
-	# Return cached result immediately (but see FIXME below about undef caching)
+	# Return cached result immediately if a previous call already resolved it.
+	# Note: undef results (private/loopback IPs) are NOT cached here because
+	# country() reads REMOTE_ADDR at call time, not construction time; caching
+	# undef would give wrong answers if REMOTE_ADDR changes between calls on
+	# the same object (the documented lazy-read design).  See LIMITATIONS.
 	if($self->{_country}) {
 		$self->_trace('quick return: ', $self->{_country});
 		return $self->{_country};
@@ -2236,6 +2240,17 @@ address string is not preserved in cache keys or log messages.
 IP addresses that Whois reports as country C<EU> are mapped to C<'Unknown'>
 unless they fall within Baidu's known subnet (RT-86809).  There is no ISO
 3166-1 country code for the European Union.
+
+=item * B<country() does not cache undef results>
+
+When C<country()> cannot determine a country (private IPs, loopback,
+unresolvable addresses), it returns C<undef> without storing the result.  A
+second call on the same object repeats the full validation pipeline.  This is
+intentional: C<country()> reads C<REMOTE_ADDR> at call time rather than at
+construction time, so caching C<undef> would return a wrong answer if
+C<REMOTE_ADDR> changes between calls.  In practice this is rarely a problem
+because C<country()> is called once per request and CGI applications typically
+create a fresh object per request.
 
 =back
 
