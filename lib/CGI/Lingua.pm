@@ -1198,6 +1198,13 @@ sub country {
 			$ip = '127.0.0.1';    # normalise loopback
 		} elsif($ip =~ /^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/i) {
 			$ip = $1;             # normalise IPv4-mapped IPv6 (::ffff:a.b.c.d) to plain IPv4
+			# \d{1,3} matches 0-999; validate range before geo lookups because
+			# some inet_aton implementations wrap out-of-range octets modulo 256,
+			# turning 999.999.999.999 into a real routable address.
+			unless(is_ipv4($ip)) {
+				$self->_warn({ warning => "$ip isn't a valid IP address" });
+				return;
+			}
 		} elsif(!is_ipv6($ip)) {
 			$self->_warn({ warning => "$ip isn't a valid IP address" });
 			return;
