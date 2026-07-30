@@ -211,7 +211,7 @@ sub new
 			# JSON cannot execute code regardless of its content.
 			# If the blob is not valid JSON (e.g. a legacy Storable entry), the
 			# eval catches the error and we fall through to fresh construction.
-			my $rc = eval { JSON::PP::decode_json($frozen) };
+			my $rc = eval { local $SIG{__DIE__}; JSON::PP::decode_json($frozen) };
 			unless(defined $rc && ref($rc) eq 'HASH') {
 				$rc = undef;    # stale or corrupt entry — rebuild below
 			}

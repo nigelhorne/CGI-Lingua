@@ -10,6 +10,13 @@ Revision history for CGI-Lingua
 	  real routable IP) and returned a spurious country code
 
 	[ Bug Fixes ]
+	- new(): add local $SIG{__DIE__} inside the eval { JSON::PP::decode_json(...) }
+	  guard so that applications using the Error module (or any other framework that
+	  installs a $SIG{__DIE__} handler) do not see spurious "malformed JSON string"
+	  log messages when the cache holds a legacy Storable blob; the eval already
+	  discards the stale entry and falls through to fresh construction, but without
+	  the local the handler intercepts the JSON parse exception before eval can
+	  swallow it
 	- t/cgi_security.t: pre-require LWP::Simple::WithCache and JSON::Parse before
 	  installing any Test::Mockingbird mocks; without this, the lazy
 	  eval { require LWP::Simple::WithCache } inside country() loads the real
