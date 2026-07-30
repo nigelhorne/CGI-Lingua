@@ -627,7 +627,6 @@ sub _accept_language_match
 #               descending quality value so fallback scans honour q= priority.
 # Entry:        $header — validated Accept-Language string.
 # Exit:         Arrayref of [$language_tag, $quality] pairs, highest q first.
-# Side Effects: None.
 sub _sorted_tokens
 {
 	my ($self, $header) = @_;
@@ -1416,7 +1415,6 @@ sub _resolve_country_via_whois
 #               (e.g. "US\r", "GB # United Kingdom").
 # Entry:        $raw — raw country string from a Whois response.
 # Exit:         Cleaned 2-char country code string.
-# Side Effects: None.
 sub _clean_country_code
 {
 	my ($raw) = @_;

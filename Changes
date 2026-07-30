@@ -1,5 +1,20 @@
 Revision history for CGI-Lingua
 
+0.84
+	[ Bug Fixes ]
+	- t/cgi_security.t: pre-require LWP::Simple::WithCache and JSON::Parse before
+	  installing any Test::Mockingbird mocks; without this, the lazy
+	  eval { require LWP::Simple::WithCache } inside country() loads the real
+	  module on first call and clobbers the mock, causing the bogus-IP subtest
+	  (::ffff:999.999.999.999) to make a real network call and receive a country
+	  code instead of undef — matches the pre-require pattern already used in
+	  t/integration.t and t/edge_cases.t
+	- t/integration.t: add missing _have_ipcountry = 0 sentinel in the
+	  'dont_use_ip suppresses country-based language detection' subtest; the
+	  comment stated all geo-module sentinels were set to GEO_ABSENT but
+	  _have_ipcountry was omitted, so on machines with IP::Country installed the
+	  lookup ran against 8.8.8.8 and returned a real country code
+
 0.83	Tue Jul 28 20:30:23 EDT 2026
 	[ Security ]
 	- Replace Storable::nfreeze/thaw with JSON::PP encode/decode for cache
