@@ -1,6 +1,6 @@
 Revision history for CGI-Lingua
 
-0.84
+0.84	Thu Jul 30 03:07:22 PM EDT 2026
 	[ Security ]
 	- country(): after extracting the IPv4 portion of an ::ffff: mapped address,
 	  validate it with is_ipv4() before proceeding to geo lookups; the untainting
