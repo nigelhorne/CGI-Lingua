@@ -35,7 +35,7 @@ jobs:
 
       # Install Perl via perlbrew
       - name: Setup Perl environment
-        uses: shogo82148/actions-setup-perl@v1
+        uses: shogo82148/actions-setup-perl@v1.42.0
         with:
           perl-version: ${{ matrix.perl }}
           # install cpanminus
@@ -103,7 +103,7 @@ jobs:
             perl Makefile.PL && make install
           else
             echo "Install ATG"
-            cpanm -iqn App::Test::Generator@0.44
+            cpanm -iqn App::Test::Generator@0.45
           fi
 
       - name: Generate dashboard
