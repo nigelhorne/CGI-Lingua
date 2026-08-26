@@ -108,7 +108,8 @@ WriteMakefile(
 	VERSION_FROM        => 'lib/CGI/Lingua.pm',
 	ABSTRACT_FROM       => 'lib/CGI/Lingua.pm',
 	LICENSE          => 'gpl_2',
-	PL_FILES	=> {}, CONFIGURE_REQUIRES => {
+	PL_FILES	=> {},
+	CONFIGURE_REQUIRES => {
 		'ExtUtils::MakeMaker' => 6.64,	# Minimum version for TEST_REQUIRES
     }, TEST_REQUIRES => $test_requires,
     PREREQ_PM => {
@@ -143,8 +144,7 @@ WriteMakefile(
     	        description => 'Detect Baidu crawler IPs that misreport as EU (RT-86809); not available on Windows due to Socket6 build dependency',
     	        prereqs => { runtime => { recommends => { 'Net::Subnet' => 0 } } },
     	    },
-    	},
-    	resources => {
+    	}, resources => {
 		repository => {
 			type => 'git',
 			url => 'git://github.com/nigelhorne/CGI-Lingua.git',
