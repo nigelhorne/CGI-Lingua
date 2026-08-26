@@ -1436,21 +1436,43 @@ sub _clean_country_code
 	return;
 }
 
+# ── _in_baidu_subnet ──────────────────────────────────────────────────────
+# Purpose:      Pure-Perl fallback check for the Baidu IPv4 subnet
+#               185.10.104.0/22.  Used when Net::Subnet is absent (e.g. on
+#               Windows where its Socket6 dependency fails to build).
+# Entry:        $ip — untainted IPv4 string.
+# Exit:         Returns true if $ip is within the /22 block, false otherwise.
+sub _in_baidu_subnet
+{
+	my $ip = shift;
+	return 0 unless $ip =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/;
+	# pack/unpack avoids signed-integer overflow on 32-bit Perl
+	my $n   = unpack('N', pack('C4', $1, $2, $3, $4));
+	my $net = unpack('N', pack('C4', 185, 10, 104, 0));
+	return (($n & 0xFFFFFC00) == ($net & 0xFFFFFC00));
+}
+
 # ── _handle_eu_country ────────────────────────────────────────────────────
 # Purpose:      Resolve the ambiguous 'eu' country code.  RT-86809 shows that
 #               Baidu reports itself as EU when it is actually in CN.  All
 #               other 'eu' addresses are logged as Unknown.
 # Entry:        $ip — validated, untainted IP string.
 # Exit:         Sets $self->{_country} to 'cn' or 'Unknown'.
-# Side Effects: Loads Net::Subnet; writes info log entry.
+# Side Effects: Optionally loads Net::Subnet; writes info log entry.
 sub _handle_eu_country
 {
 	my ($self, $ip) = @_;
 
-	require Net::Subnet;
-	Net::Subnet->import();
+	# Prefer Net::Subnet for correctness; fall back to the pure-Perl helper
+	# when it is absent (Socket6, its indirect dep, fails to build on Windows).
+	my $in_baidu;
+	if(eval { require Net::Subnet; Net::Subnet->import(); 1 }) {
+		$in_baidu = subnet_matcher($BAIDU_SUBNET)->($ip);
+	} else {
+		$in_baidu = _in_baidu_subnet($ip);
+	}
 
-	if(subnet_matcher($BAIDU_SUBNET)->($ip)) {
+	if($in_baidu) {
 		$self->{_country} = 'cn';
 	} else {
 		$self->_info("$ip has country of eu");

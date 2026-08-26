@@ -1,5 +1,13 @@
 Revision history for CGI-Lingua
 
+0.85
+	[ Bug Fixes ]
+	- Make Net::Subnet an optional (recommended) dependency rather than required;
+	  Net::Subnet depends on Socket6 which requires C compilation and fails to
+	  build on Windows; add a pure-Perl fallback (_in_baidu_subnet) for the single
+	  185.10.104.0/22 check in _handle_eu_country so the module continues to
+	  detect Baidu crawler IPs even when Net::Subnet is absent
+
 0.84	Thu Jul 30 03:07:22 PM EDT 2026
 	[ Security ]
 	- country(): after extracting the IPv4 portion of an ::ffff: mapped address,

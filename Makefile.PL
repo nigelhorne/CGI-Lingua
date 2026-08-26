@@ -133,12 +133,17 @@ WriteMakefile(
 	'CGI::Info' => 0.60, # For AUTOLOAD
 	'Sys::Syslog' => 0,
 	'HTTP::BrowserDetect' => 0,
-	'Net::Subnet' => 0,
 	'Class::Autouse' => 0
     }, dist => $dist,
     clean               => { FILES => 'CGI-Lingua-* t/online.enabled' },
     META_MERGE		=> {
     	'meta-spec' => { version => 2 },
+    	optional_features => {
+    	    baidu_subnet_detection => {
+    	        description => 'Detect Baidu crawler IPs that misreport as EU (RT-86809); not available on Windows due to Socket6 build dependency',
+    	        prereqs => { runtime => { recommends => { 'Net::Subnet' => 0 } } },
+    	    },
+    	},
     	resources => {
 		repository => {
 			type => 'git',
