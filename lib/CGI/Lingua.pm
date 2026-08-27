@@ -35,6 +35,12 @@ Readonly my $UA_MAX              => 512;              # max bytes we accept from
 Readonly my $GEO_UNKNOWN         => -1;               # geo-module sentinel: not yet probed
 Readonly my $GEO_ABSENT          =>  0;               # geo-module sentinel: unavailable
 Readonly my $GEO_PRESENT         =>  1;               # geo-module sentinel: loaded OK
+
+# Package-level sentinel for Locale::Object's SQLite database.  undef = not yet
+# probed; 0 = database absent (Windows installers often omit it); 1 = available.
+# Package-level (not per-object) because the database either exists on the
+# filesystem or it doesn't — there is no per-request variability.
+my $_locale_object_db_ok;
 Readonly my %RTL_LANGS           => (map { $_ => 1 }  # ISO 639-1 codes whose primary script is RTL
 	qw(ar dv fa he ku ps sd ug ur yi));
 
@@ -740,8 +746,15 @@ sub _resolve_base_match
 		$sl = $self->_code2country($1);
 		$requested_sublanguage //= $1;
 	} elsif($header =~ /..-([a-z]{2,3})$/i) {
-		eval { $sl = Locale::Object::Country->new(code_alpha3 => $1) };
-		$self->_info($@) if $@;
+		if($_locale_object_db_ok // 1) {
+			eval { $sl = Locale::Object::Country->new(code_alpha3 => $1) };
+			if($@) {
+				$_locale_object_db_ok = 0 if $@ =~ /database was not in/;
+				$self->_info($@);
+			} else {
+				$_locale_object_db_ok = 1;
+			}
+		}
 	}
 
 	if($sl) {
@@ -856,18 +869,28 @@ sub _resolve_sublanguage_match
 			# Cache stores "countryname=langcode" (e.g. "United Kingdom=en").
 			# Splitting on = gives the country name as the first field.
 			($language_name) = split(/=/, $from_cache);
-		} else {
-			my $db = Locale::Object::DB->new();
-			my @results = @{$db->lookup(
-				table         => 'country',
-				result_column => 'name',
-				search_column => 'code_alpha2',
-				value         => $variety
-			)};
-			if(defined($results[0])) {
-				eval { $language_name = $self->_code2countryname($variety) };
-			} else {
-				$self->_debug("Can't find the country code for $variety in Locale::Object::DB");
+		} elsif($_locale_object_db_ok // 1) {
+			# Locale::Object's SQLite database is absent on some Windows
+			# installations; the sentinel avoids repeated failed new() calls.
+			eval {
+				my $db = Locale::Object::DB->new();
+				my @results = @{$db->lookup(
+					table         => 'country',
+					result_column => 'name',
+					search_column => 'code_alpha2',
+					value         => $variety
+				)};
+				$_locale_object_db_ok = 1;
+				if(defined($results[0])) {
+					$language_name = $self->_code2countryname($variety);
+				} else {
+					$self->_debug("Can't find the country code for $variety in Locale::Object::DB");
+				}
+			};
+			if($@) {
+				$_locale_object_db_ok = 0
+					if $@ =~ /database was not in/;
+				# fall through: $language_name stays undef, caught below
 			}
 		}
 
@@ -2114,12 +2137,20 @@ sub _code2country
 	}
 
 	my $rc;
-	{
-		# Scope the signal handler tightly — only suppress the one known-harmless warning
+	if($_locale_object_db_ok // 1) {
+		# Suppress the routine "No result found" warning; catch the database-
+		# absent exception that Windows installations sometimes throw.
 		local $SIG{__WARN__} = sub {
 			warn $_[0] unless $_[0] =~ /No result found in country table/;
 		};
-		$rc = Locale::Object::Country->new(code_alpha2 => $code);
+		eval { $rc = Locale::Object::Country->new(code_alpha2 => $code) };
+		if($@) {
+			$_locale_object_db_ok = 0
+				if $@ =~ /database was not in/;
+			$rc = undef;
+		} else {
+			$_locale_object_db_ok = 1;
+		}
 	}
 	$self->_trace('<_code2country ', $code || 'undef');
 	return $rc;

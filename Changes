@@ -2,6 +2,13 @@ Revision history for CGI-Lingua
 
 0.85
 	[ Bug Fixes ]
+	- Locale::Object::Country->new() and Locale::Object::DB->new() now wrapped in
+	  eval at every call site; a package-level $_locale_object_db_ok sentinel
+	  (undef=unchecked, 0=absent, 1=present) prevents repeated failed attempts on
+	  systems where Locale::Object's SQLite database is missing — common on Windows
+	  CI runners where the .db file is not installed alongside the module; the
+	  module now degrades gracefully (sublanguage/country name returns 'Unknown'
+	  rather than dying) instead of propagating the "database was not in" exception
 	- Make Net::Subnet an optional (recommended) dependency rather than required;
 	  Net::Subnet depends on Socket6 which requires C compilation and fails to
 	  build on Windows; add a pure-Perl fallback (_in_baidu_subnet) for the single
