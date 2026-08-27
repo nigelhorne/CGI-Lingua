@@ -874,13 +874,29 @@ subtest 'locale: UA language tag resolves to Locale::Object::Country (1351,1356,
 	# Kill COND_INV_1356: if($candidate =~ /^[a-zA-Z]{2}-([a-zA-Z]{2})$/) → matches 'en-GB'.
 	# Kill COND_INV_1358: if(my $c = $self->_code2country($1)) → resolves 'GB'.
 	# Kill BOOL_NEGATE_1360: return $c → returns the object.
-	local %ENV = (HTTP_USER_AGENT => 'Mozilla/5.0 (en-GB; rv:109.0) test');
-	delete local $ENV{REMOTE_ADDR};
-	my $l = _obj([$LANG_EN]);
-	my $loc = $l->locale();
-	ok(defined($loc),          'locale returns defined object from UA (COND_INV_1351)');
-	ok(blessed($loc),          'locale is a blessed object');
-	is($loc->name(), 'United Kingdom', 'locale resolved to UK (COND_INV_1356,1358,1360)');
+
+	# Skip when Locale::Object's SQLite database is absent (common on Windows CI).
+	# _code2country() returns undef in that case so locale() cannot return a blessed object.
+	my $has_locale_db = eval {
+		require Locale::Object::DB;
+		Locale::Object::DB->new()->lookup(
+			table         => 'country',
+			result_column => 'name',
+			search_column => 'code_alpha2',
+			value         => 'gb'
+		);
+		1;
+	};
+	SKIP: {
+		skip 'Locale::Object database absent', 3 unless $has_locale_db;
+		local %ENV = (HTTP_USER_AGENT => 'Mozilla/5.0 (en-GB; rv:109.0) test');
+		delete local $ENV{REMOTE_ADDR};
+		my $l = _obj([$LANG_EN]);
+		my $loc = $l->locale();
+		ok(defined($loc),          'locale returns defined object from UA (COND_INV_1351)');
+		ok(blessed($loc),          'locale is a blessed object');
+		is($loc->name(), 'United Kingdom', 'locale resolved to UK (COND_INV_1356,1358,1360)');
+	}
 };
 
 subtest 'locale: UA with no matching language tag falls through (COND_INV_1356)' => sub {

@@ -1856,7 +1856,15 @@ sub time_zone {
 			chomp $tz;
 			$self->{_timezone} = $tz;
 		} else {
-			$self->{_timezone} = DateTime::TimeZone::Local->TimeZone()->name();
+			# DateTime::TimeZone::Local::TimeZone() is not available on all
+			# platforms/versions (absent on some Windows Perl builds); guard
+			# so time_zone() degrades to undef rather than dying.
+			eval {
+				local $SIG{__DIE__};
+				require DateTime::TimeZone::Local;
+				$self->{_timezone} = DateTime::TimeZone::Local->TimeZone()->name();
+			};
+			$self->_warn({ warning => "DateTime::TimeZone::Local failed: $@" }) if $@;
 		}
 	}
 
