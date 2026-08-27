@@ -18,7 +18,7 @@ use Class::Autouse qw{
 	I18N::LangTags::Detect
 };
 
-our $VERSION = '0.84';
+our $VERSION = '0.85';
 
 # ── Module-level constants ───────────────────────────────────────────────────
 # Gathering magic strings here makes behavioural changes one-edit operations.
@@ -128,7 +128,7 @@ CGI::Lingua - Create a multilingual web page
 
 =head1 VERSION
 
-Version 0.84
+Version 0.85
 
 =cut
 
@@ -2275,7 +2275,11 @@ sub _country_short_name
 	return unless defined($code);
 	my $lc = lc($code);
 	return $COUNTRY_SHORT_NAMES{$lc} if exists $COUNTRY_SHORT_NAMES{$lc};
-	require Locale::Codes::Country;
+	# Locale::Object may have partially initialised Locale::Codes::Country as a
+	# dependency before we get here; suppress the spurious 'redefine' warning
+	# that some Perl/Locale::Codes combinations produce on first full load.
+	{ local $SIG{__WARN__} = sub { warn $_[0] unless $_[0] =~ /redefined/ };
+	  require Locale::Codes::Country; }
 	return Locale::Codes::Country::code2country($lc, 'alpha-2');
 }
 

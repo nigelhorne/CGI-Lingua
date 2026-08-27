@@ -28,6 +28,19 @@ Revision history for CGI-Lingua
 	  build on Windows; add a pure-Perl fallback (_in_baidu_subnet) for the single
 	  185.10.104.0/22 check in _handle_eu_country so the module continues to
 	  detect Baidu crawler IPs even when Net::Subnet is absent
+	- _resolve_sublanguage_match(): second path (I18N::AcceptLanguage returns a
+	  full tag such as en-gb) now falls back to _country_short_name() before
+	  setting sublanguage to 'Unknown', fixing sublanguage() returning 'Unknown'
+	  for en-gb / en-us on Windows CI where Locale::Object's SQLite database is
+	  not installed
+	- time_zone(): DateTime::TimeZone::Local->TimeZone() wrapped in eval with
+	  local $SIG{__DIE__} so time_zone() returns undef gracefully on Windows
+	  Perl builds that install the module but omit the TimeZone() method
+	[ Test Suite ]
+	- t/mutant_killers.t: three subtests that call ->name() on a Locale::Object
+	  result now probe the Locale::Object database first and SKIP if absent,
+	  preventing a "Can't call method 'name' on an undefined value" crash on
+	  Windows CI runners
 
 0.84	Thu Jul 30 03:07:22 PM EDT 2026
 	[ Security ]

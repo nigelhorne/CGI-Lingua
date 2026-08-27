@@ -146,6 +146,10 @@ WriteMakefile(
     	        description => 'More rigorous IPv6 private-range detection via Data::Validate::IP; not available on Windows because NetAddr::IP (its dep) fails to build there',
     	        prereqs => { runtime => { recommends => { 'Data::Validate::IP' => 0.25, 'NetAddr::IP' => 0 } } },
     	    },
+    	    local_time_zone => {
+    	        description => 'Detect local time zone via DateTime::TimeZone::Local for time_zone() when running non-CGI (CLI); not available on all Windows Perl builds',
+    	        prereqs => { runtime => { recommends => { 'DateTime::TimeZone' => 0 } } },
+    	    },
     	}, resources => {
 		repository => {
 			type => 'git',

@@ -19,7 +19,6 @@ use Readonly;
 use Scalar::Util qw(blessed);
 use Test::Most;
 use Test::Mockingbird;
-use Test::Returns qw(returns_ok);
 use Test::Without::Module qw(IP::Country);
 
 BEGIN { use_ok('CGI::Lingua') }
@@ -649,7 +648,7 @@ subtest '_code2countryname: cache hit on second call' => sub {
 	my $cache = _fresh_cache();
 	my $l = _obj([$LANG{EN_GB}], cache => $cache);
 
-	$l->sublanguage();    # populates _code2countryname('gb')
+	$l->_code2countryname('gb');    # directly populate the cache
 
 	my $cached = $cache->get('CGI::Lingua:code2countryname:gb');
 	ok(defined($cached) && length($cached), '_code2countryname wrote gb entry to cache');
