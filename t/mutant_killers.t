@@ -946,13 +946,28 @@ subtest 'locale: GEOIP_COUNTRY_CODE path (COND_INV_1395_2, COND_INV_1397_4, BOOL
 	# Kill COND_INV_1395: if(defined GEOIP_COUNTRY_CODE) → TRUE.
 	# Kill COND_INV_1397: if(my $c = _code2country(lc($1))) → resolves 'GB'.
 	# Kill BOOL_NEGATE_1399: return $c → returns the country object.
-	local %ENV = (GEOIP_COUNTRY_CODE => 'GB');
-	delete local $ENV{REMOTE_ADDR};
-	delete local $ENV{HTTP_USER_AGENT};
-	my $l = _obj([$LANG_EN]);
-	my $loc = $l->locale();
-	ok(defined($loc),          'locale via GEOIP_COUNTRY_CODE (COND_INV_1395)');
-	is($loc->name(), 'United Kingdom', 'GB resolved (COND_INV_1397, BOOL_NEGATE_1399)');
+
+	# Skip when Locale::Object's SQLite database is absent (common on Windows CI).
+	my $has_locale_db = eval {
+		require Locale::Object::DB;
+		Locale::Object::DB->new()->lookup(
+			table         => 'country',
+			result_column => 'name',
+			search_column => 'code_alpha2',
+			value         => 'gb'
+		);
+		1;
+	};
+	SKIP: {
+		skip 'Locale::Object database absent', 2 unless $has_locale_db;
+		local %ENV = (GEOIP_COUNTRY_CODE => 'GB');
+		delete local $ENV{REMOTE_ADDR};
+		delete local $ENV{HTTP_USER_AGENT};
+		my $l = _obj([$LANG_EN]);
+		my $loc = $l->locale();
+		ok(defined($loc),          'locale via GEOIP_COUNTRY_CODE (COND_INV_1395)');
+		is($loc->name(), 'United Kingdom', 'GB resolved (COND_INV_1397, BOOL_NEGATE_1399)');
+	}
 };
 
 # ═══════════════════════════════════════════════════════════════════════════════
