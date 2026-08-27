@@ -1,6 +1,6 @@
 Revision history for CGI-Lingua
 
-0.85
+0.85	Thu Aug 27 11:35:33 AM EDT 2026
 	[ Bug Fixes ]
 	- Data::Validate::IP and NetAddr::IP moved from required to recommended;
 	  NetAddr::IP::UtilPP fails to build on Windows (mask4to6 bad-argument error),

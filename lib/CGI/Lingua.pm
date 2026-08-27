@@ -49,53 +49,6 @@ my $_locale_object_db_ok;
 # fails, install pure-Perl aliases for the four functions we use.
 my $_have_dvip;
 
-# ── Pure-Perl IP-validation helpers ──────────────────────────────────────────
-# These are installed into the CGI::Lingua symbol table as is_ipv4() etc. when
-# Data::Validate::IP / NetAddr::IP are unavailable (see country()).
-
-sub _is_ipv4 {
-	my $ip = shift;
-	return unless defined($ip) && $ip =~ /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
-	return !(grep { $_ > 255 } ($1, $2, $3, $4));
-}
-
-sub _is_ipv6 {
-	my $ip = shift;
-	return unless defined($ip) && $ip =~ /:/;
-	# Socket::inet_pton is core since Perl 5.14 and validates IPv6 reliably
-	if(defined &Socket::inet_pton) {
-		require Socket;
-		return defined Socket::inet_pton(Socket::AF_INET6(), $ip);
-	}
-	# Structural fallback: hex+colons, at least two colons, at most one ::
-	return ($ip =~ /^[0-9a-fA-F:]+$/ || $ip =~ /^[0-9a-fA-F:]+:\d{1,3}(?:\.\d{1,3}){3}$/)
-		&& ($ip =~ tr/:://) <= 1
-		&& ($ip =~ tr/://) >= 2;
-}
-
-sub _is_private_ip {
-	my $ip = shift;
-	return unless defined($ip);
-	if($ip =~ /^(\d+)\.(\d+)/) {
-		my ($a, $b) = ($1 + 0, $2 + 0);
-		return 1 if $a == 10;
-		return 1 if $a == 172 && $b >= 16 && $b <= 31;
-		return 1 if $a == 192 && $b == 168;
-		return 1 if $a == 169 && $b == 254;     # link-local / APIPA
-		return 0;
-	}
-	return 1 if $ip =~ /^fe[89ab][0-9a-f]:/i;  # fe80::/10 link-local
-	return 1 if $ip =~ /^f[cd]/i;              # fc00::/7 ULA
-	return 0;
-}
-
-sub _is_loopback_ip {
-	my $ip = shift;
-	return unless defined($ip);
-	return 1 if $ip eq '::1';
-	return $ip =~ /^127\./;
-}
-
 # Short-name overrides used when Locale::Object's database is absent and we
 # fall back to Locale::Codes::Country.  Locale::Codes carries full ISO official
 # names (e.g. "United Kingdom of Great Britain and Northern Ireland") while
@@ -2374,6 +2327,53 @@ sub _warn
 		$self->_log('warn', $msg);
 		carp($msg);
 	}
+}
+
+# ── Pure-Perl IP-validation helpers ──────────────────────────────────────────
+# These are installed into the CGI::Lingua symbol table as is_ipv4() etc. when
+# Data::Validate::IP / NetAddr::IP are unavailable (see country()).
+
+sub _is_ipv4 {
+	my $ip = shift;
+	return unless defined($ip) && $ip =~ /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+	return !(grep { $_ > 255 } ($1, $2, $3, $4));
+}
+
+sub _is_ipv6 {
+	my $ip = shift;
+	return unless defined($ip) && $ip =~ /:/;
+	# Socket::inet_pton is core since Perl 5.14 and validates IPv6 reliably
+	if(defined &Socket::inet_pton) {
+		require Socket;
+		return defined Socket::inet_pton(Socket::AF_INET6(), $ip);
+	}
+	# Structural fallback: hex+colons, at least two colons, at most one ::
+	return ($ip =~ /^[0-9a-fA-F:]+$/ || $ip =~ /^[0-9a-fA-F:]+:\d{1,3}(?:\.\d{1,3}){3}$/)
+		&& ($ip =~ tr/:://) <= 1
+		&& ($ip =~ tr/://) >= 2;
+}
+
+sub _is_private_ip {
+	my $ip = shift;
+	return unless defined($ip);
+	if($ip =~ /^(\d+)\.(\d+)/) {
+		my ($a, $b) = ($1 + 0, $2 + 0);
+		return 1 if $a == 10;
+		return 1 if $a == 172 && $b >= 16 && $b <= 31;
+		return 1 if $a == 192 && $b == 168;
+		return 1 if $a == 169 && $b == 254;     # link-local / APIPA
+		return 0;
+	}
+	return 1 if $ip =~ /^fe[89ab][0-9a-f]:/i;  # fe80::/10 link-local
+	return 1 if $ip =~ /^f[cd]/i;              # fc00::/7 ULA
+	return 0;
+}
+
+sub _is_loopback_ip {
+	my $ip = shift;
+	return unless defined($ip);
+	return 1 if $ip eq '::1';
+	return $ip =~ /^127\./;
 }
 
 =head1 LIMITATIONS
