@@ -1141,17 +1141,33 @@ subtest '_code2language: debug message varies when _country defined (COND_INV_15
 subtest '_code2country: returns country object regardless of _country state (COND_INV_1546_2)' => sub {
 	# The if($self->{_country}) at 1546 is a debug-trace branch only; the actual
 	# lookup always happens. Kill: verify return value in both states.
-	local %ENV = ();
-	my $l = _obj([$LANG_EN]);
 
-	$l->{_country} = 'gb';
-	my $c1 = $l->_code2country('gb');
-	ok(defined($c1), '_code2country returns object with _country set (COND_INV_1546 true)');
-	ok(blessed($c1), '_code2country is blessed');
+	# Skip when Locale::Object's SQLite database is absent (common on Windows CI);
+	# _code2country() returns undef in that case.
+	my $has_locale_db = eval {
+		require Locale::Object::DB;
+		Locale::Object::DB->new()->lookup(
+			table         => 'country',
+			result_column => 'name',
+			search_column => 'code_alpha2',
+			value         => 'gb'
+		);
+		1;
+	};
+	SKIP: {
+		skip 'Locale::Object database absent', 3 unless $has_locale_db;
+		local %ENV = ();
+		my $l = _obj([$LANG_EN]);
 
-	delete $l->{_country};
-	my $c2 = $l->_code2country('gb');
-	ok(defined($c2), '_code2country returns object without _country set (COND_INV_1546 false)');
+		$l->{_country} = 'gb';
+		my $c1 = $l->_code2country('gb');
+		ok(defined($c1), '_code2country returns object with _country set (COND_INV_1546 true)');
+		ok(blessed($c1), '_code2country is blessed');
+
+		delete $l->{_country};
+		my $c2 = $l->_code2country('gb');
+		ok(defined($c2), '_code2country returns object without _country set (COND_INV_1546 false)');
+	}
 };
 
 # ═══════════════════════════════════════════════════════════════════════════════
