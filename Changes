@@ -2,6 +2,13 @@ Revision history for CGI-Lingua
 
 0.85
 	[ Bug Fixes ]
+	- Data::Validate::IP and NetAddr::IP moved from required to recommended;
+	  NetAddr::IP::UtilPP fails to build on Windows (mask4to6 bad-argument error),
+	  which cascades to Data::Validate::IP, crashing country() on import; a
+	  package-level $_have_dvip sentinel tries to load Data::Validate::IP once and,
+	  on failure, installs pure-Perl fallbacks (using Socket::inet_pton for IPv6
+	  validation) as aliases for is_ipv4(), is_ipv6(), is_private_ip(), and
+	  is_loopback_ip() so the rest of country() is unchanged on both platforms
 	- Locale::Object::Country->new() and Locale::Object::DB->new() now wrapped in
 	  eval at every call site; a package-level $_locale_object_db_ok sentinel
 	  (undef=unchecked, 0=absent, 1=present) prevents repeated failed attempts on

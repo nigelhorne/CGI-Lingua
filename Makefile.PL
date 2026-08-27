@@ -122,11 +122,9 @@ WriteMakefile(
 	'I18N::AcceptLanguage' => 0,
 	'Locale::Language' => 0,
 	'I18N::LangTags::Detect' => 1.04,
-	'Data::Validate::IP' => 0.25,	# For is_private_ip
 	'Locale::Codes' => 3.59,	# Silence noisy warn messages in perl 5.28
 	'Net::Whois::IANA' => 0,
 	'Net::Whois::IP' => 0,
-	'NetAddr::IP' => 0,
 	'Object::Configure' => 0.23,
 	'Params::Get' => 0.15,	# 0.15 fast-path: unblessed hashref arg returned directly (not stored under default key)
 	'Readonly' => 0,
@@ -143,6 +141,10 @@ WriteMakefile(
     	    baidu_subnet_detection => {
     	        description => 'Detect Baidu crawler IPs that misreport as EU (RT-86809); not available on Windows due to Socket6 build dependency',
     	        prereqs => { runtime => { recommends => { 'Net::Subnet' => 0 } } },
+    	    },
+    	    precise_ip_validation => {
+    	        description => 'More rigorous IPv6 private-range detection via Data::Validate::IP; not available on Windows because NetAddr::IP (its dep) fails to build there',
+    	        prereqs => { runtime => { recommends => { 'Data::Validate::IP' => 0.25, 'NetAddr::IP' => 0 } } },
     	    },
     	}, resources => {
 		repository => {
