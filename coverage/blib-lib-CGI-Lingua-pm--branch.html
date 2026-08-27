@@ -20,7 +20,7 @@ https://pjcj.net
 <h1>Branch Coverage</h1>
 <table>
 <tr><td class="h" align="right">File:</td><td align="left">blib/lib/CGI/Lingua.pm</td></tr>
-<tr><td class="h" align="right">Coverage:</td><td align="left" class="c0">71.9%</td></tr>
+<tr><td class="h" align="right">Coverage:</td><td align="left" class="c0">71.7%</td></tr>
 </table>
 <div><br/></div>
 <table>
@@ -122,159 +122,160 @@ https://pjcj.net
 <tr><td class="h"><a id="L962">962</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $results[0]) { }</td></tr>
 <tr><td class="h"><a id="L968">968</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if ($@)</td></tr>
 <tr><td class="h"><a id="L969">969</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if $@ =~ /database was not in/</td></tr>
-<tr><td class="h"><a id="L975">975</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($@ or not defined $language_name) { }</td></tr>
+<tr><td class="h"><a id="L975">975</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($@ or not defined $language_name)</td></tr>
 <tr><td class="h"><a id="L976">976</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if $@</td></tr>
-<tr><td class="h"><a id="L983">983</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_cache&#39;} and not defined $from_cache)</td></tr>
-<tr><td class="h"><a id="L998">998</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (defined $self-&gt;{&#39;_sublanguage&#39;})</td></tr>
-<tr><td class="h"><a id="L1020">1020</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (not defined $country and my $c = $self-&gt;_what_language)</td></tr>
-<tr><td class="h"><a id="L1021">1021</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($c =~ /^(..)_(..)/) { }</td></tr>
+<tr><td class="h"><a id="L981">981</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (not defined $language_name) { }</td></tr>
+<tr><td class="h"><a id="L988">988</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_cache&#39;} and not defined $from_cache)</td></tr>
+<tr><td class="h"><a id="L1003">1003</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (defined $self-&gt;{&#39;_sublanguage&#39;})</td></tr>
+<tr><td class="h"><a id="L1025">1025</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (not defined $country and my $c = $self-&gt;_what_language)</td></tr>
+<tr><td class="h"><a id="L1026">1026</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($c =~ /^(..)_(..)/) { }</td></tr>
 <tr><td class="h"></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">elsif ($c =~ /^(..)$/) { }</td></tr>
-<tr><td class="h"><a id="L1027">1027</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless defined $country</td></tr>
-<tr><td class="h"><a id="L1032">1032</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_cache&#39;})</td></tr>
-<tr><td class="h"><a id="L1036">1036</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($from_cache) { }</td></tr>
-<tr><td class="h"><a id="L1041">1041</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($l)</td></tr>
-<tr><td class="h"><a id="L1043">1043</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (defined $l)</td></tr>
-<tr><td class="h"><a id="L1046">1046</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if $language_name</td></tr>
-<tr><td class="h"><a id="L1052">1052</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless $language_name</td></tr>
-<tr><td class="h"><a id="L1054">1054</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (not defined $self-&gt;{&#39;_rlanguage&#39;} or $self-&gt;{&#39;_rlanguage&#39;} eq &quot;Unknown&quot;)</td></tr>
-<tr><td class="h"><a id="L1058">1058</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">unless (exists $self-&gt;{&#39;_slanguage&#39;} and $self-&gt;{&#39;_slanguage&#39;} ne &quot;Unknown&quot;)</td></tr>
-<tr><td class="h"><a id="L1061">1061</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($language_name and $language_code2 and not defined $http_accept_language) { }</td></tr>
-<tr><td class="h"><a id="L1069">1069</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">unless ($code)</td></tr>
-<tr><td class="h"><a id="L1070">1070</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if ($http_accept_language and $http_accept_language ne $self-&gt;{&#39;_rlanguage&#39;})</td></tr>
-<tr><td class="h"><a id="L1074">1074</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">unless ($code)</td></tr>
-<tr><td class="h"><a id="L1076">1076</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if ($self-&gt;{&#39;_rlanguage&#39;} =~ /(.+)\s\(.+/)</td></tr>
-<tr><td class="h"><a id="L1077">1077</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if (not defined $http_accept_language or $1 ne $self-&gt;{&#39;_rlanguage&#39;})</td></tr>
-<tr><td class="h"><a id="L1082">1082</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">unless ($code)</td></tr>
-<tr><td class="h"><a id="L1091">1091</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if ($code)</td></tr>
-<tr><td class="h"><a id="L1093">1093</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if ($self-&gt;{&#39;_slanguage&#39;}) { }</td></tr>
-<tr><td class="h"><a id="L1103">1103</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (not defined $self-&gt;{&#39;_slanguage_code_alpha2&#39;}) { }</td></tr>
+<tr><td class="h"><a id="L1032">1032</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless defined $country</td></tr>
+<tr><td class="h"><a id="L1037">1037</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_cache&#39;})</td></tr>
+<tr><td class="h"><a id="L1041">1041</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($from_cache) { }</td></tr>
+<tr><td class="h"><a id="L1046">1046</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($l)</td></tr>
+<tr><td class="h"><a id="L1048">1048</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (defined $l)</td></tr>
+<tr><td class="h"><a id="L1051">1051</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if $language_name</td></tr>
+<tr><td class="h"><a id="L1057">1057</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless $language_name</td></tr>
+<tr><td class="h"><a id="L1059">1059</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (not defined $self-&gt;{&#39;_rlanguage&#39;} or $self-&gt;{&#39;_rlanguage&#39;} eq &quot;Unknown&quot;)</td></tr>
+<tr><td class="h"><a id="L1063">1063</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">unless (exists $self-&gt;{&#39;_slanguage&#39;} and $self-&gt;{&#39;_slanguage&#39;} ne &quot;Unknown&quot;)</td></tr>
+<tr><td class="h"><a id="L1066">1066</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($language_name and $language_code2 and not defined $http_accept_language) { }</td></tr>
+<tr><td class="h"><a id="L1074">1074</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">unless ($code)</td></tr>
+<tr><td class="h"><a id="L1075">1075</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if ($http_accept_language and $http_accept_language ne $self-&gt;{&#39;_rlanguage&#39;})</td></tr>
+<tr><td class="h"><a id="L1079">1079</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">unless ($code)</td></tr>
+<tr><td class="h"><a id="L1081">1081</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if ($self-&gt;{&#39;_rlanguage&#39;} =~ /(.+)\s\(.+/)</td></tr>
+<tr><td class="h"><a id="L1082">1082</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if (not defined $http_accept_language or $1 ne $self-&gt;{&#39;_rlanguage&#39;})</td></tr>
+<tr><td class="h"><a id="L1087">1087</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">unless ($code)</td></tr>
+<tr><td class="h"><a id="L1096">1096</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if ($code)</td></tr>
+<tr><td class="h"><a id="L1098">1098</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if ($self-&gt;{&#39;_slanguage&#39;}) { }</td></tr>
+<tr><td class="h"><a id="L1108">1108</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (not defined $self-&gt;{&#39;_slanguage_code_alpha2&#39;}) { }</td></tr>
 <tr><td class="h"></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">elsif (not defined $from_cache and $self-&gt;{&#39;_cache&#39;} and defined $self-&gt;{&#39;_slanguage_code_alpha2&#39;}) { }</td></tr>
-<tr><td class="h"><a id="L1126">1126</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">/^(.+)-/ ? :</td></tr>
-<tr><td class="h"><a id="L1128">1128</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (exists $base_languages{$language_string})</td></tr>
-<tr><td class="h"><a id="L1145">1145</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (ref $self)</td></tr>
-<tr><td class="h"><a id="L1147">1147</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $self-&gt;{&#39;_what_language&#39;})</td></tr>
-<tr><td class="h"><a id="L1151">1151</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $info = $self-&gt;{&#39;_info&#39;})</td></tr>
-<tr><td class="h"><a id="L1152">1152</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (my $rc = $info-&gt;lang)</td></tr>
-<tr><td class="h"><a id="L1159">1159</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $raw_lang = $ENV{&#39;HTTP_ACCEPT_LANGUAGE&#39;})</td></tr>
-<tr><td class="h"><a id="L1161">1161</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($raw_lang =~ /^([A-Za-z0-9\-,;=.*\s]{1,$ACCEPT_LANG_MAX})$/a) { }</td></tr>
+<tr><td class="h"><a id="L1131">1131</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">/^(.+)-/ ? :</td></tr>
+<tr><td class="h"><a id="L1133">1133</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (exists $base_languages{$language_string})</td></tr>
+<tr><td class="h"><a id="L1150">1150</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (ref $self)</td></tr>
+<tr><td class="h"><a id="L1152">1152</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $self-&gt;{&#39;_what_language&#39;})</td></tr>
+<tr><td class="h"><a id="L1156">1156</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $info = $self-&gt;{&#39;_info&#39;})</td></tr>
+<tr><td class="h"><a id="L1157">1157</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (my $rc = $info-&gt;lang)</td></tr>
+<tr><td class="h"><a id="L1164">1164</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $raw_lang = $ENV{&#39;HTTP_ACCEPT_LANGUAGE&#39;})</td></tr>
+<tr><td class="h"><a id="L1166">1166</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($raw_lang =~ /^([A-Za-z0-9\-,;=.*\s]{1,$ACCEPT_LANG_MAX})$/a) { }</td></tr>
 <tr><td class="h"></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">elsif (ref $self) { }</td></tr>
-<tr><td class="h"><a id="L1163">1163</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (ref $self)</td></tr>
-<tr><td class="h"><a id="L1172">1172</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $ENV{&#39;LANG&#39;})</td></tr>
-<tr><td class="h"><a id="L1178">1178</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($ENV{&#39;LANG&#39;} =~ /^([A-Za-z0-9_.\-]{1,$ACCEPT_LANG_MAX})$/a) { }</td></tr>
+<tr><td class="h"><a id="L1168">1168</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (ref $self)</td></tr>
+<tr><td class="h"><a id="L1177">1177</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $ENV{&#39;LANG&#39;})</td></tr>
+<tr><td class="h"><a id="L1183">1183</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($ENV{&#39;LANG&#39;} =~ /^([A-Za-z0-9_.\-]{1,$ACCEPT_LANG_MAX})$/a) { }</td></tr>
 <tr><td class="h"></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">elsif (ref $self) { }</td></tr>
-<tr><td class="h"><a id="L1180">1180</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (ref $self)</td></tr>
-<tr><td class="h"><a id="L1254">1254</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;})</td></tr>
-<tr><td class="h"><a id="L1260">1260</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $ENV{&#39;GEOIP_COUNTRY_CODE&#39;})</td></tr>
-<tr><td class="h"><a id="L1261">1261</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($ENV{&#39;GEOIP_COUNTRY_CODE&#39;} =~ /^([A-Z]{2})$/a) { }</td></tr>
-<tr><td class="h"><a id="L1270">1270</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($ENV{&#39;HTTP_CF_IPCOUNTRY&#39;} and $ENV{&#39;HTTP_CF_IPCOUNTRY&#39;} ne &quot;XX&quot;)</td></tr>
-<tr><td class="h"><a id="L1271">1271</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($ENV{&#39;HTTP_CF_IPCOUNTRY&#39;} =~ /^([A-Z]{2})$/a) { }</td></tr>
-<tr><td class="h"><a id="L1280">1280</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless defined $raw_ip</td></tr>
-<tr><td class="h"><a id="L1284">1284</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($raw_ip =~ /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/a) { }</td></tr>
+<tr><td class="h"><a id="L1185">1185</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (ref $self)</td></tr>
+<tr><td class="h"><a id="L1259">1259</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;})</td></tr>
+<tr><td class="h"><a id="L1265">1265</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $ENV{&#39;GEOIP_COUNTRY_CODE&#39;})</td></tr>
+<tr><td class="h"><a id="L1266">1266</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($ENV{&#39;GEOIP_COUNTRY_CODE&#39;} =~ /^([A-Z]{2})$/a) { }</td></tr>
+<tr><td class="h"><a id="L1275">1275</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($ENV{&#39;HTTP_CF_IPCOUNTRY&#39;} and $ENV{&#39;HTTP_CF_IPCOUNTRY&#39;} ne &quot;XX&quot;)</td></tr>
+<tr><td class="h"><a id="L1276">1276</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($ENV{&#39;HTTP_CF_IPCOUNTRY&#39;} =~ /^([A-Z]{2})$/a) { }</td></tr>
+<tr><td class="h"><a id="L1285">1285</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless defined $raw_ip</td></tr>
+<tr><td class="h"><a id="L1289">1289</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($raw_ip =~ /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/a) { }</td></tr>
 <tr><td class="h"></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">elsif ($raw_ip =~ /^([0-9a-fA-F:]{2,39}|[0-9a-fA-F:]{2,30}:(?:\d{1,3}\.){3}\d{1,3})$/a) { }</td></tr>
-<tr><td class="h"><a id="L1297">1297</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless (defined $_have_dvip)</td></tr>
-<tr><td class="h"><a id="L1299">1299</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if (eval {
+<tr><td class="h"><a id="L1302">1302</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless (defined $_have_dvip)</td></tr>
+<tr><td class="h"><a id="L1304">1304</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if (eval {
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do {
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;require Data::Validate::IP;
 &#39;Data::Validate::IP&#39;-&gt;import;
 1
 }
 }) { }</td></tr>
-<tr><td class="h"><a id="L1311">1311</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless (is_ipv4($ip))</td></tr>
-<tr><td class="h"><a id="L1313">1313</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($ip eq &#39;::1&#39;) { }</td></tr>
+<tr><td class="h"><a id="L1316">1316</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless (is_ipv4($ip))</td></tr>
+<tr><td class="h"><a id="L1318">1318</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($ip eq &#39;::1&#39;) { }</td></tr>
 <tr><td class="h"></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">elsif ($ip =~ /^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/i) { }</td></tr>
 <tr><td class="h"></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">elsif (not is_ipv6($ip)) { }</td></tr>
-<tr><td class="h"><a id="L1320">1320</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless (is_ipv4($ip))</td></tr>
-<tr><td class="h"><a id="L1329">1329</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (is_private_ip($ip))</td></tr>
-<tr><td class="h"><a id="L1333">1333</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (is_loopback_ip($ip))</td></tr>
-<tr><td class="h"><a id="L1339">1339</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_cache&#39;})</td></tr>
-<tr><td class="h"><a id="L1341">1341</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $self-&gt;{&#39;_country&#39;})</td></tr>
-<tr><td class="h"><a id="L1342">1342</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (not $self-&gt;{&#39;_country&#39;} =~ /\D/) { }</td></tr>
-<tr><td class="h"><a id="L1355">1355</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_have_ipcountry&#39;} == $GEO_UNKNOWN)</td></tr>
-<tr><td class="h"><a id="L1356">1356</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if (eval {
+<tr><td class="h"><a id="L1325">1325</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless (is_ipv4($ip))</td></tr>
+<tr><td class="h"><a id="L1334">1334</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (is_private_ip($ip))</td></tr>
+<tr><td class="h"><a id="L1338">1338</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (is_loopback_ip($ip))</td></tr>
+<tr><td class="h"><a id="L1344">1344</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_cache&#39;})</td></tr>
+<tr><td class="h"><a id="L1346">1346</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $self-&gt;{&#39;_country&#39;})</td></tr>
+<tr><td class="h"><a id="L1347">1347</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (not $self-&gt;{&#39;_country&#39;} =~ /\D/) { }</td></tr>
+<tr><td class="h"><a id="L1360">1360</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_have_ipcountry&#39;} == $GEO_UNKNOWN)</td></tr>
+<tr><td class="h"><a id="L1361">1361</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if (eval {
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do {
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;require IP::Country::Fast
 }
 }) { }</td></tr>
-<tr><td class="h"><a id="L1367">1367</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_have_ipcountry&#39;})</td></tr>
-<tr><td class="h"><a id="L1369">1369</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;}) { }</td></tr>
+<tr><td class="h"><a id="L1372">1372</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_have_ipcountry&#39;})</td></tr>
+<tr><td class="h"><a id="L1374">1374</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;}) { }</td></tr>
 <tr><td class="h"></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">elsif (is_ipv4($ip)) { }</td></tr>
-<tr><td class="h"><a id="L1377">1377</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless (defined $self-&gt;{&#39;_country&#39;})</td></tr>
-<tr><td class="h"><a id="L1378">1378</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_have_geoip&#39;} == $GEO_UNKNOWN)</td></tr>
-<tr><td class="h"><a id="L1381">1381</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_have_geoip&#39;} == $GEO_PRESENT)</td></tr>
-<tr><td class="h"><a id="L1386">1386</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (not defined $self-&gt;{&#39;_country&#39;} and $ip ne $BROKEN_GEOIPFREE)</td></tr>
-<tr><td class="h"><a id="L1387">1387</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_have_geoipfree&#39;} == $GEO_UNKNOWN)</td></tr>
-<tr><td class="h"><a id="L1389">1389</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if ($@) { }</td></tr>
-<tr><td class="h"><a id="L1399">1399</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_have_geoipfree&#39;} == $GEO_PRESENT)</td></tr>
-<tr><td class="h"><a id="L1400">1400</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (my $country = ($self-&gt;{&#39;_geoipfree&#39;}-&gt;LookUp($ip))[0])</td></tr>
-<tr><td class="h"><a id="L1408">1408</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;} and $self-&gt;{&#39;_country&#39;} eq &quot;eu&quot;)</td></tr>
-<tr><td class="h"><a id="L1413">1413</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if (not $self-&gt;{&#39;_country&#39;} and eval {
+<tr><td class="h"><a id="L1382">1382</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless (defined $self-&gt;{&#39;_country&#39;})</td></tr>
+<tr><td class="h"><a id="L1383">1383</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_have_geoip&#39;} == $GEO_UNKNOWN)</td></tr>
+<tr><td class="h"><a id="L1386">1386</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_have_geoip&#39;} == $GEO_PRESENT)</td></tr>
+<tr><td class="h"><a id="L1391">1391</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (not defined $self-&gt;{&#39;_country&#39;} and $ip ne $BROKEN_GEOIPFREE)</td></tr>
+<tr><td class="h"><a id="L1392">1392</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_have_geoipfree&#39;} == $GEO_UNKNOWN)</td></tr>
+<tr><td class="h"><a id="L1394">1394</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if ($@) { }</td></tr>
+<tr><td class="h"><a id="L1404">1404</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_have_geoipfree&#39;} == $GEO_PRESENT)</td></tr>
+<tr><td class="h"><a id="L1405">1405</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (my $country = ($self-&gt;{&#39;_geoipfree&#39;}-&gt;LookUp($ip))[0])</td></tr>
+<tr><td class="h"><a id="L1413">1413</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;} and $self-&gt;{&#39;_country&#39;} eq &quot;eu&quot;)</td></tr>
+<tr><td class="h"><a id="L1418">1418</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if (not $self-&gt;{&#39;_country&#39;} and eval {
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do {
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;require LWP::Simple::WithCache;
 require JSON::Parse
 }
 })</td></tr>
-<tr><td class="h"><a id="L1417">1417</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if (my $data = LWP::Simple::WithCache::get(&quot;https://www.geoplugin.net/json.gp?ip=$ip&quot;))</td></tr>
-<tr><td class="h"><a id="L1419">1419</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if $@</td></tr>
-<tr><td class="h"><a id="L1424">1424</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ($self-&gt;{&#39;_country&#39;})</td></tr>
-<tr><td class="h"><a id="L1429">1429</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;})</td></tr>
-<tr><td class="h"><a id="L1430">1430</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (not $self-&gt;{&#39;_country&#39;} =~ /\D/) { }</td></tr>
-<tr><td class="h"><a id="L1437">1437</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;} eq &#39;hk&#39;) { }</td></tr>
+<tr><td class="h"><a id="L1422">1422</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if (my $data = LWP::Simple::WithCache::get(&quot;https://www.geoplugin.net/json.gp?ip=$ip&quot;))</td></tr>
+<tr><td class="h"><a id="L1424">1424</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if $@</td></tr>
+<tr><td class="h"><a id="L1429">1429</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ($self-&gt;{&#39;_country&#39;})</td></tr>
+<tr><td class="h"><a id="L1434">1434</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;})</td></tr>
+<tr><td class="h"><a id="L1435">1435</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (not $self-&gt;{&#39;_country&#39;} =~ /\D/) { }</td></tr>
+<tr><td class="h"><a id="L1442">1442</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;} eq &#39;hk&#39;) { }</td></tr>
 <tr><td class="h"></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">elsif ($self-&gt;{&#39;_country&#39;} eq &#39;eu&#39;) { }</td></tr>
-<tr><td class="h"><a id="L1443">1443</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;} and not $self-&gt;{&#39;_country&#39;} =~ /\D/) { }</td></tr>
+<tr><td class="h"><a id="L1448">1448</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;} and not $self-&gt;{&#39;_country&#39;} =~ /\D/) { }</td></tr>
 <tr><td class="h"></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">elsif ($self-&gt;{&#39;_country&#39;} and $self-&gt;{&#39;_country&#39;} ne &#39;Unknown&#39; and not $self-&gt;{&#39;_country&#39;} =~ /^[a-z]{2}$/) { }</td></tr>
 <tr><td class="h"></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">elsif ($self-&gt;{&#39;_country&#39;} and $self-&gt;{&#39;_cache&#39;}) { }</td></tr>
-<tr><td class="h"><a id="L1492">1492</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ($@ or not defined $whois or ref $whois ne &quot;HASH&quot;)</td></tr>
-<tr><td class="h"><a id="L1493">1493</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $whois-&gt;{&#39;Country&#39;}) { }</td></tr>
+<tr><td class="h"><a id="L1497">1497</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ($@ or not defined $whois or ref $whois ne &quot;HASH&quot;)</td></tr>
+<tr><td class="h"><a id="L1498">1498</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $whois-&gt;{&#39;Country&#39;}) { }</td></tr>
 <tr><td class="h"></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">elsif (defined $whois-&gt;{&#39;country&#39;}) { }</td></tr>
-<tr><td class="h"><a id="L1498">1498</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;})</td></tr>
-<tr><td class="h"><a id="L1499">1499</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;} eq &#39;EU&#39;) { }</td></tr>
+<tr><td class="h"><a id="L1503">1503</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;})</td></tr>
+<tr><td class="h"><a id="L1504">1504</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;} eq &#39;EU&#39;) { }</td></tr>
 <tr><td class="h"></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">elsif ($self-&gt;{&#39;_country&#39;} eq &#39;US&#39; and defined $whois-&gt;{&#39;StateProv&#39;} and $whois-&gt;{&#39;StateProv&#39;} eq &#39;PR&#39;) { }</td></tr>
-<tr><td class="h"><a id="L1508">1508</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;})</td></tr>
-<tr><td class="h"><a id="L1513">1513</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if defined $self-&gt;{&#39;_country&#39;}</td></tr>
-<tr><td class="h"><a id="L1524">1524</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">unless ($@)</td></tr>
-<tr><td class="h"><a id="L1529">1529</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;})</td></tr>
-<tr><td class="h"><a id="L1531">1531</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">unless defined $self-&gt;{&#39;_country&#39;}</td></tr>
-<tr><td class="h"><a id="L1549">1549</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($raw =~ /^([A-Za-z]{2})\s*(?:#.*)?$/)</td></tr>
-<tr><td class="h"><a id="L1564">1564</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">unless $ip =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/</td></tr>
-<tr><td class="h"><a id="L1585">1585</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if (eval {
+<tr><td class="h"><a id="L1513">1513</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;})</td></tr>
+<tr><td class="h"><a id="L1518">1518</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if defined $self-&gt;{&#39;_country&#39;}</td></tr>
+<tr><td class="h"><a id="L1529">1529</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">unless ($@)</td></tr>
+<tr><td class="h"><a id="L1534">1534</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;})</td></tr>
+<tr><td class="h"><a id="L1536">1536</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">unless defined $self-&gt;{&#39;_country&#39;}</td></tr>
+<tr><td class="h"><a id="L1554">1554</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($raw =~ /^([A-Za-z]{2})\s*(?:#.*)?$/)</td></tr>
+<tr><td class="h"><a id="L1569">1569</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">unless $ip =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/</td></tr>
+<tr><td class="h"><a id="L1590">1590</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if (eval {
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do {
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;require Net::Subnet;
 &#39;Net::Subnet&#39;-&gt;import;
 1
 }
 }) { }</td></tr>
-<tr><td class="h"><a id="L1591">1591</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($in_baidu) { }</td></tr>
-<tr><td class="h"><a id="L1617">1617</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">unless ($db_present)</td></tr>
-<tr><td class="h"><a id="L1623">1623</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if ($@)</td></tr>
-<tr><td class="h"><a id="L1632">1632</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if (-r &#39;/usr/share/GeoIP/GeoIP.dat&#39;) { }</td></tr>
-<tr><td class="h"><a id="L1677">1677</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if $self-&gt;{&#39;_locale&#39;}</td></tr>
-<tr><td class="h"><a id="L1683">1683</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined(my $raw_agent = $ENV{&#39;HTTP_USER_AGENT&#39;}))</td></tr>
-<tr><td class="h"><a id="L1684">1684</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($raw_agent =~ /^([\x20-\x7e]{1,$UA_MAX})$/a) { }</td></tr>
-<tr><td class="h"><a id="L1692">1692</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $agent and $agent =~ /\((.+)\)/)</td></tr>
-<tr><td class="h"><a id="L1697">1697</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($candidate =~ /^[a-zA-Z]{2}-([a-zA-Z]{2})$/)</td></tr>
-<tr><td class="h"><a id="L1699">1699</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (my $c = $self-&gt;_code2country($1))</td></tr>
-<tr><td class="h"><a id="L1707">1707</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (eval {
+<tr><td class="h"><a id="L1596">1596</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($in_baidu) { }</td></tr>
+<tr><td class="h"><a id="L1622">1622</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">unless ($db_present)</td></tr>
+<tr><td class="h"><a id="L1628">1628</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if ($@)</td></tr>
+<tr><td class="h"><a id="L1637">1637</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if (-r &#39;/usr/share/GeoIP/GeoIP.dat&#39;) { }</td></tr>
+<tr><td class="h"><a id="L1682">1682</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if $self-&gt;{&#39;_locale&#39;}</td></tr>
+<tr><td class="h"><a id="L1688">1688</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined(my $raw_agent = $ENV{&#39;HTTP_USER_AGENT&#39;}))</td></tr>
+<tr><td class="h"><a id="L1689">1689</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($raw_agent =~ /^([\x20-\x7e]{1,$UA_MAX})$/a) { }</td></tr>
+<tr><td class="h"><a id="L1697">1697</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $agent and $agent =~ /\((.+)\)/)</td></tr>
+<tr><td class="h"><a id="L1702">1702</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($candidate =~ /^[a-zA-Z]{2}-([a-zA-Z]{2})$/)</td></tr>
+<tr><td class="h"><a id="L1704">1704</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (my $c = $self-&gt;_code2country($1))</td></tr>
+<tr><td class="h"><a id="L1712">1712</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (eval {
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do {
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;require HTTP::BrowserDetect
 }
 })</td></tr>
-<tr><td class="h"><a id="L1712">1712</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if ($browser)</td></tr>
-<tr><td class="h"><a id="L1714">1714</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($bc =~ /^([A-Za-z]{2})$/a)</td></tr>
-<tr><td class="h"><a id="L1715">1715</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (my $c = $self-&gt;_code2country($1))</td></tr>
-<tr><td class="h"><a id="L1726">1726</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($country)</td></tr>
-<tr><td class="h"><a id="L1733">1733</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">unless ($@)</td></tr>
-<tr><td class="h"><a id="L1734">1734</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if ($c)</td></tr>
-<tr><td class="h"><a id="L1743">1743</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $ENV{&#39;GEOIP_COUNTRY_CODE&#39;})</td></tr>
-<tr><td class="h"><a id="L1744">1744</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if ($ENV{&#39;GEOIP_COUNTRY_CODE&#39;} =~ /^([A-Z]{2})$/a)</td></tr>
-<tr><td class="h"><a id="L1745">1745</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if (my $c = $self-&gt;_code2country(lc $1))</td></tr>
-<tr><td class="h"><a id="L1799">1799</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_timezone&#39;})</td></tr>
-<tr><td class="h"><a id="L1806">1806</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $raw_ip) { }</td></tr>
-<tr><td class="h"><a id="L1810">1810</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($raw_ip =~ /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/a) { }</td></tr>
+<tr><td class="h"><a id="L1717">1717</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if ($browser)</td></tr>
+<tr><td class="h"><a id="L1719">1719</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($bc =~ /^([A-Za-z]{2})$/a)</td></tr>
+<tr><td class="h"><a id="L1720">1720</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (my $c = $self-&gt;_code2country($1))</td></tr>
+<tr><td class="h"><a id="L1731">1731</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($country)</td></tr>
+<tr><td class="h"><a id="L1738">1738</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">unless ($@)</td></tr>
+<tr><td class="h"><a id="L1739">1739</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if ($c)</td></tr>
+<tr><td class="h"><a id="L1748">1748</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $ENV{&#39;GEOIP_COUNTRY_CODE&#39;})</td></tr>
+<tr><td class="h"><a id="L1749">1749</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if ($ENV{&#39;GEOIP_COUNTRY_CODE&#39;} =~ /^([A-Z]{2})$/a)</td></tr>
+<tr><td class="h"><a id="L1750">1750</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if (my $c = $self-&gt;_code2country(lc $1))</td></tr>
+<tr><td class="h"><a id="L1804">1804</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_timezone&#39;})</td></tr>
+<tr><td class="h"><a id="L1811">1811</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $raw_ip) { }</td></tr>
+<tr><td class="h"><a id="L1815">1815</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($raw_ip =~ /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/a) { }</td></tr>
 <tr><td class="h"></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">elsif ($raw_ip =~ /^([0-9a-fA-F:]{2,39}|[0-9a-fA-F:]{2,30}:(?:\d{1,3}\.){3}\d{1,3})$/a) { }</td></tr>
-<tr><td class="h"><a id="L1819">1819</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_have_geoip&#39;} == $GEO_UNKNOWN)</td></tr>
-<tr><td class="h"><a id="L1822">1822</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_have_geoip&#39;} == $GEO_PRESENT)</td></tr>
-<tr><td class="h"><a id="L1826">1826</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ($self-&gt;{&#39;_timezone&#39;})</td></tr>
-<tr><td class="h"><a id="L1827">1827</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if (eval {
+<tr><td class="h"><a id="L1824">1824</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_have_geoip&#39;} == $GEO_UNKNOWN)</td></tr>
+<tr><td class="h"><a id="L1827">1827</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_have_geoip&#39;} == $GEO_PRESENT)</td></tr>
+<tr><td class="h"><a id="L1831">1831</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ($self-&gt;{&#39;_timezone&#39;})</td></tr>
+<tr><td class="h"><a id="L1832">1832</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if (eval {
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;do {
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;require LWP::Simple::WithCache;
 require JSON::Parse
@@ -286,47 +287,48 @@ require JSON::Parse
 require JSON::Parse
 }
 }) { }</td></tr>
-<tr><td class="h"><a id="L1830">1830</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if (my $data = LWP::Simple::WithCache::get(&quot;http://ip-api.com/json/$ip&quot;))</td></tr>
-<tr><td class="h"><a id="L1832">1832</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if $@</td></tr>
-<tr><td class="h"><a id="L1837">1837</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if (my $data = LWP::Simple::get(&quot;http://ip-api.com/json/$ip&quot;))</td></tr>
-<tr><td class="h"><a id="L1839">1839</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if $@</td></tr>
-<tr><td class="h"><a id="L1849">1849</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (open my $fin, &#39;&lt;&#39;, &#39;/etc/timezone&#39;) { }</td></tr>
-<tr><td class="h"><a id="L1862">1862</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if (defined $self-&gt;{&#39;_timezone&#39;} and not $self-&gt;{&#39;_timezone&#39;} =~ m[^[A-Za-z][A-Za-z0-9_+\-/]{0,50}$])</td></tr>
-<tr><td class="h"><a id="L1868">1868</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless (defined $self-&gt;{&#39;_timezone&#39;})</td></tr>
-<tr><td class="h"><a id="L1896">1896</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">$RTL_LANGS{$self-&gt;language_code_alpha2 // &#39;&#39;} ? :</td></tr>
-<tr><td class="h"><a id="L1920">1920</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">$self-&gt;is_rtl ? :</td></tr>
-<tr><td class="h"><a id="L2094">2094</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">unless defined $n</td></tr>
-<tr><td class="h"><a id="L2096">2096</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">int $_[0] == 1 ? :</td></tr>
-<tr><td class="h"><a id="L2144">2144</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless defined $dir</td></tr>
-<tr><td class="h"><a id="L2150">2150</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if ($dir =~ /\.\./ or $dir =~ /\x00/)</td></tr>
-<tr><td class="h"><a id="L2160">2160</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ($ext =~ /^[A-Za-z0-9\-]+$/)</td></tr>
-<tr><td class="h"><a id="L2166">2166</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if (my $sub = $self-&gt;sublanguage_code_alpha2)</td></tr>
-<tr><td class="h"><a id="L2169">2169</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if defined $self-&gt;language_code_alpha2</td></tr>
-<tr><td class="h"><a id="L2174">2174</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if -e $path</td></tr>
-<tr><td class="h"><a id="L2189">2189</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless $code</td></tr>
-<tr><td class="h"><a id="L2190">2190</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $self-&gt;{&#39;_country&#39;}) { }</td></tr>
-<tr><td class="h"><a id="L2196">2196</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ($self-&gt;{&#39;_cache&#39;})</td></tr>
-<tr><td class="h"><a id="L2200">2200</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $from_cache = $self-&gt;{&#39;_cache&#39;}-&gt;get($CACHE_NS . &quot;code2language:$code&quot;))</td></tr>
-<tr><td class="h"><a id="L2209">2209</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $name)</td></tr>
-<tr><td class="h"><a id="L2225">2225</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless $code</td></tr>
-<tr><td class="h"><a id="L2226">2226</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;}) { }</td></tr>
-<tr><td class="h"><a id="L2233">2233</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if ($_locale_object_db_ok // 1)</td></tr>
-<tr><td class="h"><a id="L2237">2237</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">unless $_[0] =~ /No result found in country table/</td></tr>
-<tr><td class="h"><a id="L2240">2240</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if ($@) { }</td></tr>
-<tr><td class="h"><a id="L2241">2241</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if $@ =~ /database was not in/</td></tr>
-<tr><td class="h"><a id="L2262">2262</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">unless defined $code</td></tr>
-<tr><td class="h"><a id="L2264">2264</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if exists $COUNTRY_SHORT_NAMES{$lc}</td></tr>
-<tr><td class="h"><a id="L2279">2279</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless $code</td></tr>
-<tr><td class="h"><a id="L2282">2282</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ($self-&gt;{&#39;_cache&#39;})</td></tr>
-<tr><td class="h"><a id="L2284">2284</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if defined $country</td></tr>
-<tr><td class="h"><a id="L2288">2288</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $from_cache = $self-&gt;{&#39;_cache&#39;}-&gt;get($CACHE_NS . &quot;code2countryname:$code&quot;))</td></tr>
-<tr><td class="h"><a id="L2294">2294</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $country = $self-&gt;_code2country($code)) { }</td></tr>
-<tr><td class="h"><a id="L2302">2302</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $name)</td></tr>
-<tr><td class="h"><a id="L2323">2323</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ref $self and scalar @messages</td></tr>
-<tr><td class="h"><a id="L2326">2326</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless length $text</td></tr>
-<tr><td class="h"><a id="L2329">2329</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $logger = $self-&gt;{&#39;logger&#39;})</td></tr>
-<tr><td class="h"><a id="L2352">2352</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">ref $params ? :</td></tr>
-<tr><td class="h"><a id="L2354">2354</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $self-&gt;{&#39;logger&#39;}) { }</td></tr>
+<tr><td class="h"><a id="L1835">1835</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if (my $data = LWP::Simple::WithCache::get(&quot;http://ip-api.com/json/$ip&quot;))</td></tr>
+<tr><td class="h"><a id="L1837">1837</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if $@</td></tr>
+<tr><td class="h"><a id="L1842">1842</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if (my $data = LWP::Simple::get(&quot;http://ip-api.com/json/$ip&quot;))</td></tr>
+<tr><td class="h"><a id="L1844">1844</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if $@</td></tr>
+<tr><td class="h"><a id="L1854">1854</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if (open my $fin, &#39;&lt;&#39;, &#39;/etc/timezone&#39;) { }</td></tr>
+<tr><td class="h"><a id="L1867">1867</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if $@</td></tr>
+<tr><td class="h"><a id="L1875">1875</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if (defined $self-&gt;{&#39;_timezone&#39;} and not $self-&gt;{&#39;_timezone&#39;} =~ m[^[A-Za-z][A-Za-z0-9_+\-/]{0,50}$])</td></tr>
+<tr><td class="h"><a id="L1881">1881</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless (defined $self-&gt;{&#39;_timezone&#39;})</td></tr>
+<tr><td class="h"><a id="L1909">1909</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">$RTL_LANGS{$self-&gt;language_code_alpha2 // &#39;&#39;} ? :</td></tr>
+<tr><td class="h"><a id="L1933">1933</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">$self-&gt;is_rtl ? :</td></tr>
+<tr><td class="h"><a id="L2107">2107</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">unless defined $n</td></tr>
+<tr><td class="h"><a id="L2109">2109</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">int $_[0] == 1 ? :</td></tr>
+<tr><td class="h"><a id="L2157">2157</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless defined $dir</td></tr>
+<tr><td class="h"><a id="L2163">2163</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if ($dir =~ /\.\./ or $dir =~ /\x00/)</td></tr>
+<tr><td class="h"><a id="L2173">2173</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ($ext =~ /^[A-Za-z0-9\-]+$/)</td></tr>
+<tr><td class="h"><a id="L2179">2179</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if (my $sub = $self-&gt;sublanguage_code_alpha2)</td></tr>
+<tr><td class="h"><a id="L2182">2182</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if defined $self-&gt;language_code_alpha2</td></tr>
+<tr><td class="h"><a id="L2187">2187</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if -e $path</td></tr>
+<tr><td class="h"><a id="L2202">2202</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless $code</td></tr>
+<tr><td class="h"><a id="L2203">2203</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $self-&gt;{&#39;_country&#39;}) { }</td></tr>
+<tr><td class="h"><a id="L2209">2209</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ($self-&gt;{&#39;_cache&#39;})</td></tr>
+<tr><td class="h"><a id="L2213">2213</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $from_cache = $self-&gt;{&#39;_cache&#39;}-&gt;get($CACHE_NS . &quot;code2language:$code&quot;))</td></tr>
+<tr><td class="h"><a id="L2222">2222</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $name)</td></tr>
+<tr><td class="h"><a id="L2238">2238</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless $code</td></tr>
+<tr><td class="h"><a id="L2239">2239</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if ($self-&gt;{&#39;_country&#39;}) { }</td></tr>
+<tr><td class="h"><a id="L2246">2246</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">if ($_locale_object_db_ok // 1)</td></tr>
+<tr><td class="h"><a id="L2250">2250</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">unless $_[0] =~ /No result found in country table/</td></tr>
+<tr><td class="h"><a id="L2253">2253</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if ($@) { }</td></tr>
+<tr><td class="h"><a id="L2254">2254</a></td><td class="c0">0</td><td class="c0">T</td><td class="c0">F</td><td class="s">if $@ =~ /database was not in/</td></tr>
+<tr><td class="h"><a id="L2275">2275</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">unless defined $code</td></tr>
+<tr><td class="h"><a id="L2277">2277</a></td><td class="c0">50</td><td class="c0">T</td><td class="c3">F</td><td class="s">if exists $COUNTRY_SHORT_NAMES{$lc}</td></tr>
+<tr><td class="h"><a id="L2292">2292</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless $code</td></tr>
+<tr><td class="h"><a id="L2295">2295</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ($self-&gt;{&#39;_cache&#39;})</td></tr>
+<tr><td class="h"><a id="L2297">2297</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if defined $country</td></tr>
+<tr><td class="h"><a id="L2301">2301</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $from_cache = $self-&gt;{&#39;_cache&#39;}-&gt;get($CACHE_NS . &quot;code2countryname:$code&quot;))</td></tr>
+<tr><td class="h"><a id="L2307">2307</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $country = $self-&gt;_code2country($code)) { }</td></tr>
+<tr><td class="h"><a id="L2315">2315</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $name)</td></tr>
+<tr><td class="h"><a id="L2336">2336</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless ref $self and scalar @messages</td></tr>
+<tr><td class="h"><a id="L2339">2339</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">unless length $text</td></tr>
+<tr><td class="h"><a id="L2342">2342</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (my $logger = $self-&gt;{&#39;logger&#39;})</td></tr>
+<tr><td class="h"><a id="L2365">2365</a></td><td class="c0">50</td><td class="c3">T</td><td class="c0">F</td><td class="s">ref $params ? :</td></tr>
+<tr><td class="h"><a id="L2367">2367</a></td><td class="c3">100</td><td class="c3">T</td><td class="c3">F</td><td class="s">if (defined $self-&gt;{&#39;logger&#39;}) { }</td></tr>
 </table>
 </body>
 </html>
