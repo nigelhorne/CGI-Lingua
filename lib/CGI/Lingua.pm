@@ -974,6 +974,11 @@ sub _resolve_sublanguage_match
 
 		if($@ || !defined($language_name)) {
 			$self->_warn({ warning => $@ }) if $@;
+			# Locale::Object DB may be absent (common on Windows CI); fall back to
+			# the short-name table / Locale::Codes before giving up.
+			$language_name = $self->_country_short_name($variety);
+		}
+		if(!defined($language_name)) {
 			$self->_debug(__PACKAGE__, ': ', __LINE__, ': setting sublanguage to Unknown');
 			$self->{_sublanguage} = 'Unknown';
 			$self->_warn({ warning => "Can't determine values for $header" });
