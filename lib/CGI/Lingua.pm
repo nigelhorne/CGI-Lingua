@@ -96,6 +96,29 @@ sub _is_loopback_ip {
 	return $ip =~ /^127\./;
 }
 
+# Short-name overrides used when Locale::Object's database is absent and we
+# fall back to Locale::Codes::Country.  Locale::Codes carries full ISO official
+# names (e.g. "United Kingdom of Great Britain and Northern Ireland") while
+# Locale::Object returns the common short form ("United Kingdom").  Only
+# entries that differ are listed; everything else comes from Locale::Codes.
+my %COUNTRY_SHORT_NAMES = (
+	bo => 'Bolivia',
+	cd => 'Democratic Republic of the Congo',
+	fk => 'Falkland Islands',
+	fm => 'Micronesia',
+	gb => 'United Kingdom',
+	ir => 'Iran',
+	kp => 'North Korea',
+	kr => 'South Korea',
+	md => 'Moldova',
+	nl => 'Netherlands',
+	ps => 'Palestine',
+	tw => 'Taiwan',
+	tz => 'Tanzania',
+	us => 'United States',
+	ve => 'Venezuela',
+);
+
 Readonly my %RTL_LANGS           => (map { $_ => 1 }  # ISO 639-1 codes whose primary script is RTL
 	qw(ar dv fa he ku ps sd ug ur yi));
 
@@ -2226,6 +2249,23 @@ sub _code2country
 	return $rc;
 }
 
+# ── _country_short_name ───────────────────────────────────────────────────
+# Purpose:      Return the common short English name for an ISO 3166-1 alpha-2
+#               code when Locale::Object's database is unavailable.  Uses
+#               %COUNTRY_SHORT_NAMES overrides for codes where Locale::Codes
+#               returns the full ISO official name rather than the short form.
+# Entry:        $code — 2-char country code (any case).
+# Exit:         Short name string, or undef.
+sub _country_short_name
+{
+	my ($self, $code) = @_;
+	return unless defined($code);
+	my $lc = lc($code);
+	return $COUNTRY_SHORT_NAMES{$lc} if exists $COUNTRY_SHORT_NAMES{$lc};
+	require Locale::Codes::Country;
+	return Locale::Codes::Country::code2country($lc, 'alpha-2');
+}
+
 # ── _code2countryname ─────────────────────────────────────────────────────
 # Purpose:      Translate a 2-char country code to its English name string,
 #               with optional CHI caching.
@@ -2241,7 +2281,8 @@ sub _code2countryname
 
 	unless($self->{_cache}) {
 		my $country = $self->_code2country($code);
-		return defined($country) ? $country->name : undef;
+		return $country->name if defined($country);
+		return $self->_country_short_name($code);
 	}
 
 	if(my $from_cache = $self->{_cache}->get($CACHE_NS . "code2countryname:$code")) {
@@ -2249,11 +2290,18 @@ sub _code2countryname
 		return $from_cache;
 	}
 
+	my $name;
 	if(my $country = $self->_code2country($code)) {
+		$name = $country->name();
+	} else {
+		# Locale::Object database absent (common on Windows); fall back to
+		# Locale::Codes::Country with a short-name correction table.
+		$name = $self->_country_short_name($code);
+	}
+
+	if(defined($name)) {
 		$self->_debug('_code2countryname not in cache, storing');
-		my $name = $country->name();
 		$self->_trace('<_code2countryname ', $name);
-		# Store then return explicitly — don't rely on set() return value
 		$self->{_cache}->set($CACHE_NS . "code2countryname:$code", $name, $CACHE_TTL_LONG);
 		return $name;
 	}
