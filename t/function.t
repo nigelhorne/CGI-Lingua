@@ -18,9 +18,7 @@ use Test::Memory::Cycle;
 use Test::Mockingbird;
 use Test::Most;
 use Test::Returns qw(returns_ok returns_is);
-
-use lib 't/lib';
-use MyLogger;
+use Test::Log::Abstraction;
 
 BEGIN { use_ok('CGI::Lingua') }
 
