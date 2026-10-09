@@ -1,8 +1,19 @@
 Revision history for CGI-Lingua
 
 0.87
+	[ Documentation ]
+	- country(): note that geoplugin.net no longer has a free tier (as of
+	  October 2026 it returns HTTP 403 with no country code, so the lookup falls
+	  through to Whois), and that legacy GeoIP.dat databases are frozen and can
+	  be wrong for reallocated addresses
 	[ Tests ]
 	- Use Test::Log::Abstraction
+	- t/country.t: failed with 'gp' instead of 'gb' on machines with Debian's
+	  geoip-database installed, whose frozen GeoIP.dat (2019-12-24) maps
+	  45.128.139.41 to Guadeloupe; the test now bypasses the local geo databases
+	  and checks the online lookup path
+	- Added t/geoip.t: tests country() against a real GeoIP.dat when Geo::IP and
+	  a database are available (standard locations, or GEOIP_DAT=/path)
 0.86	Mon Oct  5 02:32:02 PM EDT 2026
 	[ Bug Fixes ]
 	- t/mutant_killers.t: time_zone() local-mode test failed on FreeBSD, which has

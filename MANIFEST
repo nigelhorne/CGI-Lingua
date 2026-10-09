@@ -38,6 +38,7 @@ t/eu.t
 t/extended_tests.t
 t/function.t
 t/fuzz.t
+t/geoip.t
 t/gv.t
 t/hk.t
 t/hp-tablet.t

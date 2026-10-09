@@ -1154,6 +1154,17 @@ CGI::Lingua will make use of that, otherwise, it will do a Whois lookup.
 If you do not have any of those installed I recommend you use the
 caching capability of CGI::Lingua.
 
+Note that as of October 2026 geoplugin.net, one of the remote
+fallbacks, no longer has a free tier: it answers with an HTTP 403 and
+a "please upgrade to a paid plan" message, which contains no country
+code, so the lookup falls through to Whois.
+The geoplugin.net code is kept in case that changes.
+
+Legacy MaxMind F<GeoIP.dat> databases, as used by L<Geo::IP>, are no
+longer updated (Debian's C<geoip-database> package is frozen at
+2019-12-24), so they can give the wrong country for addresses that
+have been reallocated since then.
+
 =head3 API SPECIFICATION
 
     Input:  none beyond $self
@@ -1191,7 +1202,8 @@ caching capability of CGI::Lingua.
     7. Try IP::Country::Fast (local DB, fastest)
     8. Try Geo::IP (local DB)
     9. Try Geo::IPfree (local DB, skip $BROKEN_GEOIPFREE)
-    10. Try geoplugin.net JSON API (LWP::Simple::WithCache or LWP::Simple)
+    10. Try geoplugin.net JSON API (LWP::Simple::WithCache or LWP::Simple;
+        no free tier as of October 2026, so normally yields nothing)
     11. Last resort: Net::Whois::IP then Net::Whois::IANA
     12. Sanitise: discard numeric, normalise HK->CN, handle EU special case
     13. Store in CHI cache; return result
