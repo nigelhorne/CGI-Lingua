@@ -27,8 +27,6 @@ use Test::Mockingbird;
 use Test::Returns qw(returns_ok);
 use Test::Without::Module qw(IP::Country);
 
-use lib 't/lib';
-
 BEGIN { use_ok('CGI::Lingua') }
 
 # Pre-require lazy-loaded network modules before mocking them.

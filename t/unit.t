@@ -21,8 +21,6 @@ use Test::Most;
 use Test::Mockingbird;
 use Test::Returns qw(returns_ok returns_is);
 
-use lib 't/lib';
-
 BEGIN { use_ok('CGI::Lingua') }
 
 # ── Shared constants ──────────────────────────────────────────────────────────

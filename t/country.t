@@ -6,8 +6,6 @@ use warnings;
 use Test::Most;
 use Test::RequiresInternet;
 
-use lib 't/lib';
-
 BEGIN { use_ok('CGI::Lingua') }
 
 local $ENV{'REMOTE_ADDR'} = '45.128.139.41';

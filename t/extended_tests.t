@@ -18,8 +18,6 @@ use Test::Most;
 use Test::Mockingbird;
 use Test::Returns qw(returns_ok);
 
-use lib 't/lib';
-
 BEGIN { use_ok('CGI::Lingua') }
 
 # Pre-require lazy-loaded modules so their BEGIN blocks run before any mock.

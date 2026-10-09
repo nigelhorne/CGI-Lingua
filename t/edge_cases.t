@@ -17,8 +17,6 @@ use Test::Most;
 use Test::Mockingbird;
 use Test::Returns qw(returns_ok);
 
-use lib 't/lib';
-
 BEGIN { use_ok('CGI::Lingua') }
 
 # Pre-require lazily-loaded modules before installing mocks
