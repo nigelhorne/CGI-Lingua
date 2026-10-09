@@ -181,6 +181,33 @@ sub _web_missing {
 	return 1;
 }
 
+# Run time_zone() in a child perl with @hidden made unloadable by
+# Test::Without::Module (require cannot be mocked in this process).  The
+# script goes in a file: Windows mangles a multi-line "perl -e" argument.
+Readonly my $TZ_CHILD => <<'CHILD';
+use CGI::Lingua;
+$SIG{__WARN__} = sub { print "WARN: $_[0]" };
+local $ENV{REMOTE_ADDR} = '8.8.8.8';
+my $l = CGI::Lingua->new(supported => ['en']);
+$l->{logger} = undef;
+$l->{_have_geoip} = 0;
+print 'RESULT: ', (defined($l->time_zone()) ? 'defined' : 'undef'), "\n";
+CHILD
+
+sub _time_zone_child {
+	my @hidden = @_;
+	require File::Temp;
+	my ($sfh, $script) = File::Temp::tempfile(SUFFIX => '.pl', UNLINK => 1);
+	print {$sfh} $TZ_CHILD;
+	close $sfh;
+	open(my $fh, '-|', $^X, '-Ilib', '-MTest::Without::Module=' . join(',', @hidden), $script)
+		or die "Can't run $^X: $!";
+	my $out = do { local $/; <$fh> };
+	close $fh;
+	diag($out) if $ENV{TEST_VERBOSE};
+	return $out // '';
+}
+
 # -- Helper --------------------------------------------------------------------
 
 # Build a minimal object with the given supported list and optional extras.
@@ -1203,19 +1230,7 @@ subtest 'ledger time_zone: no LWP module installed' => sub {
 		_cannot_reach($key, 'Test::Without::Module not installed');
 		plan(skip_all => $SKIPPED{$key});
 	}
-	my $child = <<'CHILD';
-		$SIG{__WARN__} = sub { print "WARN: $_[0]" };
-		local $ENV{REMOTE_ADDR} = '8.8.8.8';
-		my $l = CGI::Lingua->new(supported => ['en']);
-		$l->{logger} = undef;
-		$l->{_have_geoip} = 0;
-		print 'RESULT: ', (defined($l->time_zone()) ? 'defined' : 'undef'), "\n";
-CHILD
-	open(my $fh, '-|', $^X, '-Ilib', '-MTest::Without::Module=LWP::Simple::WithCache,LWP::Simple',
-		'-MCGI::Lingua', '-e', $child) or die "Can't run $^X: $!";
-	my $out = do { local $/; <$fh> };
-	close $fh;
-	diag($out) if $ENV{TEST_VERBOSE};
+	my $out = _time_zone_child(qw(LWP::Simple::WithCache LWP::Simple));
 	like($out, qr/^RESULT: undef$/m, 'undef returned, no croak');
 	like($out, qr/^WARN: LWP::Simple::WithCache and LWP::Simple are both absent; cannot contact ip-api\.com /m, 'exact warning');
 	_hit($key);
@@ -1296,6 +1311,12 @@ subtest 'public methods leave $@, $!, $_ and alarm() alone' => sub {
 	_mock_get(JSON::PP::encode_json({ timezone => $CFG{zone}, geoplugin_countryCode => 'GB' })) if $HAS_LWP;
 	local $SIG{ALRM} = sub { };
 
+	# Windows emulates alarm() and alarm(0) there returns 0 rather than the
+	# seconds left, so the timer can only be checked where it is reported
+	my $alarm_reports = do { alarm($CFG{alarm_seconds}); alarm(0) > 0 };
+	diag('alarm() does not report the time left on this platform; not checking it')
+		if !$alarm_reports && $ENV{TEST_VERBOSE};
+
 	my @calls = (
 		[ 'new',                     sub { CGI::Lingua->new(supported => ['en-gb', 'fr']) } ],
 		map { my $m = $_; [ $m, sub { _web_only(CGI::Lingua->new(supported => ['en-gb', 'fr']))->$m() } ] }
@@ -1317,7 +1338,7 @@ subtest 'public methods leave $@, $!, $_ and alarm() alone' => sub {
 		is($@, $CFG{sentinel_eval}, "$name: \$\@ untouched");
 		is($! + 0, $CFG{sentinel_errno}, "$name: \$! untouched");
 		is($_, $CFG{sentinel_topic}, "$name: \$_ untouched");
-		cmp_ok($left, '>', $CFG{alarm_seconds} - 2, "$name: pending alarm() kept");
+		cmp_ok($left, '>', $CFG{alarm_seconds} - 2, "$name: pending alarm() kept") if $alarm_reports;
 	}
 	_unmock_all();
 };
@@ -1404,18 +1425,12 @@ subtest 'ledger time_zone: JSON::Parse missing is named in the warning' => sub {
 		_cannot_reach($key, 'Test::Without::Module not installed');
 		plan(skip_all => $SKIPPED{$key});
 	}
-	my $child = <<'CHILD';
-		$SIG{__WARN__} = sub { print "WARN: $_[0]" };
-		local $ENV{REMOTE_ADDR} = '8.8.8.8';
-		my $l = CGI::Lingua->new(supported => ['en']);
-		$l->{logger} = undef;
-		$l->{_have_geoip} = 0;
-		print 'RESULT: ', (defined($l->time_zone()) ? 'defined' : 'undef'), "\n";
-CHILD
-	open(my $fh, '-|', $^X, '-Ilib', '-MTest::Without::Module=JSON::Parse', '-MCGI::Lingua', '-e', $child)
-		or die "Can't run $^X: $!";
-	my $out = do { local $/; <$fh> };
-	close $fh;
+	# The message blames JSON::Parse only when an LWP module is there to use
+	unless($HAS_LWP || eval { require LWP::Simple; 1 }) {
+		_cannot_reach($key, 'neither LWP::Simple::WithCache nor LWP::Simple is installed');
+		plan(skip_all => $SKIPPED{$key});
+	}
+	my $out = _time_zone_child('JSON::Parse');
 	like($out, qr/^RESULT: undef$/m, 'undef returned');
 	like($out, qr/^WARN: JSON::Parse is absent; cannot read ip-api\.com answers /m, 'exact warning');
 	unlike($out, qr/both absent/, 'does not wrongly blame LWP');

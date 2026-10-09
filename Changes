@@ -57,9 +57,10 @@ Revision history for CGI-Lingua
 	- country(): a malformed geoplugin answer (a JSON object, "GB<script>") is
 	  now rejected at once, so the Whois fallback still runs; before, the junk
 	  value stopped Whois and was then discarded, leaving no country
-	- time_zone(): when only JSON::Parse is missing, the warning now says
-	  "JSON::Parse is absent; cannot read ip-api.com answers" instead of
-	  wrongly claiming that both LWP modules are absent
+	- time_zone(): when an LWP module is installed but JSON::Parse is not, the
+	  warning now says "JSON::Parse is absent; cannot read ip-api.com answers"
+	  instead of wrongly claiming that both LWP modules are absent (with no LWP
+	  module at all, the LWP message is still given)
 	- _resolve_sublanguage_match(): a stale $@ from the caller could be
 	  logged as a Locale::Object error; the eval's error is now kept in a
 	  lexical
@@ -80,6 +81,11 @@ Revision history for CGI-Lingua
 	  with Test::Permissions; upstream sabotage (timeouts, latency, malformed
 	  payloads, Whois and cache outages); three-object concurrency over one
 	  shared cache; file is now ASCII only
+	- t/unit.t, t/integration.t: child perls now run from a script file, not
+	  "perl -e" (Windows mangled the multi-line -e argument); integration
+	  tests for Data::Validate::IP and Net::Subnet no longer need LWP or
+	  JSON::Parse; the alarm() check is skipped where alarm(0) does not report
+	  the time left (Windows)
 	- Use Test::Log::Abstraction
 	- t/country.t: failed with 'gp' instead of 'gb' on machines with Debian's
 	  geoip-database installed, whose frozen GeoIP.dat (2019-12-24) maps

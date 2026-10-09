@@ -2327,10 +2327,10 @@ sub time_zone {
 				# A module is missing — degrade gracefully rather than killing the
 				# entire request with a croak; caller can check for undef.  Name the
 				# module that is really missing: an LWP may be present without JSON::Parse.
-				if(eval { require JSON::Parse; 1 }) {
-					$self->_warn({ warning => 'LWP::Simple::WithCache and LWP::Simple are both absent; cannot contact ip-api.com' });
-				} else {
+				if(eval { require LWP::Simple::WithCache; 1 } || eval { require LWP::Simple; 1 }) {
 					$self->_warn({ warning => 'JSON::Parse is absent; cannot read ip-api.com answers' });
+				} else {
+					$self->_warn({ warning => 'LWP::Simple::WithCache and LWP::Simple are both absent; cannot contact ip-api.com' });
 				}
 			}
 		}

@@ -832,7 +832,7 @@ my %have = map { my $m = $_; ($m => (eval "require $m; 1" ? 1 : 0)) } @{$cfg->{p
 	require Net::Whois::IANA;
 	Test::Mockingbird::mock('Net::Whois::IP', 'whoisip_query', sub { $called{whois}++; return { Country => $canned{whois} } });
 	Test::Mockingbird::mock('Net::Whois::IANA', 'whois_query', sub { 1 });
-	Test::Mockingbird::mock('Net::Whois::IANA', 'country', sub { undef });
+	Test::Mockingbird::mock('Net::Whois::IANA', 'country', sub { $called{iana}++ if defined $canned{iana}; $canned{iana} });
 }
 $SIG{__WARN__} = sub { push @warnings, $_[0] };
 
@@ -862,12 +862,27 @@ sub _child {
 	my %probe = map { $_ => 1 } (@{$cfg->{probe} || []}, @{$CFG{geo_modules}}, @{$CFG{tz_modules}});
 	local $ENV{CGI_LINGUA_CHILD} = JSON::PP::encode_json({ %{$cfg}, probe => [ sort keys %probe ] });
 	my @hide = @{$hidden} ? ('-MTest::Without::Module=' . join(',', @{$hidden})) : ();
-	open(my $fh, '-|', $^X, '-Ilib', @hide, '-e', $CHILD) or die "Can't run $^X: $!";
-	my $out = do { local $/; <$fh> };
+	open(my $fh, '-|', $^X, '-Ilib', @hide, _child_script()) or die "Can't run $^X: $!";
+	my $out = do { local $/; <$fh> } // '';
 	close $fh;
 	diag("child [@hide]: $out") if $ENV{TEST_VERBOSE};
 	my ($json) = $out =~ /^\Q$CFG{child_marker}\E(.*)$/m;
-	return $json ? JSON::PP::decode_json($json) : { error => $out };
+	return JSON::PP::decode_json($json) if $json;
+	# An empty error string would read as success; always say something
+	return { error => length($out) ? $out : 'child printed nothing' };
+}
+
+# The child runs from a file, written once: Windows mangles a multi-line
+# "perl -e" argument (the script arrives as a syntax error).
+my $child_script;
+sub _child_script {
+	return $child_script if defined $child_script;
+	require File::Temp;
+	my $fh;
+	($fh, $child_script) = File::Temp::tempfile(SUFFIX => '.pl', UNLINK => 1);
+	print {$fh} $CHILD;
+	close $fh;
+	return $child_script;
 }
 
 # All 2**N subsets of a list.
@@ -961,9 +976,11 @@ subtest 'optional matrix: time_zone() over every LWP / JSON::Parse combination' 
 			is($tz, $CFG{zone_simple}, "$label: falls back to LWP::Simple");
 		} else {
 			ok(!defined($tz), "$label: undef, not a croak");
-			my $expect = $have{'JSON::Parse'}
-				? qr/^LWP::Simple::WithCache and LWP::Simple are both absent; cannot contact ip-api\.com /
-				: qr/^JSON::Parse is absent; cannot read ip-api\.com answers /;
+			# No LWP at all is reported first; JSON::Parse is blamed only when
+			# an LWP module was there to fetch the answer
+			my $expect = ($have{'LWP::Simple::WithCache'} || $have{'LWP::Simple'})
+				? qr/^JSON::Parse is absent; cannot read ip-api\.com answers /
+				: qr/^LWP::Simple::WithCache and LWP::Simple are both absent; cannot contact ip-api\.com /;
 			ok((grep { $_ =~ $expect } @{$run->{warnings}}), "$label: warning names the missing module")
 				or diag(explain($run->{warnings}));
 		}
@@ -972,12 +989,14 @@ subtest 'optional matrix: time_zone() over every LWP / JSON::Parse combination' 
 
 subtest 'optional: Data::Validate::IP absent gives the same answers as present' => sub {
 	# The pure-Perl fallbacks must classify addresses exactly as the module does
+	# Every local and web source is hidden, so Whois (a prerequisite) always
+	# answers and the result does not depend on what this host has installed
 	my @runs = map { { env => { REMOTE_ADDR => $_ }, calls => ['country'] } }
 		($CFG{ip_private}, $CFG{ip_mapped}, $CFG{ip_v6}, $CFG{ip_public});
 	my %by;
 	for my $hidden ([], [qw(Data::Validate::IP NetAddr::IP)]) {
 		my $label = @{$hidden} ? 'without Data::Validate::IP' : 'with Data::Validate::IP';
-		my $report = _child([ @{$hidden}, qw(IP::Country::Fast Geo::IP Geo::IPfree) ], {
+		my $report = _child([ @{$hidden}, qw(IP::Country::Fast Geo::IP Geo::IPfree LWP::Simple::WithCache) ], {
 			probe => [], canned => \%CANNED, supported => ['en'], runs => \@runs,
 		});
 		BAIL_OUT("child failed: $report->{error}") if $report->{error};
@@ -985,16 +1004,18 @@ subtest 'optional: Data::Validate::IP absent gives the same answers as present' 
 		diag("$label: ", explain($by{$label})) if $ENV{TEST_VERBOSE};
 	}
 	is_deeply($by{'without Data::Validate::IP'}, $by{'with Data::Validate::IP'}, 'identical results');
-	is_deeply($by{'with Data::Validate::IP'}, [ undef, lc($CANNED{geoplugin}), lc($CANNED{geoplugin}), lc($CANNED{geoplugin}) ],
+	is_deeply($by{'with Data::Validate::IP'}, [ undef, lc($CANNED{whois}), lc($CANNED{whois}), lc($CANNED{whois}) ],
 		'private address has no country; mapped, IPv6 and IPv4 addresses are looked up');
 };
 
 subtest "optional: Net::Subnet absent - EU answers still resolve Baidu to cn" => sub {
 	# RT-86809: the pure-Perl subnet check must agree with Net::Subnet
+	# The EU answer comes from IANA (Whois proper discards EU), with the web
+	# and local sources hidden, so the test does not need LWP or JSON::Parse
 	for my $hidden ([], ['Net::Subnet']) {
 		my $label = @{$hidden} ? 'without Net::Subnet' : 'with Net::Subnet';
-		my $report = _child([ @{$hidden}, qw(IP::Country::Fast Geo::IP Geo::IPfree) ], {
-			probe => [], canned => { %CANNED, geoplugin => 'EU' }, supported => ['en'],
+		my $report = _child([ @{$hidden}, qw(IP::Country::Fast Geo::IP Geo::IPfree LWP::Simple::WithCache) ], {
+			probe => [], canned => { %CANNED, whois => 'EU', iana => 'EU' }, supported => ['en'],
 			runs  => [ map { { env => { REMOTE_ADDR => $_ }, calls => ['country'] } } ($CFG{ip_baidu}, $CFG{ip_public}) ],
 		});
 		BAIL_OUT("child failed: $report->{error}") if $report->{error};
