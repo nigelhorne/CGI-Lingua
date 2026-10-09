@@ -415,7 +415,10 @@ sub new
 	# Handle ::new() misuse
 	if(!defined($class)) {
 		if($params) {
-			if(my $logger = $params->{'logger'}) {
+			# Object::Configure has not run yet, so the logger may still be in
+			# one of its raw forms (arrayref, hashref, file name)
+			my $logger = $params->{'logger'};
+			if(blessed($logger) && $logger->can('error')) {
 				$logger->error(__PACKAGE__ . ' use ->new() not ::new() to instantiate');
 			}
 			croak(__PACKAGE__ . ' use ->new() not ::new() to instantiate');
@@ -440,7 +443,8 @@ sub new
 		}
 	}
 
-	$params = Object::Configure::configure($class, $params);
+	# Object::Configure runs evals and file tests; keep them off the caller's $@ and $!
+	$params = do { local ($@, $!); Object::Configure::configure($class, $params) };
 
 	# Normalise supported / supported_languages alias
 	$params->{'supported'} ||= $params->{'supported_languages'};
@@ -473,7 +477,7 @@ sub new
 			# JSON cannot execute code regardless of its content.
 			# If the blob is not valid JSON (e.g. a legacy Storable entry), the
 			# eval catches the error and we fall through to fresh construction.
-			my $rc = eval { local $SIG{__DIE__}; JSON::PP::decode_json($frozen) };
+			my $rc = do { local $@; eval { local $SIG{__DIE__}; JSON::PP::decode_json($frozen) } };
 			unless(defined $rc && ref($rc) eq 'HASH') {
 				$rc = undef;    # stale or corrupt entry — rebuild below
 			}
@@ -551,6 +555,8 @@ sub _build_cache_key
 
 # Some of the information takes a long time to work out, so cache what we can
 sub DESTROY {
+	# Destructors run at arbitrary points, e.g. while the caller is examining $@
+	local ($@, $!);
 	if(defined($^V) && ($^V ge 'v5.14.0')) {
 		return if ${^GLOBAL_PHASE} eq 'DESTRUCT';
 	}
@@ -840,8 +846,7 @@ If the visitor asked for a variant, it is shown in brackets,
 for example C<'English (United Kingdom)'>.
 
 Returns C<'Unknown'> when the visitor's language cannot be found at all.
-In rare cases (an unusual header that I18N::LangTags cannot read) it can
-return C<undef>.
+It never returns C<undef>.
 
 =head3 API SPECIFICATION
 
@@ -852,9 +857,8 @@ return C<undef>.
 =head4 Output
 
     {
-        type     => 'string',
-        min      => 1,
-        optional => 1,
+        type => 'string',
+        min  => 1,
     }
 
 =head3 EXAMPLE
@@ -875,6 +879,8 @@ sub requested_language {
 	my $self = $_[0];
 
 	$self->_find_language() unless $self->{_rlanguage};
+	# I18N::LangTags::Detect can return undef; the API promises a string
+	$self->{_rlanguage} //= 'Unknown';
 	return $self->{_rlanguage};
 }
 
@@ -888,6 +894,9 @@ sub requested_language {
 sub _find_language
 {
 	my $self = shift;
+	# Called by every language accessor; the evals and file tests below must
+	# not change the caller's $@ or $!
+	local ($@, $!);
 
 	$self->_trace('Entered _find_language');
 
@@ -1583,6 +1592,7 @@ These are debug messages, sent only to the logger:
 
 sub country {
 	my $self = shift;
+	local ($@, $!);	# evals and lazy requires below must not leak to the caller
 
 	$self->_trace(__PACKAGE__, ': Entered country()');
 
@@ -2044,6 +2054,7 @@ Returns C<undef> when nothing is found.
 
 sub locale {
 	my $self = shift;
+	local ($@, $!);	# evals below must not leak to the caller
 
 	return $self->{_locale} if $self->{_locale};
 
@@ -2186,6 +2197,7 @@ These are warnings. C<time_zone()> does not die.
 
 sub time_zone {
 	my $self = shift;
+	local ($@, $!);	# evals, open() and HTTP calls must not leak to the caller
 
 	$self->_trace('Entered time_zone');
 
@@ -2611,6 +2623,7 @@ These are warnings. C<translation_file()> does not die.
 sub translation_file
 {
 	my ($self, $dir, $ext) = @_;
+	local $!;	# a failed -e test sets $!
 	return unless defined $dir;
 
 	# Reject traversal attempts in the directory argument.  A real translation
@@ -2946,7 +2959,7 @@ so C<if($l-E<gt>language())> is always true.
     Method                    When it does not know
     ------------------------  -----------------------------
     language()                'Unknown'  (never undef)
-    requested_language()      'Unknown'  (undef in rare cases)
+    requested_language()      'Unknown'  (never undef)
     sublanguage()             undef
     language_code_alpha2()    undef
     sublanguage_code_alpha2() undef
@@ -3316,7 +3329,7 @@ You do not need it to use the module.
 
     ┌─ RequestedLanguage ───────────────────────────────────────────
     │ EnsureResolved
-    │ result! : seq CHAR ∪ {⊥}
+    │ result! : seq CHAR
     ├───────────────────────────────────────────────────────────────
     │ result! = rlanguage'
     │ -- rlanguage' = name(b) ⁀ " (" ⁀ cname(v) ⁀ ")" when the visitor

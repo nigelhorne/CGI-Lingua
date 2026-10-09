@@ -29,6 +29,14 @@ Revision history for CGI-Lingua
 	- GEOIP_COUNTRY_CODE and HTTP_CF_IPCOUNTRY (in country() and locale())
 	  are now checked with /^([A-Z]{2})\z/a; with $ a trailing newline such as
 	  "GB\n" was accepted
+	- Public methods (new, the language accessors, country, locale, time_zone,
+	  translation_file) and DESTROY no longer overwrite the caller's $@ or $!;
+	  internal evals, file tests and HTTP calls now run under local
+	- CGI::Lingua::new() called as a function with an unblessed logger (e.g. an
+	  arrayref) died with "Can't call method error on unblessed reference"
+	  instead of the documented "use ->new() not ::new()" message
+	- requested_language() is documented to return a string and now returns
+	  'Unknown' rather than undef if I18N::LangTags::Detect finds nothing
 	- _find_language_from_ip(): the "Couldn't determine closest language"
 	  warning printed ARRAY(0x...) instead of the supported languages, and the
 	  "Can't determine code from IP" warning raised an uninitialized-value
@@ -43,6 +51,11 @@ Revision history for CGI-Lingua
 	- t/pod-spelling.t: added stopwords for technical terms
 	- t/function.t: 60 new subtests covering every helper that had no direct
 	  test, plus hostile input for the public methods; file is now ASCII only
+	- t/unit.t: API ledger of every documented message and return state; the
+	  last subtest fails if any was not produced.  New subtests for is_rtl,
+	  text_direction, plural_category, translation_file, time_zone failures
+	  and global-state ($@, $!, $_, alarm) preservation; file is now ASCII only
+	- t/data-flow.t: country() must now preserve the caller's $@, not clear it
 	- Use Test::Log::Abstraction
 	- t/country.t: failed with 'gp' instead of 'gb' on machines with Debian's
 	  geoip-database installed, whose frozen GeoIP.dat (2019-12-24) maps

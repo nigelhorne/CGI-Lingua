@@ -563,14 +563,11 @@ subtest '$@: country() does not leak $@ to caller' => sub {
 	eval { die 'pre-existing-error' };
 	my $before = $@;
 
-	# A fresh call to country() must not change $@ as seen outside.
-	# (The eval blocks inside country() are required to reset $@.)
+	# A fresh call to country() must not change $@ as seen outside: its
+	# internal evals run under "local $@", so the caller's error survives.
 	$l->country();
 
-	# $@ after country() can legitimately be '' (eval block ran to completion)
-	# but must not retain the caller's pre-existing value.
-	# The specific invariant: $@ is not 'pre-existing-error'.
-	unlike($@, qr/pre-existing-error/, '$@ after country() does not contain caller error');
+	is($@, $before, '$@ after country() is the caller\'s value, untouched');
 };
 
 subtest '$@: new() with valid JSON cache blob leaves $@ clean' => sub {
