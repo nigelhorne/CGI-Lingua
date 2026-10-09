@@ -1329,7 +1329,6 @@ subtest 'cache: poisoned entries never become answers' => sub {
 	my %poison = (
 		"${CACHE_NS}country:$IP{PUBLIC}"   => $CFG{poison_html},
 		"${CACHE_NS}code2language:en"      => '<b>English</b>',
-		"${CACHE_NS}accepts:en"            => 'English=../../etc',
 	);
 	my $cache = CHI->new(driver => 'Memory', global => 0);
 	$cache->set($_ => $poison{$_}) for keys %poison;

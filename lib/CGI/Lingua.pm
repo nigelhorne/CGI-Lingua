@@ -4,21 +4,65 @@ use warnings;
 use strict;
 use autodie qw(:all);
 
-use Carp qw(croak carp);
+use Carp ();	# fully qualified calls: nothing imported into this package
 use Object::Configure 0.23;
 use Params::Get 0.15;	# 0.15 fast-path: unblessed hashref returned directly
 use Readonly;
-use Scalar::Util qw(blessed);
+use Scalar::Util ();	# fully qualified, so $obj->blessed() is not a method
 use JSON::PP ();
 use Class::Autouse qw{
 	Locale::Language
 	Locale::Object::Country
 	Locale::Object::DB
 	I18N::AcceptLanguage
-	I18N::LangTags::Detect
 };
 
-our $VERSION = '0.86';
+our $VERSION = '0.87';
+
+# Post-release roadmap (from the 0.87 gap analysis).
+#
+# Upstream services
+# TODO: geoplugin.net has no free tier any more, so that look-up is dead code
+#	for nearly everyone.  Make the web providers configurable
+#	(geo_providers => [...]) with a built-in client for a free HTTPS
+#	service, or drop geoplugin.
+# TODO: ip-api.com is plain HTTP and limited to 45 requests a minute; answers
+#	are validated but can be read and altered in transit.  Allow an API key
+#	/ HTTPS provider and add rate limiting or back-off.
+# TODO: Support MaxMind GeoLite2 (GeoIP2::Database::Reader or
+#	IP::Geolocation::MMDB); GeoIP.dat (frozen 2019) and Geo::IPfree (known
+#	wrong entries) are the only local databases today.
+# TODO: Add a timeout option: a slow upstream holds the request for LWP's
+#	default of 180 seconds.
+#
+# Features
+# TODO: native_name() ("Francais" for French, in that language's script),
+#	plus bcp47() / lang_attribute() for the HTML lang attribute.
+# TODO: Number, currency and date formatting helpers from the negotiated
+#	locale (CLDR via Locale::CLDR, optional).
+# TODO: Script detection (zh-Hant / zh-Hans, sr-Latn) and RTL by script
+#	rather than by language.
+# TODO: Proper 3-letter and UN M.49 regions (es-419, en-029); these are the
+#	remaining TODO tests (t/es_419.t, t/en_029.t).
+# TODO: A Content-Language / Vary: Accept-Language header helper, and RFC
+#	4647 "lookup" fallback chains.
+# TODO: PSGI / Plack: middleware or a from_env(\%env) constructor that does
+#	not depend on %ENV, removing the "country() reads REMOTE_ADDR when
+#	called" pitfall.
+#
+# Technical debt
+# TODO: Split this file into ::Negotiate, ::Geo (one class per provider) and
+#	::Cache; most of the mocking pitfalls in the tests come from the
+#	coupling.
+# TODO: Replace the three geo sentinels and the two package sentinels
+#	($_locale_object_db_ok, $_have_dvip) with one capability probe, cached
+#	per process.
+# TODO: Enforce privacy with Sub::Private once t/function.t and
+#	t/extended_tests.t stop calling _-methods directly.
+# TODO: Structured log events (a code plus fields) instead of English
+#	strings, so applications can translate and filter them.
+# TODO: t/integration.t takes about 15 seconds because of its ~45 child
+#	processes; run them in parallel or reuse one child per combination.
 
 # Gathering magic strings here makes behavioural changes one-edit operations.
 
@@ -45,6 +89,19 @@ Readonly my $NAME_CODE_RE => qr/^[A-Za-z][A-Za-z0-9 ,.'()\[\]\-]{0,99}=[a-z]{2,3
 Readonly my $LANG_CODE_RE => qr/^[a-z]{2,3}\z/a;
 Readonly my $COUNTRY_RE   => qr/^(?:[a-z]{2}|Unknown)\z/a;
 
+# A language list from HTTP_ACCEPT_LANGUAGE or a lang= parameter: the RFC 7231
+# characters plus "*", spaces and tabs (never CR or LF), at most
+# $ACCEPT_LANG_MAX bytes.  Captures the untainted value.
+Readonly my $ACCEPT_LANG_RE => qr/^([A-Za-z0-9\-,;=.* \t]{1,$ACCEPT_LANG_MAX})\z/a;
+
+# A supported-list entry: a language tag such as "en", "en-gb", "es-419" or
+# "zh-Hant" (an underscore is accepted for "en_gb").  "english" is not one.
+Readonly my $SUPPORTED_RE => qr/^[A-Za-z]{2,3}(?:[-_][A-Za-z0-9]{2,8})*\z/a;
+
+# An IP address as accepted from REMOTE_ADDR, before Data::Validate::IP checks
+# it properly: dotted quad, or IPv6 including ::ffff:a.b.c.d.  Captures it.
+Readonly my $IP_SHAPE_RE => qr/^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|[0-9a-fA-F:]{2,39}|[0-9a-fA-F:]{2,30}:(?:\d{1,3}\.){3}\d{1,3})\z/a;
+
 # Fields that DESTROY saves and new() restores, with the shape each must have
 # time_zone(): IANA zone names (e.g. "America/New_York", "Etc/GMT+8", "UTC")
 Readonly my $ZONE_RE       => qr/^[A-Za-z][A-Za-z0-9_+\-\/]{0,50}\z/a;
@@ -54,6 +111,15 @@ Readonly my $ZONE_FILE_MAX => 256;	# bytes read from $ZONE_FILE; a zone name is 
 # REMOTE_ADDR.  A package variable (not Readonly) so tests can point it at a
 # hostile file with "local $CGI::Lingua::ZONE_FILE = ...".
 our $ZONE_FILE = '/etc/timezone';
+
+# Where _load_geoip() looks for the legacy MaxMind GeoIP.dat used by Geo::IP;
+# the first readable regular file wins.  A package variable so a test or a
+# site can point it elsewhere ("local @CGI::Lingua::GEOIP_DAT = ...").
+our @GEOIP_DAT = (
+	(($^O eq 'MSWin32') ? ('c:/GeoIP/GeoIP.dat') : ()),
+	'/usr/share/GeoIP/GeoIP.dat',
+	'/usr/local/share/GeoIP/GeoIP.dat',
+);
 
 Readonly my %RESTORABLE => (
 	_slanguage               => $NAME_RE,
@@ -109,7 +175,7 @@ CGI::Lingua - Create a multilingual web page
 
 =head1 VERSION
 
-Version 0.86
+Version 0.87
 
 =cut
 
@@ -245,6 +311,8 @@ The web server sets this from the browser's C<Accept-Language> header,
 for example C<fr-CA,fr;q=0.9,en;q=0.8>.
 Languages with a higher C<q> value are tried first.
 A language with C<q=0> means "not acceptable" (RFC 7231) and is never chosen.
+Some browsers still send the old tag C<en-uk>; it is treated as C<en-gb>
+(the code for the United Kingdom is C<gb>), with a warning.
 
 =item 3. The C<LANG> environment variable.
 This is used when you run the program on the command line,
@@ -317,8 +385,15 @@ The arguments are:
 =item * C<supported> (required)
 
 The languages your website supports: one short code (a string of 2 to 5
-characters) or a reference to an array of short codes.
+characters) or a reference to an array of language tags.
 C<supported_languages> is another name for the same argument.
+
+Each entry in the array must look like a language tag: two or three letters,
+optionally followed by subtags, such as C<'en'>, C<'en-gb'>, C<'en_gb'>,
+C<'es-419'> or C<'zh-Hant'>. Other entries (C<undef>, references, C<''>, or
+words such as C<'english'>) could never match, so they are dropped with the
+warning C<"Ignoring '...' in the supported list: not a language code">.
+An empty list is allowed; L</language> then always returns C<'Unknown'>.
 
 =item * C<cache> (optional)
 
@@ -354,7 +429,9 @@ Without a logger, warnings go to L<Carp>.
 
 A L<CGI::Info> object (or any object with a C<lang()> method).
 A C<lang> parameter in the request is then used before the browser's
-settings.
+settings. The parameter comes from the visitor, so it is checked like the
+C<Accept-Language> header (see L</ENCODING>); a value that fails is ignored with
+the warning C<"lang parameter contains invalid characters; ignoring">.
 
 =item * C<dont_use_ip> (optional, default false)
 
@@ -439,6 +516,8 @@ C<new()> dies (with L<Carp/croak>) with one of these messages:
 
 It warns, and carries on, with:
 
+    "Ignoring '...' in the supported list: not a language code"
+        - an entry of the supported list is not a language tag
     "Cache get failed: ..."
         - the cache died while looking up saved answers
     "Discarding malformed cache entry for ..."
@@ -468,10 +547,10 @@ sub new
 			# Object::Configure has not run yet, so the logger may still be in
 			# one of its raw forms (arrayref, hashref, file name)
 			my $logger = $params->{'logger'};
-			if(blessed($logger) && $logger->can('error')) {
+			if(Scalar::Util::blessed($logger) && $logger->can('error')) {
 				$logger->error(__PACKAGE__ . ' use ->new() not ::new() to instantiate');
 			}
-			croak(__PACKAGE__ . ' use ->new() not ::new() to instantiate');
+			Carp::croak(__PACKAGE__ . ' use ->new() not ::new() to instantiate');
 		}
 		$class = __PACKAGE__;
 	} elsif(ref($class)) {
@@ -483,13 +562,13 @@ sub new
 	# Validate blessed logger objects before Object::Configure runs.
 	# Non-blessed values (arrayrefs, hashrefs) are valid config forms that
 	# Object::Configure knows how to convert into a Log::Abstraction instance.
-	if(defined $params->{'logger'} && blessed($params->{'logger'})) {
+	if(defined $params->{'logger'} && Scalar::Util::blessed($params->{'logger'})) {
 		unless(
 			$params->{'logger'}->can('warn')
 			&& $params->{'logger'}->can('info')
 			&& $params->{'logger'}->can('error')
 		) {
-			croak('Logger must be a blessed object with warn/info/error methods');
+			Carp::croak('Logger must be a blessed object with warn/info/error methods');
 		}
 	}
 
@@ -502,16 +581,16 @@ sub new
 		# Validate supported type/length
 		if(ref($params->{supported})) {
 			if(ref($params->{supported}) ne 'ARRAY') {
-				croak('List of supported languages must be an array ref');
+				Carp::croak('List of supported languages must be an array ref');
 			}
 		} elsif((length($params->{supported}) < 2) || (length($params->{supported}) > 5)) {
-			croak('Supported languages must be the short code');
+			Carp::croak('Supported languages must be the short code');
 		}
 	} else {
 		if(my $logger = $params->{'logger'}) {
 			$logger->error('You must give a list of supported languages');
 		}
-		croak('You must give a list of supported languages');
+		Carp::croak('You must give a list of supported languages');
 	}
 
 	my $cache = $params->{cache};
@@ -519,17 +598,42 @@ sub new
 
 	# info is asked for lang() on every request.  CGI::Info provides lang()
 	# through AUTOLOAD, so can('lang') alone is not enough of a test.
-	if(defined($info) && !(blessed($info) && ($info->can('lang') || $info->can('AUTOLOAD')))) {
-		croak('info must be an object with a lang() method');
+	if(defined($info) && !(Scalar::Util::blessed($info) && ($info->can('lang') || $info->can('AUTOLOAD')))) {
+		Carp::croak('info must be an object with a lang() method');
+	}
+
+	# Keep only entries that are language tags ("en", "en-gb", "es-419").
+	# undef, references (including a list that contains itself), '' and words
+	# such as "english" could never match and would make I18N::AcceptLanguage
+	# warn; say so rather than drop them silently.
+	my @supported;
+	for my $item (ref($params->{supported}) ? @{$params->{supported}} : ($params->{'supported'})) {
+		my $entry = $item;	# a copy: the loop variable aliases the caller's array
+		if(defined($entry) && !ref($entry) && ($entry =~ $SUPPORTED_RE)) {
+			if(lc($entry) eq $DEPRECATED_EN_UK) {
+				# Same rule as the header: en-uk is en-gb
+				my $msg = "Resetting country code to GB for $entry";
+				if(Scalar::Util::blessed($params->{'logger'}) && $params->{'logger'}->can('warn')) {
+					$params->{'logger'}->warn($msg);
+				} else {
+					Carp::carp($msg);
+				}
+				$entry = $CANONICAL_EN_GB;
+			}
+			push @supported, $entry;
+			next;
+		}
+		my $msg = q{Ignoring '} . _printable($entry) . q{' in the supported list: not a language code};
+		if(Scalar::Util::blessed($params->{'logger'}) && $params->{'logger'}->can('warn')) {
+			$params->{'logger'}->warn($msg);
+		} else {
+			Carp::carp($msg);
+		}
 	}
 
 	my $self = bless {
 		%{$params},
-		# Only non-empty plain strings can be language codes; undef, references
-		# (including a list that contains itself) and '' would only make
-		# I18N::AcceptLanguage warn
-		_supported       => [ grep { defined($_) && !ref($_) && length($_) }
-			ref($params->{supported}) ? @{$params->{supported}} : ($params->{'supported'}) ],
+		_supported       => \@supported,
 		_cache           => $cache,
 		_info            => $info,
 		_syslog          => $params->{syslog},
@@ -547,7 +651,8 @@ sub new
 	# the supported list, dont_use_ip, or an HTML/path payload as a language.
 	if($cache && $ENV{'REMOTE_ADDR'}) {
 		my $key = _build_cache_key($ENV{'REMOTE_ADDR'}, $params, $class, $info);
-		if(my $frozen = _cache_call($params, $cache, 'get', $key)) {
+		# No key means REMOTE_ADDR is not a valid address: do not cache
+		if(defined($key) && (my $frozen = _cache_call($params, $cache, 'get', $key))) {
 			# JSON::PP rather than Storable::thaw: Storable can run code via
 			# STORABLE_thaw hooks in a crafted blob; JSON cannot.  A blob that
 			# is not JSON (e.g. a legacy Storable entry) is quietly rebuilt.
@@ -558,10 +663,10 @@ sub new
 				} sort keys %RESTORABLE;
 				if(@bad) {
 					my $msg = "Discarding malformed cache entry for $key";
-					if(blessed($params->{'logger'}) && $params->{'logger'}->can('warn')) {
+					if(Scalar::Util::blessed($params->{'logger'}) && $params->{'logger'}->can('warn')) {
 						$params->{'logger'}->warn($msg);
 					} else {
-						carp($msg);
+						Carp::carp($msg);
 					}
 					_cache_call($params, $cache, 'remove', $key);
 				} else {
@@ -592,29 +697,44 @@ sub _build_cache_key
 {
 	my ($addr, $params, $class, $info) = @_;
 
-	my $key = "$addr/";
+	# Every part of the key comes from the visitor or the caller, and cache
+	# backends such as Memcached treat CR, LF and spaces in a key as protocol.
+	# So the key is built only from checked values, and there is no key (and
+	# so no caching) when the address is not a valid one.
+	my $ip = _untaint_ip($addr);
+	return undef unless defined($ip);
+	my $key = "$ip/";
 
 	# Include the requested language (if determinable) so different
 	# Accept-Language values get distinct cache slots for the same IP.
+	# Both sources are validated; spaces are not significant in the header.
 	my $l;
-	if(defined($l = _info_lang($info)) && length($l)) {
-		$key .= "$l/";
-	} elsif($l = $class->_what_language()) {
-		$key .= "$l/";
+	if(defined($l = _info_lang($info)) || defined($l = $class->_what_language())) {
+		$l =~ s/[ \t]+//g;
+		$key .= "$l/" if length($l);
 	}
 
 	# Fix: was ref($params->{'supported'} eq 'ARRAY') — eq was inside ref(),
 	# so ref() always received a boolean (1 or ''), never the arrayref itself.
-	# Result: arrayref-supported always fell through to the else branch and
-	# stringified to 'ARRAY(0x...)' — a different address every request —
-	# making cache lookups in new() permanently fail.
-	if(ref($params->{'supported'}) eq 'ARRAY') {
-		$key .= join('/', @{$params->{supported}});
-	} else {
-		$key .= $params->{'supported'};
-	}
+	# Only entries that new() would keep are used.
+	my @supported = ref($params->{'supported'}) eq 'ARRAY' ? @{$params->{supported}} : ($params->{'supported'});
+	$key .= join('/', grep { defined($_) && !ref($_) && ($_ =~ $SUPPORTED_RE) } @supported);
 
 	return $key;
+}
+
+# ── _untaint_ip ──────────────────────────────────────────────────────────
+# Purpose:      Check that a value has the shape of an IP address and return
+#               an untainted copy.  The single place REMOTE_ADDR is checked,
+#               so country(), time_zone() and the cache key always agree.
+# Entry:        $raw — any scalar.
+# Exit:         The address, or undef.  \z, not $, so "1.2.3.4\n" is refused.
+# Notes:        Shape only: country() then range-checks with is_ipv4/is_ipv6.
+sub _untaint_ip
+{
+	my $raw = shift;
+	return undef unless defined($raw) && !ref($raw);
+	return $raw =~ $IP_SHAPE_RE ? $1 : undef;
 }
 
 # ── _cache_call ──────────────────────────────────────────────────────────
@@ -639,12 +759,12 @@ sub _cache_call
 	my $err = $@ || 'unknown error';
 	$err =~ s/\s+\z//;
 	my $msg = "Cache $method failed: $err";
-	if(blessed($self)) {
+	if(Scalar::Util::blessed($self)) {
 		$self->_warn({ warning => $msg });
-	} elsif((ref($self) eq 'HASH') && blessed($self->{'logger'}) && $self->{'logger'}->can('warn')) {
+	} elsif((ref($self) eq 'HASH') && Scalar::Util::blessed($self->{'logger'}) && $self->{'logger'}->can('warn')) {
 		$self->{'logger'}->warn($msg);
 	} else {
-		carp($msg);
+		Carp::carp($msg);
 	}
 	return;
 }
@@ -652,17 +772,25 @@ sub _cache_call
 # ── _info_lang ───────────────────────────────────────────────────────────
 # Purpose:      Ask the CGI::Info-style object for the lang= parameter without
 #               letting a broken object (an AUTOLOAD that dies) end the request.
-# Entry:        $info — the info object, or undef.
-# Exit:         The lang value, or undef if there is none or the call died.
+# Entry:        $info — the info object, or undef;
+#               $self — optional object to warn through when the value is bad.
+# Exit:         The validated, untainted lang value, or undef if there is none,
+#               the call died, or the value is not a plausible language list.
 sub _info_lang
 {
-	my $info = shift;
+	my ($info, $self) = @_;
 
 	return undef unless $info;
 	local $@;
 	my $lang;
 	return undef unless eval { local $SIG{__DIE__}; $lang = $info->lang(); 1 };
-	return $lang;
+	return undef unless defined($lang) && length($lang);
+
+	# lang= comes from the query string, so it is as hostile as any header:
+	# same character set and length cap as HTTP_ACCEPT_LANGUAGE
+	return $1 if !ref($lang) && ($lang =~ $ACCEPT_LANG_RE);
+	$self->_warn({ warning => 'lang parameter contains invalid characters; ignoring' }) if ref($self);
+	return undef;
 }
 
 # ── _cache_get_valid ─────────────────────────────────────────────────────
@@ -708,6 +836,7 @@ sub DESTROY {
 		ref($self),
 		$self->{_info},
 	);
+	return unless defined($key);	# REMOTE_ADDR is not a valid address
 	return if $self->_cache_call($cache, 'get', $key);
 
 	$self->_debug("Storing self in cache as $key");
@@ -760,6 +889,19 @@ It never returns C<undef>.
     local $ENV{HTTP_ACCEPT_LANGUAGE} = 'de';
     my $l = CGI::Lingua->new(supported => ['en', 'fr']);
     print $l->language();   # "Unknown"
+
+=head3 MESSAGES
+
+The first call to L</language> (or any other language method) warns, and
+ignores the value, when one of its inputs is not acceptable:
+
+    "lang parameter contains invalid characters; ignoring"
+    "HTTP_ACCEPT_LANGUAGE contains invalid characters; ignoring"
+    "LANG contains invalid characters; ignoring"
+
+It also warns when it changes the deprecated tag C<en-uk> into C<en-gb>:
+
+    "Resetting country code to GB for ..."
 
 =cut
 
@@ -969,7 +1111,8 @@ B<whether or not your site supports it>.
 Use it to tell the visitor that their language is not available.
 
 If the visitor asked for a variant, it is shown in brackets,
-for example C<'English (United Kingdom)'>.
+for example C<'English (United Kingdom)'>. A variant that is not a known
+country code is shown as it was sent, for example C<'English (Unknown: zz)'>.
 
 Returns C<'Unknown'> when the visitor's language cannot be found at all.
 It never returns C<undef>.
@@ -1005,7 +1148,7 @@ sub requested_language {
 	my $self = $_[0];
 
 	$self->_find_language() unless $self->{_rlanguage};
-	# I18N::LangTags::Detect can return undef; the API promises a string
+	# _find_language() can leave it undef; the API promises a string
 	$self->{_rlanguage} //= 'Unknown';
 	return $self->{_rlanguage};
 }
@@ -1057,10 +1200,11 @@ sub _find_language
 			. join(', ', @{$self->{_supported}} // '')
 		);
 
-		# Normalise the deprecated en-uk tag that some browsers send
-		if($http_accept_language eq $DEPRECATED_EN_UK) {
-			$self->_debug("Resetting country code to GB for $http_accept_language");
-			$http_accept_language = $CANONICAL_EN_GB;
+		# Normalise the deprecated en-uk tag that some browsers send, wherever
+		# it is in the list (not only when it is the whole header)
+		my $sent = $http_accept_language;
+		if($http_accept_language =~ s/(?<![A-Za-z0-9-])\Q$DEPRECATED_EN_UK\E(?![A-Za-z0-9-])/$CANONICAL_EN_GB/gi) {
+			$self->_warn({ warning => "Resetting country code to GB for $sent" });
 		}
 
 		# Run the header through the Accept-Language resolver
@@ -1078,19 +1222,6 @@ sub _find_language
 				. ' supported languages are: '
 				. join(',', @{$self->{_supported}})
 			);
-		}
-
-		# Detected slanguage but rlanguage still Unknown — try I18N::LangTags
-		if($self->{_slanguage} && ($self->{_slanguage} ne 'Unknown')) {
-			if($self->{_rlanguage} eq 'Unknown') {
-				$self->{_rlanguage} = I18N::LangTags::Detect::detect();
-			}
-			if($self->{_rlanguage}) {
-				if(my $resolved = $self->_code2language($self->{_rlanguage})) {
-					$self->{_rlanguage} = $resolved;
-				}
-				return;
-			}
 		}
 
 		# Last-chance: 2-char or xx-xx header where we have no match
@@ -1306,60 +1437,12 @@ sub _resolve_sublanguage_match
 
 	my $i18n    = I18N::AcceptLanguage->new(strict => 1);
 	my $accepts = $i18n->accepts($l, $self->{_supported});
-	$self->_debug("accepts = $accepts");
+	$self->_debug('accepts = ', $accepts // 'undef');
 
-	if($accepts) {
-		$self->_debug("accepts: $accepts");
-
-		if($accepts =~ /\-/) {
-			delete $self->{_slanguage};
-		} else {
-			# Cache look-up for the base-language name
-			my $from_cache;
-			if($self->{_cache}) {
-				$from_cache = $self->_cache_get_valid($CACHE_NS . "accepts:$accepts", $NAME_CODE_RE);
-			}
-			my $slanguage;
-			if($from_cache) {
-				$self->_debug("$accepts is in cache as $from_cache");
-				$slanguage = (split(/=/, $from_cache))[0];
-			} else {
-				$slanguage = $self->_code2language($accepts);
-			}
-
-			if($slanguage) {
-				$self->{_slanguage} = $slanguage;
-
-				# Normalise deprecated en-uk variety
-				if($variety eq 'uk') {
-					$self->_warn({ warning => "Resetting country code to GB for $header" });
-					$variety = 'gb';
-				}
-
-				if(defined(my $c = $self->_code2countryname($variety))) {
-					$self->_debug(__PACKAGE__, ': ', __LINE__, ":  setting sublanguage to $c");
-					$self->{_sublanguage} = $c;
-				}
-				$self->{_slanguage_code_alpha2}   = $accepts;
-				$self->{_sublanguage_code_alpha2}  = $variety;
-
-				if($self->{_sublanguage}) {
-					$self->{_rlanguage} = "$self->{_slanguage} ($self->{_sublanguage})";
-					$self->_debug(__PACKAGE__, ': ', __LINE__, ": _rlanguage: $self->{_rlanguage}");
-				}
-
-				unless($from_cache) {
-					$self->_debug("Set $variety to $slanguage=$accepts");
-					$self->_cache_call($self->{_cache}, 'set',
-						$CACHE_NS . "accepts:$variety",
-						"$slanguage=$accepts",
-						$CACHE_TTL_LONG
-					) if $self->{_cache};
-				}
-				return 1;
-			}
-		}
-	}
+	# $l is an entry of the supported list with a hyphen (e.g. 'en-gb'), so a
+	# strict match always gives back that same hyphenated entry.  (An earlier
+	# branch for a hyphen-less answer could never run, and was removed.)
+	delete $self->{_slanguage} if $accepts;
 
 	# Accepts returned something but we couldn't resolve a language name —
 	# try harder using the variety code directly
@@ -1376,11 +1459,6 @@ sub _resolve_sublanguage_match
 	if(($variety =~ /[a-z]{2,3}/) && !defined($self->{_sublanguage})) {
 		$self->_get_closest($alpha2, $alpha2);
 		$self->_debug("Find the country code for $variety");
-
-		if($variety eq 'uk') {
-			$self->_warn({ warning => "Resetting country code to GB for $header" });
-			$variety = 'gb';
-		}
 
 		my ($from_cache, $language_name, $db_error);
 		if($self->{_cache}) {
@@ -1606,7 +1684,7 @@ sub _what_language {
 			return $self->{_what_language};
 		}
 		if(my $info = $self->{_info}) {
-			if(my $rc = _info_lang($info)) {
+			if(my $rc = _info_lang($info, $self)) {
 				$self->_trace("_what_language set language to $rc from the lang argument");
 				return $self->{_what_language} = $rc;
 			}
@@ -1614,8 +1692,10 @@ sub _what_language {
 	}
 
 	if(my $raw_lang = $ENV{'HTTP_ACCEPT_LANGUAGE'}) {
-		# Validate and untaint — RFC 7231 §5.3.5 character set plus * wildcard
-		if($raw_lang =~ /^([A-Za-z0-9\-,;=.*\s]{1,$ACCEPT_LANG_MAX})$/a) {
+		# Validate and untaint — RFC 7231 §5.3.5 character set plus * wildcard.
+		# Spaces and tabs only, not \s: CR and LF would carry header, log-line
+		# and Memcached-command injection into the cache key and messages.
+		if($raw_lang =~ $ACCEPT_LANG_RE) {
 			my $rc = $1;    # untainted
 			if(ref($self)) {
 				return $self->{_what_language} = $rc;
@@ -1657,6 +1737,10 @@ C<REMOTE_ADDR> is not set, is not a valid IP address, or is a private
 In one special case it returns the string C<'Unknown'>:
 when a source says the address is in the European Union (C<EU>),
 which is not a country.
+
+Two answers are corrected: C<hk> (Hong Kong) is returned as C<cn>, and a Whois
+record that says C<US> with the state C<PR> is returned as C<pr> (Puerto Rico
+has its own country code; RT#131347).
 
 See L</Finding the country> for the order in which the sources are tried.
 If you have none of L<IP::Country>, L<Geo::IP> or L<Geo::IPfree> installed,
@@ -1782,12 +1866,8 @@ sub country {
 	return undef unless defined $raw_ip;
 
 	# Validate and untaint the IP address before passing to any geo module
-	my $ip;
-	if($raw_ip =~ /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/a) {
-		$ip = $1;    # untainted IPv4
-	} elsif($raw_ip =~ /^([0-9a-fA-F:]{2,39}|[0-9a-fA-F:]{2,30}:(?:\d{1,3}\.){3}\d{1,3})$/a) {
-		$ip = $1;    # untainted IPv6, including mixed notation (e.g. ::ffff:192.0.2.1)
-	} else {
+	my $ip = _untaint_ip($raw_ip);
+	unless(defined($ip)) {
 		$self->_warn({ warning => "$raw_ip isn't a valid IP address" });
 		return undef;
 	}
@@ -1796,9 +1876,11 @@ sub country {
 	# (NetAddr::IP::UtilPP::mask4to6 bad-argument error).  Try to load it once;
 	# on failure install pure-Perl aliases for the four bare function names used
 	# below so the rest of the function is unchanged on both platforms.
+	# Import only those four: a plain import() installs all 29 of the module's
+	# exports here, where they would become methods of every object.
 	if(!defined($_have_dvip)) {
 		local $SIG{__DIE__};
-		if(eval { require Data::Validate::IP; Data::Validate::IP->import(); 1 }) {
+		if(eval { require Data::Validate::IP; Data::Validate::IP->import(qw(is_ipv4 is_ipv6 is_private_ip is_loopback_ip)); 1 }) {
 			$_have_dvip = 1;
 		} else {
 			$_have_dvip = 0;
@@ -2147,31 +2229,28 @@ sub _load_geoip
 
 	# Check for the database file before even trying to load the module
 	# (avoids noisy errors on Windows — CPANTESTERS report 54117bd0)
-	my $db_present = (
-		(($^O eq 'MSWin32') && (-r 'c:/GeoIP/GeoIP.dat'))
-		|| (-r '/usr/local/share/GeoIP/GeoIP.dat')
-		|| (-r '/usr/share/GeoIP/GeoIP.dat')
-	);
-
-	unless($db_present) {
+	my ($dat) = grep { -f $_ && -r _ } @GEOIP_DAT;
+	unless(defined($dat)) {
 		$self->{_have_geoip} = $GEO_ABSENT;
 		return;
 	}
 
-	eval { require Geo::IP };
-	if($@) {
+	unless(eval { local $SIG{__DIE__}; require Geo::IP; 1 }) {
 		$self->{_have_geoip} = $GEO_ABSENT;
 		return;
 	}
 
-	# No ->import(): Geo::IP->open() and Geo::IP->new() are class methods; import unneeded.
-	$self->{_have_geoip} = $GEO_PRESENT;
-
-	# GEOIP_STANDARD = 0 (can't use the constant name directly)
-	if(-r '/usr/share/GeoIP/GeoIP.dat') {
-		$self->{_geoip} = Geo::IP->open('/usr/share/GeoIP/GeoIP.dat', 0);
+	# No ->import(): Geo::IP->open() is a class method.  GEOIP_STANDARD = 0
+	# (the constant cannot be used by name).  A corrupt or truncated file makes
+	# open() die or return undef; treat that as no database, rather than let
+	# country() call a method on undef later.
+	my $geoip = eval { local $SIG{__DIE__}; Geo::IP->open($dat, 0) };
+	if(Scalar::Util::blessed($geoip)) {
+		$self->{_have_geoip} = $GEO_PRESENT;
+		$self->{_geoip}      = $geoip;
 	} else {
-		$self->{_geoip} = Geo::IP->new(0);
+		$self->_warn({ warning => "Can't open $dat with Geo::IP; not using it" });
+		$self->{_have_geoip} = $GEO_ABSENT;
 	}
 }
 
@@ -2399,12 +2478,8 @@ sub time_zone {
 	if(defined $raw_ip) {
 		# Untaint before any external use — kept in sync with country()'s pattern,
 		# including the mixed-notation branch for ::ffff:a.b.c.d addresses.
-		my $ip;
-		if($raw_ip =~ /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/a) {
-			$ip = $1;
-		} elsif($raw_ip =~ /^([0-9a-fA-F:]{2,39}|[0-9a-fA-F:]{2,30}:(?:\d{1,3}\.){3}\d{1,3})$/a) {
-			$ip = $1;
-		} else {
+		my $ip = _untaint_ip($raw_ip);
+		unless(defined($ip)) {
 			$self->_warn({ warning => "$raw_ip isn't a valid IP address" });
 			return undef;
 		}
@@ -2776,7 +2851,7 @@ my %PLURAL_RULES = (
 sub plural_category
 {
 	my ($self, $n) = @_;
-	croak('plural_category: $n must be defined') unless defined $n;
+	Carp::croak('plural_category: $n must be defined') unless defined $n;
 	my $code = $self->language_code_alpha2() // return 'other';
 	my $rule = $PLURAL_RULES{$code} // sub { int($_[0]) == 1 ? 'one' : 'other' };
 	return $rule->($n);
@@ -3088,7 +3163,7 @@ sub _warn
 		$self->{'logger'}->warn($msg);
 	} else {
 		$self->_log('warn', $msg);
-		carp($msg);
+		Carp::carp($msg);
 	}
 }
 
@@ -3262,6 +3337,11 @@ If C<HTTP_ACCEPT_LANGUAGE> is longer than 256 characters, or contains a
 character that is not allowed (see L</ENCODING>), the whole header is ignored
 with a warning. CGI::Lingua then uses C<LANG> or the IP address instead.
 
+=item * B<The supported list holds tags, not names>
+
+C<< supported => ['english', 'fr'] >> supports only French: C<'english'> is not a
+language tag, so it is dropped (with a warning). Use C<'en'>.
+
 =item * B<Language names are in English>
 
 L</language> returns C<'French'>, not C<'Francais'>, and C<'German'>, not
@@ -3292,10 +3372,13 @@ CGI::Lingua works with ASCII text. This table shows what each input accepts.
 
     Input                   Accepted characters        Non-ASCII / UTF-8 / emoji
     ----------------------  -------------------------  -------------------------
-    supported               language codes, 2-5 chars   no (will not match)
+    supported               language tags (en, en-gb,   no: entry is ignored,
+                            es-419); a plain string     with a warning
+                            must be 2-5 chars
     HTTP_ACCEPT_LANGUAGE    A-Z a-z 0-9 - , ; = . *     no: header is ignored
-                            and space; max 256 chars
-    lang (CGI::Info)        language codes              no (will not match)
+                            space and tab (never CR or
+                            LF); max 256 chars
+    lang (CGI::Info)        as HTTP_ACCEPT_LANGUAGE     no: parameter is ignored
     LANG                    A-Z a-z 0-9 _ . -           no: LANG is ignored
     HTTP_USER_AGENT         printable ASCII             no: user agent ignored
                             (0x20-0x7E), max 512 chars
@@ -3312,6 +3395,34 @@ CGI::Lingua works with ASCII text. This table shows what each input accepts.
 All values that CGI::Lingua returns are plain ASCII: language names
 (C<'French'>), country names (C<'Reunion'>), codes and time zone names.
 You do not need to decode them.
+
+=head1 CONFIGURATION VARIABLES
+
+Two package variables say where CGI::Lingua looks for files on the local
+machine. You do not normally need to change them; tests and unusual
+installations can, with C<local>:
+
+=over 4
+
+=item * C<$CGI::Lingua::ZONE_FILE>
+
+The file that L</time_zone> reads when there is no C<REMOTE_ADDR> (command-line
+use). The default is F</etc/timezone>. Only a readable regular file is used,
+and only its first 256 bytes are read; otherwise L<DateTime::TimeZone> is used.
+
+    local $CGI::Lingua::ZONE_FILE = '/srv/myapp/timezone';
+
+=item * C<@CGI::Lingua::GEOIP_DAT>
+
+The places where L</country> and L</time_zone> look for the legacy MaxMind
+F<GeoIP.dat> used by L<Geo::IP>; the first readable regular file is used. The
+default is F</usr/share/GeoIP/GeoIP.dat> and F</usr/local/share/GeoIP/GeoIP.dat>
+(and F<c:/GeoIP/GeoIP.dat> first, on Windows). A file that L<Geo::IP> cannot
+open is skipped with the warning C<"Can't open ... with Geo::IP; not using it">.
+
+    local @CGI::Lingua::GEOIP_DAT = ('/opt/geo/GeoIP.dat');
+
+=back
 
 =head1 LIMITATIONS
 
@@ -3528,14 +3639,27 @@ You do not need it to use the module.
     ├───────────────────────────────────────────────────────────────
     │ supported? ∈ LANGTAG ⇒ 2 ≤ #supported? ≤ 5
     │ supported' = (if supported? ∈ LANGTAG then ⟨supported?⟩ else supported?)
+    │                 ↾ SUPPORTED_TAGS        -- other entries dropped, with a warning
     │ ipc' = gip' = gipf' = unknown
-    │ (cache? ≠ ⊥ ∧ env?.REMOTE_ADDR ≠ ⊥ ∧ key ∈ dom cache?)
-    │     ⇒ θLingua' = decode(cache?(key)) ⊕ {ipc, gip, gipf ↦ unknown}
+    │ dont_use_ip' = dont_use_ip?             -- never taken from the cache
+    │ let ip == untaint_ip(env?.REMOTE_ADDR); saved == decode(cache?(key(ip))) •
+    │ (cache? ≠ ⊥ ∧ ip ≠ ⊥ ∧ key(ip) ∈ dom cache?
+    │      ∧ (∀ f : dom saved ∩ dom RESTORABLE • saved(f) ∈ RESTORABLE(f)))
+    │     ⇒ (∀ f : dom saved ∩ dom RESTORABLE • θLingua'.f = saved(f))
+    │ (cache? ≠ ⊥ ∧ ip ≠ ⊥ ∧ key(ip) ∈ dom cache?
+    │      ∧ (∃ f : dom saved ∩ dom RESTORABLE • saved(f) ∉ RESTORABLE(f)))
+    │     ⇒ key(ip) ∉ dom cache?'            -- poisoned entry removed, with a warning
     │ otherwise
     │     slanguage' = rlanguage' = country' = locale' = timezone' = ⊥
     └───────────────────────────────────────────────────────────────
 
-    NewError ≙ [ supported? = ⊥ ∨ supported? ∉ LANGTAG ∪ seq LANGTAG ] ⇒ croak
+    RESTORABLE : FIELD ⇸ ℙ seq CHAR
+    RESTORABLE ≙ { slanguage, rlanguage, sublanguage ↦ NAME,
+                   slanguage_code_alpha2, sublanguage_code_alpha2 ↦ LANGCODE,
+                   country ↦ CC2 ∪ {Unknown} }
+
+    NewError ≙ [ supported? = ⊥ ∨ supported? ∉ LANGTAG ∪ seq LANGTAG
+                 ∨ (info? ≠ ⊥ ∧ ¬ can(info?, lang) ∧ ¬ can(info?, AUTOLOAD)) ] ⇒ croak
 
 =head2 language
 
@@ -3784,11 +3908,17 @@ Part 5: the life of the object
       |   no cache entry, or        ^      object goes out of     side effect:
       |   no REMOTE_ADDR            |      scope (DESTROY)        if cache and
       |                             |                             REMOTE_ADDR are
-      +---- cache entry found ------+                             set and no entry
-            (answers restored,                                    exists yet, the
-             geo sentinels reset                                  answers are saved
-             to UNKNOWN)                                          to the cache as
-                                                                  JSON
+      +---- valid cache entry ------+                             set and no entry
+      |     found (the six answer   |                             exists yet, the
+      |     fields restored, each   |                             answers are saved
+      |     checked; geo sentinels  |                             to the cache as
+      |     reset to UNKNOWN)       |                             JSON
+      |                             |
+      +---- malformed cache entry --+
+      |     found (removed, warned;
+      |     answers worked out again)
+      |
+      +---- REMOTE_ADDR not a valid address: the cache is not used
       |
       +---- bad arguments ---> croak (no object)
 

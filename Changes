@@ -1,7 +1,39 @@
 Revision history for CGI-Lingua
 
 0.87
+	[ Incompatible changes ]
+	- Entries of the supported list that are not language tags (e.g.
+	  'english', undef, references) are dropped with a warning; a list entry
+	  'en-uk' becomes 'en-gb', anywhere in Accept-Language too
+	- Accept-Language tags with q=0, or with a q value outside the RFC 7231
+	  range, are never chosen
+	- country(), locale(), time_zone() and translation_file() return a real
+	  undef in list context (one element), not an empty list
+	- translation_file() returns only readable regular files, and refuses an
+	  empty or reference directory argument
+	- requested_language() always returns a string ('Unknown' rather than
+	  undef)
+	- new() croaks "info must be an object with a lang() method" for an info
+	  argument that cannot answer lang()
+	- Cache keys and the saved state have changed; entries written by 0.86
+	  are ignored and rebuilt.  The cache is only used when REMOTE_ADDR is a
+	  valid address
+	- Public methods no longer clear the caller's $@ or $!
+	- Nothing is imported into the CGI::Lingua namespace any more, so
+	  $obj->carp, $obj->croak, $obj->blessed and the 29 Data::Validate::IP
+	  functions ($obj->is_public_ip and so on) are no longer methods
+	- CGI::Info, Class::Load, Sys::Syslog and I18N::LangTags::Detect are no
+	  longer prerequisites (CGI::Info is recommended for the lang= parameter)
 	[ Documentation ]
+	- Documented the en-uk to en-gb rule and its warning, the Puerto Rico
+	  and Hong Kong corrections in country(), and the "English (Unknown: zz)"
+	  form of requested_language()
+	- New CONFIGURATION VARIABLES section: $CGI::Lingua::ZONE_FILE and the new
+	  @CGI::Lingua::GEOIP_DAT; language() now lists its input warnings; the
+	  supported-list rules are in new() and COMMON PITFALLS
+	- FORMAL SPECIFICATION (new) and STATE DIAGRAM brought in line with the
+	  validated cache restore
+	- Post-release roadmap added as TODO comments at the top of the module
 	- country(): note that geoplugin.net no longer has a free tier (as of
 	  October 2026 it returns HTTP 403 with no country code, so the lookup falls
 	  through to Whois), and that legacy GeoIP.dat databases are frozen and can
@@ -12,13 +44,24 @@ Revision history for CGI-Lingua
 	- Every public method now has an API SPECIFICATION with Input and Output
 	  schemas (Params::Validate::Strict / Return::Set format); the POD passes
 	  extract-schemas --strict-pod=fatal
-	- FORMAL SPECIFICATION rewritten as Z schemas and moved below LICENSE AND
-	  COPYRIGHT
+	- FORMAL SPECIFICATION rewritten as Z schemas
 	- Fixed inaccurate POD: new() no longer lists a 'data' argument (it was
 	  never used); LIMITATIONS no longer says that the logger must be a
 	  blessed object; locale() example called a non-existent currency_code()
 	  method; text_direction() example had broken quoting
 	[ Security ]
+	- The lang= parameter from the info object (CGI::Info) was used without
+	  any check: CR/LF, markup and any length reached I18N::AcceptLanguage, the
+	  cache key and log messages.  It now passes the same check as
+	  HTTP_ACCEPT_LANGUAGE, or is ignored with "lang parameter contains invalid
+	  characters; ignoring"
+	- HTTP_ACCEPT_LANGUAGE was checked with \s, which allows CR and LF, so
+	  "en\r\nstats" was accepted; only spaces and tabs are allowed now
+	- Cache keys were built from the raw REMOTE_ADDR, so
+	  "1.2.3.4\r\nflush_all" became part of a key (command injection on the
+	  Memcached text protocol).  Keys now use only the checked address and
+	  language values, and an invalid REMOTE_ADDR means no object caching.
+	  REMOTE_ADDR is checked in one place (_untaint_ip, anchored with \z)
 	- Cache poisoning: values read back from the cache were trusted, so a
 	  shared or world-writable backend could make country() return
 	  "gb<script>...", language() return a hash, or language_code_alpha2()
@@ -39,6 +82,22 @@ Revision history for CGI-Lingua
 	  regular file, checks the zone name, and falls back to
 	  DateTime::TimeZone otherwise (an empty file used to warn and give undef)
 	[ Bug Fixes ]
+	- The deprecated en-uk tag was only rewritten to en-gb when it was the
+	  whole Accept-Language header; "en-uk,fr;q=0.5" gave "English (Unknown:
+	  uk)".  It is now rewritten wherever it appears, with a warning
+	- Makefile.PL: Carp, Scalar::Util and Socket are declared; the local geo
+	  databases, LWP::Simple and CGI::Info are listed as optional features;
+	  the repository URL uses https
+	- Entries of the supported list that are not language tags ("english")
+	  were silently never matched; they are now dropped with "Ignoring '...' in
+	  the supported list: not a language code"
+	- A corrupt GeoIP.dat made Geo::IP->open die or return undef, and
+	  country() then called a method on undef; the file is now skipped with
+	  "Can't open ... with Geo::IP; not using it"
+	- Removed code that could never run: the I18N::LangTags::Detect fallback in
+	  _find_language (I18N::LangTags::Detect is no longer a prerequisite) and
+	  the hyphen-less branch of _resolve_sublanguage_match (with its
+	  mismatched "accepts:" cache keys)
 	- _is_ipv4() accepted non-ASCII digits (e.g. U+0661) and a trailing newline
 	- _is_ipv6() pure-Perl fallback could never return true: it used tr/:://,
 	  which counts colon characters rather than "::" pairs
@@ -100,39 +159,14 @@ Revision history for CGI-Lingua
 	- undef, references or '' inside the supported list made
 	  I18N::AcceptLanguage warn; they are now ignored
 	[ Tests ]
-	- t/pod-spelling.t: added stopwords for technical terms
-	- t/function.t: 60 new subtests covering every helper that had no direct
-	  test, plus hostile input for the public methods; file is now ASCII only
-	- t/unit.t: API ledger of every documented message and return state; the
-	  last subtest fails if any was not produced.  New subtests for is_rtl,
-	  text_direction, plural_category, translation_file, time_zone failures
-	  and global-state ($@, $!, $_, alarm) preservation; file is now ASCII only
-	- t/edge_cases.t: list-context, read-only $_, hostile references,
-	  invalid UTF-8, q-value, REMOTE_ADDR boundary, filesystem (directories,
-	  devices, dangling links, shell-character names, Test::Permissions
-	  drops), zone-file, ENOSPC, cache-poisoning and upstream tests, with a
-	  regression subtest for each bug above; file is now ASCII only
-	- t/data-flow.t: country() and new() must now preserve the caller's $@,
-	  not clear it
-	- t/integration.t: optional-dependency matrix run in child perls with
-	  Test::Without::Module (all 32 combinations of the geo modules, all 8 of
-	  the time_zone modules, plus Data::Validate::IP, Net::Subnet,
-	  DateTime::TimeZone and HTTP::BrowserDetect); filesystem permission drops
-	  with Test::Permissions; upstream sabotage (timeouts, latency, malformed
-	  payloads, Whois and cache outages); three-object concurrency over one
-	  shared cache; file is now ASCII only
-	- t/unit.t, t/integration.t: child perls now run from a script file, not
-	  "perl -e" (Windows mangled the multi-line -e argument); integration
-	  tests for Data::Validate::IP and Net::Subnet no longer need LWP or
-	  JSON::Parse; the alarm() check is skipped where alarm(0) does not report
-	  the time left (Windows)
-	- Use Test::Log::Abstraction
-	- t/country.t: failed with 'gp' instead of 'gb' on machines with Debian's
-	  geoip-database installed, whose frozen GeoIP.dat (2019-12-24) maps
-	  45.128.139.41 to Guadeloupe; the test now bypasses the local geo databases
-	  and checks the online lookup path
-	- Added t/geoip.t: tests country() against a real GeoIP.dat when Geo::IP and
-	  a database are available (standard locations, or GEOIP_DAT=/path)
+	- Much larger suite: white-box tests for every helper, an API ledger that
+	  fails if any documented message or return state is not produced, tests
+	  for every combination of optional modules, hostile-input, filesystem and
+	  upstream-failure tests, with a regression test for each fix above
+	- t/country.t no longer fails on hosts with Debian's frozen GeoIP.dat,
+	  which maps 45.128.139.41 to Guadeloupe; added t/geoip.t
+	- Test requirements now include JSON::Parse, LWP::Simple::WithCache,
+	  CGI::Info, Test::Permissions, Test::More and Test::Mockingbird 0.14
 
 0.86	Mon Oct  5 02:32:02 PM EDT 2026
 	[ Bug Fixes ]

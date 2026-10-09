@@ -91,6 +91,12 @@ my %LEDGER = map { $_ => 1 } (
 	'new: returns CGI::Lingua object',
 	'new: returns copy when called on an object',
 	'new: warn "Cache get failed: ..."',
+	q{new: warn "Ignoring '...' in the supported list: not a language code"},
+	'language: warn "lang parameter contains invalid characters; ignoring"',
+	'language: warn "HTTP_ACCEPT_LANGUAGE contains invalid characters; ignoring"',
+	'language: warn "LANG contains invalid characters; ignoring"',
+	'language: warn "Resetting country code to GB for ..."',
+	q{country: warn "Can't open ... with Geo::IP; not using it"},
 	'new: warn "Discarding malformed cache entry for ..."',
 	# Language accessors
 	'language: returns language name',
@@ -198,13 +204,21 @@ $l->{_have_geoip} = 0;
 print 'RESULT: ', (defined($l->time_zone()) ? 'defined' : 'undef'), "\n";
 CHILD
 
+# Under "cover -test" the parent runs with -MDevel::Cover from
+# HARNESS_PERL_SWITCHES, but a child perl does not; pass the same switch on,
+# so the paths that only run in children (missing optional modules) are
+# counted.  (PERL5OPT, if used instead, is inherited anyway.)
+sub _cover_switches {
+	return grep { /^-MDevel::Cover\b/ } split(/\s+/, $ENV{HARNESS_PERL_SWITCHES} // '');
+}
+
 sub _time_zone_child {
 	my @hidden = @_;
 	require File::Temp;
 	my ($sfh, $script) = File::Temp::tempfile(SUFFIX => '.pl', UNLINK => 1);
 	print {$sfh} $TZ_CHILD;
 	close $sfh;
-	open(my $fh, '-|', $^X, '-Ilib', '-MTest::Without::Module=' . join(',', @hidden), $script)
+	open(my $fh, '-|', $^X, _cover_switches(), '-Ilib', '-MTest::Without::Module=' . join(',', @hidden), $script)
 		or die "Can't run $^X: $!";
 	my $out = do { local $/; <$fh> };
 	close $fh;
@@ -1470,6 +1484,73 @@ subtest 'ledger cache poisoning: hostile entries are discarded' => sub {
 	ok(!defined($cc) || $cc =~ /^[a-z]{2}\z/, 'country(): poisoned value not returned');
 	ok($spy->logged('warn', qr/^Discarding malformed cache entry for \Q$cc_key\E$/), 'country(): exact warning');
 	_hit('country: warn "Discarding malformed cache entry for ..."');
+};
+
+subtest 'ledger input warnings: supported list, lang parameter, header, LANG' => sub {
+	# Strategy: each input the POD lists under new() and language() MESSAGES
+	# is given a value that fails its check; the exact warning must appear and
+	# the value must not be used.
+	{
+		local %ENV = (HTTP_ACCEPT_LANGUAGE => 'fr');
+		my @log;
+		my $l = CGI::Lingua->new(supported => ['english', 'fr'], logger => \@log, dont_use_ip => 1);
+		ok((grep { $_->{message} eq q{Ignoring 'english' in the supported list: not a language code} } @log),
+			'new(): exact warning for a word in the supported list');
+		is_deeply($l->{_supported}, ['fr'], 'the word is dropped, the tag kept');
+		_hit(q{new: warn "Ignoring '...' in the supported list: not a language code"});
+	}
+	{
+		package Unit::HostileInfo;
+		sub new { return bless {}, shift }
+		sub lang { return "fr\r\nX-Evil: 1" }
+	}
+	my %case = (
+		'lang parameter'       => [ { HTTP_ACCEPT_LANGUAGE => 'en' }, info => Unit::HostileInfo->new() ],
+		'HTTP_ACCEPT_LANGUAGE' => [ { HTTP_ACCEPT_LANGUAGE => "en\r\nstats" } ],
+		'LANG'                 => [ { LANG => 'en;rm -rf /' } ],
+	);
+	for my $what (sort keys %case) {
+		my ($env, %args) = @{$case{$what}};
+		local %ENV = %{$env};
+		my ($l, $spy) = _spied(['en', 'fr'], dont_use_ip => 1, %args);
+		my $lang = $l->language();
+		isnt($lang, 'French', "$what: hostile value not used");
+		ok($spy->logged('warn', qr/^\Q$what\E contains invalid characters; ignoring$/), "$what: exact warning");
+		_hit(qq{language: warn "$what contains invalid characters; ignoring"});
+	}
+};
+
+subtest 'ledger language: deprecated en-uk becomes en-gb' => sub {
+	local %ENV = (HTTP_ACCEPT_LANGUAGE => 'en-uk');
+	my ($l, $spy) = _spied(['en-uk'], dont_use_ip => 1);
+	is($l->language(), 'English', 'English');
+	is($l->sublanguage_code_alpha2(), 'gb', 'variant code is gb, not uk');
+	ok($spy->logged('warn', qr/^Resetting country code to GB for en-uk$/), 'exact warning');
+	_hit('language: warn "Resetting country code to GB for ..."');
+};
+
+subtest 'ledger country: unreadable GeoIP.dat is skipped' => sub {
+	my $key = q{country: warn "Can't open ... with Geo::IP; not using it"};
+	unless(eval { require Geo::IP; 1 }) {
+		_cannot_reach($key, 'Geo::IP not installed');
+		plan(skip_all => $SKIPPED{$key});
+	}
+	require File::Temp;
+	my $dir = File::Temp::tempdir(CLEANUP => 1);
+	my $dat = "$dir/GeoIP.dat";
+	open(my $fh, '>', $dat) or die "$dat: $!";
+	print {$fh} 'not a GeoIP database';
+	close $fh;
+	no warnings 'once';
+	local @CGI::Lingua::GEOIP_DAT = ($dat);
+	Test::Mockingbird::mock('Geo::IP', 'open', sub { die "Bad database\n" });
+	local %ENV = (REMOTE_ADDR => $IP{PUBLIC});
+	my ($l, $spy) = _spied(['en']);
+	$l->{_have_ipcountry} = 0;
+	lives_ok { $l->country() } 'country() lives';
+	ok($spy->logged('warn', qr/^Can't open \Q$dat\E with Geo::IP; not using it$/), 'exact warning');
+	_hit($key);
+	_unmock_all();
 };
 
 subtest 'API ledger: every documented state was produced' => sub {

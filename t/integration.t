@@ -862,7 +862,7 @@ sub _child {
 	my %probe = map { $_ => 1 } (@{$cfg->{probe} || []}, @{$CFG{geo_modules}}, @{$CFG{tz_modules}});
 	local $ENV{CGI_LINGUA_CHILD} = JSON::PP::encode_json({ %{$cfg}, probe => [ sort keys %probe ] });
 	my @hide = @{$hidden} ? ('-MTest::Without::Module=' . join(',', @{$hidden})) : ();
-	open(my $fh, '-|', $^X, '-Ilib', @hide, _child_script()) or die "Can't run $^X: $!";
+	open(my $fh, '-|', $^X, _cover_switches(), '-Ilib', @hide, _child_script()) or die "Can't run $^X: $!";
 	my $out = do { local $/; <$fh> } // '';
 	close $fh;
 	diag("child [@hide]: $out") if $ENV{TEST_VERBOSE};
@@ -870,6 +870,14 @@ sub _child {
 	return JSON::PP::decode_json($json) if $json;
 	# An empty error string would read as success; always say something
 	return { error => length($out) ? $out : 'child printed nothing' };
+}
+
+# Under "cover -test" the parent runs with -MDevel::Cover from
+# HARNESS_PERL_SWITCHES, but a child perl does not; pass the same switch on,
+# so the paths that only run in children (missing optional modules) are
+# counted.  (PERL5OPT, if used instead, is inherited anyway.)
+sub _cover_switches {
+	return grep { /^-MDevel::Cover\b/ } split(/\s+/, $ENV{HARNESS_PERL_SWITCHES} // '');
 }
 
 # The child runs from a file, written once: Windows mangles a multi-line

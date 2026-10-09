@@ -16,7 +16,7 @@ CGI::Lingua - Create a multilingual web page
 
 ## Version
 
-Version 0.86
+Version 0.87
 
 ## Synopsis
 
@@ -166,6 +166,9 @@ to ["new"](#new) with `info`.
 The web server sets this from the browser's `Accept-Language` header,
 for example `fr-CA,fr;q=0.9,en;q=0.8`.
 Languages with a higher `q` value are tried first.
+A language with `q=0` means "not acceptable" (RFC 7231) and is never chosen.
+Some browsers still send the old tag `en-uk`; it is treated as `en-gb`
+(the code for the United Kingdom is `gb`), with a warning.
 - 3. The `LANG` environment variable.
 This is used when you run the program on the command line,
 for example `LANG=fr_FR.UTF-8`.
@@ -226,14 +229,21 @@ The arguments are:
 - `supported` (required)
 
     The languages your website supports: one short code (a string of 2 to 5
-    characters) or a reference to an array of short codes.
+    characters) or a reference to an array of language tags.
     `supported_languages` is another name for the same argument.
+
+    Each entry in the array must look like a language tag: two or three letters,
+    optionally followed by subtags, such as `'en'`, `'en-gb'`, `'en_gb'`,
+    `'es-419'` or `'zh-Hant'`. Other entries (`undef`, references, `''`, or
+    words such as `'english'`) could never match, so they are dropped with the
+    warning `"Ignoring '...' in the supported list: not a language code"`.
+    An empty list is allowed; ["language"](#language) then always returns `'Unknown'`.
 
 - `cache` (optional)
 
     An object with `get()`, `set()` and `remove()` methods, such as a [CHI](https://metacpan.org/pod/CHI) object.
     CGI::Lingua stores its answers here so that later requests are faster.
-    If a call to the cache dies (for example a full disk, an unreachable server,
+    If a call to the cache dies (for example a full disc, an unreachable server,
     or a [CHI](https://metacpan.org/pod/CHI) object created with `on_get_error => 'die'`), CGI::Lingua
     warns `"Cache get failed: ..."` (or `set` / `remove`) and carries on as if
     the value was not cached. Any method that uses the cache can give this warning.
@@ -263,7 +273,9 @@ The arguments are:
 
     A [CGI::Info](https://metacpan.org/pod/CGI%3A%3AInfo) object (or any object with a `lang()` method).
     A `lang` parameter in the request is then used before the browser's
-    settings.
+    settings. The parameter comes from the visitor, so it is checked like the
+    `Accept-Language` header (see ["ENCODING"](#encoding)); a value that fails is ignored with
+    the warning `"lang parameter contains invalid characters; ignoring"`.
 
 - `dont_use_ip` (optional, default false)
 
@@ -348,11 +360,15 @@ my $l = CGI::Lingua->new({
     - logger is an object that is missing one of these methods
 "CGI::Lingua use ->new() not ::new() to instantiate"
     - new() was called as a function, with arguments
+"info must be an object with a lang() method"
+    - info is not an object, or has neither lang() nor AUTOLOAD
 ```
 
 It warns, and carries on, with:
 
 ```
+"Ignoring '...' in the supported list: not a language code"
+    - an entry of the supported list is not a language tag
 "Cache get failed: ..."
     - the cache died while looking up saved answers
 "Discarding malformed cache entry for ..."
@@ -414,6 +430,23 @@ print $l->language();   # "French"
 local $ENV{HTTP_ACCEPT_LANGUAGE} = 'de';
 my $l = CGI::Lingua->new(supported => ['en', 'fr']);
 print $l->language();   # "Unknown"
+```
+
+#### Messages
+
+The first call to ["language"](#language) (or any other language method) warns, and
+ignores the value, when one of its inputs is not acceptable:
+
+```
+"lang parameter contains invalid characters; ignoring"
+"HTTP_ACCEPT_LANGUAGE contains invalid characters; ignoring"
+"LANG contains invalid characters; ignoring"
+```
+
+It also warns when it changes the deprecated tag `en-uk` into `en-gb`:
+
+```
+"Resetting country code to GB for ..."
 ```
 
 ### Preferred\_Language
@@ -592,7 +625,8 @@ Returns, in English, the language that the visitor asked for,
 Use it to tell the visitor that their language is not available.
 
 If the visitor asked for a variant, it is shown in brackets,
-for example `'English (United Kingdom)'`.
+for example `'English (United Kingdom)'`. A variant that is not a known
+country code is shown as it was sent, for example `'English (Unknown: zz)'`.
 
 Returns `'Unknown'` when the visitor's language cannot be found at all.
 It never returns `undef`.
@@ -640,6 +674,10 @@ Returns `undef` when the country cannot be found, for example when
 In one special case it returns the string `'Unknown'`:
 when a source says the address is in the European Union (`EU`),
 which is not a country.
+
+Two answers are corrected: `hk` (Hong Kong) is returned as `cn`, and a Whois
+record that says `US` with the state `PR` is returned as `pr` (Puerto Rico
+has its own country code; RT#131347).
 
 See ["Finding the country"](#finding-the-country) for the order in which the sources are tried.
 If you have none of [IP::Country](https://metacpan.org/pod/IP%3A%3ACountry), [Geo::IP](https://metacpan.org/pod/Geo%3A%3AIP) or [Geo::IPfree](https://metacpan.org/pod/Geo%3A%3AIPfree) installed,
@@ -1166,6 +1204,11 @@ These are warnings. `translation_file()` does not die.
     character that is not allowed (see ["ENCODING"](#encoding)), the whole header is ignored
     with a warning. CGI::Lingua then uses `LANG` or the IP address instead.
 
+- **The supported list holds tags, not names**
+
+    `supported => ['english', 'fr']` supports only French: `'english'` is not a
+    language tag, so it is dropped (with a warning). Use `'en'`.
+
 - **Language names are in English**
 
     ["language"](#language) returns `'French'`, not `'Francais'`, and `'German'`, not
@@ -1195,10 +1238,13 @@ CGI::Lingua works with ASCII text. This table shows what each input accepts.
 ```
 Input                   Accepted characters        Non-ASCII / UTF-8 / emoji
 ----------------------  -------------------------  -------------------------
-supported               language codes, 2-5 chars   no (will not match)
+supported               language tags (en, en-gb,   no: entry is ignored,
+                        es-419); a plain string     with a warning
+                        must be 2-5 chars
 HTTP_ACCEPT_LANGUAGE    A-Z a-z 0-9 - , ; = . *     no: header is ignored
-                        and space; max 256 chars
-lang (CGI::Info)        language codes              no (will not match)
+                        space and tab (never CR or
+                        LF); max 256 chars
+lang (CGI::Info)        as HTTP_ACCEPT_LANGUAGE     no: parameter is ignored
 LANG                    A-Z a-z 0-9 _ . -           no: LANG is ignored
 HTTP_USER_AGENT         printable ASCII             no: user agent ignored
                         (0x20-0x7E), max 512 chars
@@ -1216,6 +1262,34 @@ plural_category $n      a number                    not applicable
 All values that CGI::Lingua returns are plain ASCII: language names
 (`'French'`), country names (`'Reunion'`), codes and time zone names.
 You do not need to decode them.
+
+## Configuration Variables
+
+Two package variables say where CGI::Lingua looks for files on the local
+machine. You do not normally need to change them; tests and unusual
+installations can, with `local`:
+
+- `$CGI::Lingua::ZONE_FILE`
+
+    The file that ["time\_zone"](#time_zone) reads when there is no `REMOTE_ADDR` (command-line
+    use). The default is `/etc/timezone`. Only a readable regular file is used,
+    and only its first 256 bytes are read; otherwise [DateTime::TimeZone](https://metacpan.org/pod/DateTime%3A%3ATimeZone) is used.
+
+    ```
+    local $CGI::Lingua::ZONE_FILE = '/srv/myapp/timezone';
+    ```
+
+- `@CGI::Lingua::GEOIP_DAT`
+
+    The places where ["country"](#country) and ["time\_zone"](#time_zone) look for the legacy MaxMind
+    `GeoIP.dat` used by [Geo::IP](https://metacpan.org/pod/Geo%3A%3AIP); the first readable regular file is used. The
+    default is `/usr/share/GeoIP/GeoIP.dat` and `/usr/local/share/GeoIP/GeoIP.dat`
+    (and `c:/GeoIP/GeoIP.dat` first, on Windows). A file that [Geo::IP](https://metacpan.org/pod/Geo%3A%3AIP) cannot
+    open is skipped with the warning `"Can't open ... with Geo::IP; not using it"`.
+
+    ```
+    local @CGI::Lingua::GEOIP_DAT = ('/opt/geo/GeoIP.dat');
+    ```
 
 ## Limitations
 
@@ -1418,14 +1492,27 @@ EnsureResolved ≙ (Resolve ∨ (ΞLingua ∧ slanguage ≠ ⊥))
 ├───────────────────────────────────────────────────────────────
 │ supported? ∈ LANGTAG ⇒ 2 ≤ #supported? ≤ 5
 │ supported' = (if supported? ∈ LANGTAG then ⟨supported?⟩ else supported?)
+│                 ↾ SUPPORTED_TAGS        -- other entries dropped, with a warning
 │ ipc' = gip' = gipf' = unknown
-│ (cache? ≠ ⊥ ∧ env?.REMOTE_ADDR ≠ ⊥ ∧ key ∈ dom cache?)
-│     ⇒ θLingua' = decode(cache?(key)) ⊕ {ipc, gip, gipf ↦ unknown}
+│ dont_use_ip' = dont_use_ip?             -- never taken from the cache
+│ let ip == untaint_ip(env?.REMOTE_ADDR); saved == decode(cache?(key(ip))) •
+│ (cache? ≠ ⊥ ∧ ip ≠ ⊥ ∧ key(ip) ∈ dom cache?
+│      ∧ (∀ f : dom saved ∩ dom RESTORABLE • saved(f) ∈ RESTORABLE(f)))
+│     ⇒ (∀ f : dom saved ∩ dom RESTORABLE • θLingua'.f = saved(f))
+│ (cache? ≠ ⊥ ∧ ip ≠ ⊥ ∧ key(ip) ∈ dom cache?
+│      ∧ (∃ f : dom saved ∩ dom RESTORABLE • saved(f) ∉ RESTORABLE(f)))
+│     ⇒ key(ip) ∉ dom cache?'            -- poisoned entry removed, with a warning
 │ otherwise
 │     slanguage' = rlanguage' = country' = locale' = timezone' = ⊥
 └───────────────────────────────────────────────────────────────
 
-NewError ≙ [ supported? = ⊥ ∨ supported? ∉ LANGTAG ∪ seq LANGTAG ] ⇒ croak
+RESTORABLE : FIELD ⇸ ℙ seq CHAR
+RESTORABLE ≙ { slanguage, rlanguage, sublanguage ↦ NAME,
+               slanguage_code_alpha2, sublanguage_code_alpha2 ↦ LANGCODE,
+               country ↦ CC2 ∪ {Unknown} }
+
+NewError ≙ [ supported? = ⊥ ∨ supported? ∉ LANGTAG ∪ seq LANGTAG
+             ∨ (info? ≠ ⊥ ∧ ¬ can(info?, lang) ∧ ¬ can(info?, AUTOLOAD)) ] ⇒ croak
 ```
 
 ### Language
@@ -1708,11 +1795,17 @@ new() ----------------------> ALIVE ----------------------> DESTROYED
   |   no cache entry, or        ^      object goes out of     side effect:
   |   no REMOTE_ADDR            |      scope (DESTROY)        if cache and
   |                             |                             REMOTE_ADDR are
-  +---- cache entry found ------+                             set and no entry
-        (answers restored,                                    exists yet, the
-         geo sentinels reset                                  answers are saved
-         to UNKNOWN)                                          to the cache as
-                                                              JSON
+  +---- valid cache entry ------+                             set and no entry
+  |     found (the six answer   |                             exists yet, the
+  |     fields restored, each   |                             answers are saved
+  |     checked; geo sentinels  |                             to the cache as
+  |     reset to UNKNOWN)       |                             JSON
+  |                             |
+  +---- malformed cache entry --+
+  |     found (removed, warned;
+  |     answers worked out again)
+  |
+  +---- REMOTE_ADDR not a valid address: the cache is not used
   |
   +---- bad arguments ---> croak (no object)
 

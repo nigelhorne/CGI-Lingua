@@ -37,9 +37,7 @@ RT79214: {
 		ok(defined($l->requested_language()));
 		is($l->language(), 'Unknown');
 
-		TODO: {
-			local $TODO = 'https://rt.cpan.org/Public/Bug/Display.html?id=79214';
-			ok(!defined($l->code_alpha2()));
-		}
+		# RT#79214, fixed: this used to be TODO
+		ok(!defined($l->code_alpha2()));
 	}
 }

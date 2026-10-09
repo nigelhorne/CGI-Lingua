@@ -872,11 +872,11 @@ subtest '_warn: without logger appends to messages and carps' => sub {
 	my $l = _basic_obj();
 	$l->{logger} = undef;    # force the Carp::carp code path
 	my @carp_msgs;
-	# carp is now imported into CGI::Lingua at compile time (use Carp qw(carp)),
-	# so we must mock CGI::Lingua::carp - mocking Carp::carp would miss it.
-	Test::Mockingbird::mock('CGI::Lingua', 'carp', sub { push @carp_msgs, $_[0] });
+	# CGI::Lingua calls Carp::carp by its full name (nothing is imported), so
+	# Carp::carp is what to mock
+	Test::Mockingbird::mock('Carp', 'carp', sub { push @carp_msgs, $_[0] });
 	$l->_warn({ warning => 'carp test' });
-	ok((grep { /carp test/ } @carp_msgs), 'CGI::Lingua::carp called with message text');
+	ok((grep { /carp test/ } @carp_msgs), 'Carp::carp called with message text');
 	ok((grep { $_->{message} =~ /carp test/ } @{$l->{messages}}), 'Message recorded internally');
 	Test::Mockingbird::restore_all();
 };
@@ -1640,16 +1640,23 @@ subtest '_resolve_sublanguage_match: cached variety name is used' => sub {
 	diag(explain({ map { $_ => $l->{$_} } grep { /^_[sr]/ } keys %{$l} })) if $ENV{TEST_VERBOSE};
 };
 
-subtest '_resolve_sublanguage_match: deprecated en-uk is mapped to gb with a warning' => sub {
-	local %ENV = ();
-	my $cache = _fresh_cache();
-	$cache->set("${CACHE_NS}variety:gb", 'United Kingdom=en');
-	my $l = CGI::Lingua->new(supported => ['en-uk'], cache => $cache);
-	my $spy = Spy::Logger->new();
-	$l->{logger} = $spy;
-	$l->_resolve_sublanguage_match('en-uk', 'en', 'uk', 'en-uk');
-	is($l->{_sublanguage_code_alpha2}, 'gb', 'uk replaced by gb');
-	ok((grep { /Resetting country code to GB/ } $spy->messages('warn')), 'warning logged');
+subtest 'new / _find_language: deprecated en-uk is treated as en-gb' => sub {
+	# The rule is applied where the tag enters: in the supported list (new)
+	# and anywhere in the header (_find_language), not only when the header
+	# is exactly "en-uk".  The caller's own array must not be rewritten.
+	my @log;
+	my $supported = ['en-uk', 'fr'];
+	my $l = CGI::Lingua->new(supported => $supported, logger => \@log);
+	is_deeply($l->{_supported}, ['en-gb', 'fr'], 'supported entry rewritten in the object');
+	is_deeply($supported, ['en-uk', 'fr'], "caller's array unchanged");
+	ok((grep { $_->{message} eq 'Resetting country code to GB for en-uk' } @log), 'new(): warned');
+
+	local %ENV = (HTTP_ACCEPT_LANGUAGE => 'fr;q=0.1, en-UK');
+	my ($m, $spy) = _spied_obj(dont_use_ip => 1);
+	$m->{_supported} = ['en-gb'];
+	$m->_find_language();
+	is($m->{_sublanguage_code_alpha2}, 'gb', 'header tag inside a list is rewritten');
+	ok((grep { /^Resetting country code to GB for fr;q=0\.1,\s*en-UK$/ } $spy->messages('warn')), '_find_language(): warned');
 };
 
 subtest '_resolve_sublanguage_match: poisoned cache entry is not trusted' => sub {
@@ -2056,6 +2063,85 @@ subtest 'objects are freed after use (no leaks, no cycles)' => sub {
 		_reset_mocks();
 	}
 	ok(!defined($weak), 'object destroyed when it goes out of scope');
+};
+
+# -- _load_geoip with a database, and missing modules --------------------------
+
+# A require that fails for $file even if the module is already loaded:
+# remove it from %INC for the block and refuse it from the front of @INC.
+sub _hide_module_for {
+	my ($file, $code) = @_;
+	delete local $INC{$file};
+	local @INC = (sub { die "hidden by the test\n" if $_[1] eq $file; return }, @INC);
+	return $code->();
+}
+
+subtest '_load_geoip: first readable GeoIP.dat in @GEOIP_DAT is opened' => sub {
+	plan(skip_all => 'Geo::IP not installed') unless eval { require Geo::IP; 1 };
+	my $dir = File::Temp::tempdir(CLEANUP => 1);
+	my $dat = "$dir/GeoIP.dat";
+	open(my $fh, '>', $dat) or die "$dat: $!";
+	close $fh;
+	no warnings 'once';
+	local @CGI::Lingua::GEOIP_DAT = ("$dir/missing.dat", $dir, $dat);	# missing, a directory, then the file
+
+	my @opened;
+	Test::Mockingbird::mock('Geo::IP', 'open', sub { push @opened, [ @_[1, 2] ]; bless {}, 'Geo::IP' });
+	my $l = _basic_obj();
+	$l->_load_geoip();
+	is($l->{_have_geoip}, $GEO_PRESENT, 'sentinel set to GEO_PRESENT');
+	isa_ok($l->{_geoip}, 'Geo::IP', 'handle stored');
+	is_deeply(\@opened, [ [ $dat, 0 ] ], 'only the readable regular file is opened, in standard mode');
+	_reset_mocks();
+};
+
+subtest '_load_geoip: a corrupt database is not used' => sub {
+	# Geo::IP->open dies or returns undef on a truncated file; country() must
+	# not later call a method on undef
+	plan(skip_all => 'Geo::IP not installed') unless eval { require Geo::IP; 1 };
+	my $dir = File::Temp::tempdir(CLEANUP => 1);
+	my $dat = "$dir/GeoIP.dat";
+	open(my $fh, '>', $dat) or die "$dat: $!";
+	close $fh;
+	no warnings 'once';
+	local @CGI::Lingua::GEOIP_DAT = ($dat);
+	for my $failure (sub { die "Bad database\n" }, sub { undef }) {
+		Test::Mockingbird::mock('Geo::IP', 'open', $failure);
+		my ($l, $spy) = _spied_obj();
+		lives_ok { $l->_load_geoip() } 'lives';
+		is($l->{_have_geoip}, $GEO_ABSENT, 'treated as no database');
+		ok((grep { /^Can't open \Q$dat\E with Geo::IP; not using it$/ } $spy->messages('warn')), 'reported');
+		_reset_mocks();
+	}
+};
+
+subtest '_load_geoip: database present but Geo::IP missing' => sub {
+	my $dir = File::Temp::tempdir(CLEANUP => 1);
+	my $dat = "$dir/GeoIP.dat";
+	open(my $fh, '>', $dat) or die "$dat: $!";
+	close $fh;
+	no warnings 'once';
+	local @CGI::Lingua::GEOIP_DAT = ($dat);
+	my $l = _basic_obj();
+	_hide_module_for('Geo/IP.pm', sub { $l->_load_geoip() });
+	is($l->{_have_geoip}, $GEO_ABSENT, 'sentinel set to GEO_ABSENT');
+};
+
+subtest 'time_zone: falls back to LWP::Simple without LWP::Simple::WithCache' => sub {
+	plan(skip_all => 'LWP::Simple or JSON::Parse not installed')
+		unless eval { require LWP::Simple; require JSON::Parse; 1 };
+	local %ENV = (REMOTE_ADDR => $CFG{public_v4});
+	my @urls;
+	{
+		local $SIG{__WARN__} = sub { };	# LWP::Simple::get has a prototype
+		Test::Mockingbird::mock('LWP::Simple', 'get', sub { push @urls, $_[0]; '{"timezone":"Asia/Tokyo"}' });
+	}
+	my $l = _basic_obj();
+	$l->{_have_geoip} = $GEO_ABSENT;
+	my $tz = _hide_module_for('LWP/Simple/WithCache.pm', sub { $l->time_zone() });
+	is($tz, 'Asia/Tokyo', 'zone from LWP::Simple');
+	is_deeply(\@urls, ["http://ip-api.com/json/$CFG{public_v4}"], 'ip-api.com asked about the visitor');
+	_reset_mocks();
 };
 
 done_testing();
