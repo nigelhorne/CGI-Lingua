@@ -15,6 +15,7 @@ use strict;
 use warnings;
 
 use CHI;
+use File::Spec;
 use Readonly;
 use Scalar::Util qw(blessed);
 use Test::Most;
@@ -86,9 +87,11 @@ my %LEDGER = map { $_ => 1 } (
 	'new: croak "Supported languages must be the short code"',
 	'new: croak "Logger must be a blessed object with warn/info/error methods"',
 	'new: croak "CGI::Lingua use ->new() not ::new() to instantiate"',
+	'new: croak "info must be an object with a lang() method"',
 	'new: returns CGI::Lingua object',
 	'new: returns copy when called on an object',
 	'new: warn "Cache get failed: ..."',
+	'new: warn "Discarding malformed cache entry for ..."',
 	# Language accessors
 	'language: returns language name',
 	"language: returns 'Unknown'",
@@ -118,6 +121,7 @@ my %LEDGER = map { $_ => 1 } (
 	'country: warn "Cache get failed: ..."',
 	'country: warn "Cache set failed: ..."',
 	'country: warn "Cache remove failed: ..."',
+	'country: warn "Discarding malformed cache entry for ..."',
 	'country: returns lower-case code',
 	'country: returns undef',
 	"country: returns 'Unknown' for EU",
@@ -960,6 +964,10 @@ subtest 'ledger new: every croak message, exactly' => sub {
 
 	throws_ok { CGI::Lingua::new(undef, { supported => ['en'], logger => \@quiet }) } $CFG{function_call}, 'called as a function';
 	_hit('new: croak "CGI::Lingua use ->new() not ::new() to instantiate"');
+
+	throws_ok { CGI::Lingua->new(supported => ['en'], info => bless({}, 'Unit::NoLang')) }
+		qr/^info must be an object with a lang\(\) method at /, 'info without lang()';
+	_hit('new: croak "info must be an object with a lang() method"');
 };
 
 subtest 'ledger new: object and copy' => sub {
@@ -1206,14 +1214,17 @@ subtest 'ledger time_zone: invalid REMOTE_ADDR' => sub {
 };
 
 subtest 'ledger time_zone: DateTime::TimeZone::Local fails' => sub {
-	# Reached only when there is no REMOTE_ADDR and /etc/timezone cannot be
-	# read; the open() is CORE::open, so the file cannot be mocked away.
+	# Reached when there is no REMOTE_ADDR and the zone file cannot be used;
+	# $CGI::Lingua::ZONE_FILE points at a file that does not exist, so this
+	# runs even on hosts that have an /etc/timezone.
 	my $key = 'time_zone: warn "DateTime::TimeZone::Local failed: ..."';
-	if(-r '/etc/timezone' || !$HAS_DTZ) {
-		_cannot_reach($key, -r '/etc/timezone' ? '/etc/timezone is readable' : 'DateTime::TimeZone not installed');
+	unless($HAS_DTZ) {
+		_cannot_reach($key, 'DateTime::TimeZone not installed');
 		plan(skip_all => $SKIPPED{$key});
 	}
 	local %ENV = ();
+	no warnings 'once';
+	local $CGI::Lingua::ZONE_FILE = File::Spec->catfile(File::Spec->tmpdir(), "no-such-zone-file-$$");
 	Test::Mockingbird::mock('DateTime::TimeZone::Local', 'TimeZone', sub { die "no zone here\n" });
 	my ($l, $spy) = _spied(['en']);
 	ok(!defined($l->time_zone()), 'undef');
@@ -1435,6 +1446,30 @@ subtest 'ledger time_zone: JSON::Parse missing is named in the warning' => sub {
 	like($out, qr/^WARN: JSON::Parse is absent; cannot read ip-api\.com answers /m, 'exact warning');
 	unlike($out, qr/both absent/, 'does not wrongly blame LWP');
 	_hit($key);
+};
+
+subtest 'ledger cache poisoning: hostile entries are discarded' => sub {
+	# Strategy: write entries that CGI::Lingua itself would never write and
+	# check that each is reported, removed and not returned.
+	local %ENV = (REMOTE_ADDR => $IP{PUBLIC}, HTTP_ACCEPT_LANGUAGE => 'en');
+	my $cache = CHI->new(driver => 'Memory', global => 0);
+	my $blob_key = "$IP{PUBLIC}/en/en";
+	$cache->set($blob_key, JSON::PP::encode_json({ _slanguage => '<script>' }));
+	my @log;
+	my $l = CGI::Lingua->new(supported => ['en'], cache => $cache, logger => \@log);
+	ok((grep { $_->{message} =~ /^Discarding malformed cache entry for \Q$blob_key\E$/ } @log), 'new(): exact warning');
+	ok(!defined($cache->get($blob_key)), 'new(): entry removed');
+	is($l->language(), 'English', 'new(): language worked out again');
+	_hit('new: warn "Discarding malformed cache entry for ..."');
+
+	my $cc_key = "CGI::Lingua:country:$IP{PUBLIC}";
+	$cache->set($cc_key, 'gb<script>');
+	my ($m, $spy) = _spied(['en'], cache => $cache);
+	_web_only($m);
+	my $cc = $m->country();
+	ok(!defined($cc) || $cc =~ /^[a-z]{2}\z/, 'country(): poisoned value not returned');
+	ok($spy->logged('warn', qr/^Discarding malformed cache entry for \Q$cc_key\E$/), 'country(): exact warning');
+	_hit('country: warn "Discarding malformed cache entry for ..."');
 };
 
 subtest 'API ledger: every documented state was produced' => sub {

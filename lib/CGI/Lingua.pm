@@ -35,6 +35,35 @@ Readonly my $GEO_UNKNOWN         => -1;               # geo-module sentinel: not
 Readonly my $GEO_ABSENT          =>  0;               # geo-module sentinel: unavailable
 Readonly my $GEO_PRESENT         =>  1;               # geo-module sentinel: loaded OK
 
+# Shapes of the values CGI::Lingua keeps in the cache.  Anything read back
+# that does not match is treated as poisoned and discarded.  Language and
+# country names from Locale::Language, Locale::Codes and Locale::Object use
+# only these characters (e.g. "Cote D'Ivoire", "Modern Greek (1453-)",
+# "Falkland Islands (The) [Malvinas]"); none of them use < > " & ; / =.
+Readonly my $NAME_RE      => qr/^[A-Za-z][A-Za-z0-9 ,.:'()\[\]\-]{0,99}\z/a;	# ":" for "English (Unknown: zz)"
+Readonly my $NAME_CODE_RE => qr/^[A-Za-z][A-Za-z0-9 ,.'()\[\]\-]{0,99}=[a-z]{2,3}\z/a;
+Readonly my $LANG_CODE_RE => qr/^[a-z]{2,3}\z/a;
+Readonly my $COUNTRY_RE   => qr/^(?:[a-z]{2}|Unknown)\z/a;
+
+# Fields that DESTROY saves and new() restores, with the shape each must have
+# time_zone(): IANA zone names (e.g. "America/New_York", "Etc/GMT+8", "UTC")
+Readonly my $ZONE_RE       => qr/^[A-Za-z][A-Za-z0-9_+\-\/]{0,50}\z/a;
+Readonly my $ZONE_FILE_MAX => 256;	# bytes read from $ZONE_FILE; a zone name is far shorter
+
+# File holding the system time zone, read by time_zone() when there is no
+# REMOTE_ADDR.  A package variable (not Readonly) so tests can point it at a
+# hostile file with "local $CGI::Lingua::ZONE_FILE = ...".
+our $ZONE_FILE = '/etc/timezone';
+
+Readonly my %RESTORABLE => (
+	_slanguage               => $NAME_RE,
+	_rlanguage               => $NAME_RE,
+	_sublanguage             => $NAME_RE,
+	_slanguage_code_alpha2   => $LANG_CODE_RE,
+	_sublanguage_code_alpha2 => $LANG_CODE_RE,
+	_country                 => $COUNTRY_RE,
+);
+
 # Package-level sentinel for Locale::Object's SQLite database.  undef = not yet
 # probed; 0 = database absent (Windows installers often omit it); 1 = available.
 # Package-level (not per-object) because the database either exists on the
@@ -215,6 +244,7 @@ to L</new> with C<info>.
 The web server sets this from the browser's C<Accept-Language> header,
 for example C<fr-CA,fr;q=0.9,en;q=0.8>.
 Languages with a higher C<q> value are tried first.
+A language with C<q=0> means "not acceptable" (RFC 7231) and is never chosen.
 
 =item 3. The C<LANG> environment variable.
 This is used when you run the program on the command line,
@@ -294,10 +324,17 @@ C<supported_languages> is another name for the same argument.
 
 An object with C<get()>, C<set()> and C<remove()> methods, such as a L<CHI> object.
 CGI::Lingua stores its answers here so that later requests are faster.
-If a call to the cache dies (for example a full disk, an unreachable server,
+If a call to the cache dies (for example a full disc, an unreachable server,
 or a L<CHI> object created with C<< on_get_error =E<gt> 'die' >>), CGI::Lingua
 warns C<"Cache get failed: ..."> (or C<set> / C<remove>) and carries on as if
 the value was not cached. Any method that uses the cache can give this warning.
+
+Everything read back from the cache is checked before it is used, because a
+cache can be shared with, or written by, other programs. A value that does not
+have the shape CGI::Lingua stores (for example C<< gb<script> >> as a country, or
+a hash where a language name should be) is removed and warned about with
+C<"Discarding malformed cache entry for ...">, and the answer is worked out
+again.
 
 =item * C<config_file> (optional)
 
@@ -397,11 +434,15 @@ C<new()> dies (with L<Carp/croak>) with one of these messages:
         - logger is an object that is missing one of these methods
     "CGI::Lingua use ->new() not ::new() to instantiate"
         - new() was called as a function, with arguments
+    "info must be an object with a lang() method"
+        - info is not an object, or has neither lang() nor AUTOLOAD
 
 It warns, and carries on, with:
 
     "Cache get failed: ..."
         - the cache died while looking up saved answers
+    "Discarding malformed cache entry for ..."
+        - the saved answers were not in the shape CGI::Lingua writes
 
 =head3 PSEUDOCODE
 
@@ -476,44 +517,19 @@ sub new
 	my $cache = $params->{cache};
 	my $info  = $params->{info};
 
-	# Try to restore a frozen state from the cache before doing any work
-	if($cache && $ENV{'REMOTE_ADDR'}) {
-		my $key = _build_cache_key($ENV{'REMOTE_ADDR'}, $params, $class, $info);
-		if(my $frozen = _cache_call($params, $cache, 'get', $key)) {
-			# JSON::PP is used in preference to Storable::thaw because Storable
-			# can execute arbitrary Perl code via STORABLE_thaw hooks if an
-			# attacker manages to write a crafted blob to the cache backend.
-			# JSON cannot execute code regardless of its content.
-			# If the blob is not valid JSON (e.g. a legacy Storable entry), the
-			# eval catches the error and we fall through to fresh construction.
-			my $rc = do { local $@; eval { local $SIG{__DIE__}; JSON::PP::decode_json($frozen) } };
-			unless(defined $rc && ref($rc) eq 'HASH') {
-				$rc = undef;    # stale or corrupt entry — rebuild below
-			}
-			if(defined $rc) {
-				bless $rc, $class;
-				# Re-inject transient/non-serialisable fields
-				$rc->{logger}           = $params->{'logger'};
-			$rc->{_syslog}          = $params->{syslog};
-			$rc->{_cache}           = $cache;
-			$rc->{_supported}       = $params->{supported};
-			$rc->{_info}            = $info;
-			$rc->{_have_ipcountry}  = $GEO_UNKNOWN;
-			$rc->{_have_geoip}      = $GEO_UNKNOWN;
-			$rc->{_have_geoipfree}  = $GEO_UNKNOWN;
-
-			# If lang= CGI param is active, the cached language choice may be stale
-				if(($rc->{_what_language} || $rc->{_rlanguage}) && $info && $info->lang()) {
-					delete @{$rc}{qw(_what_language _rlanguage _country)};
-				}
-				return $rc;
-			}
-		}
+	# info is asked for lang() on every request.  CGI::Info provides lang()
+	# through AUTOLOAD, so can('lang') alone is not enough of a test.
+	if(defined($info) && !(blessed($info) && ($info->can('lang') || $info->can('AUTOLOAD')))) {
+		croak('info must be an object with a lang() method');
 	}
 
-	return bless {
+	my $self = bless {
 		%{$params},
-		_supported => ref($params->{supported}) ? $params->{supported} : [ $params->{'supported'} ],
+		# Only non-empty plain strings can be language codes; undef, references
+		# (including a list that contains itself) and '' would only make
+		# I18N::AcceptLanguage warn
+		_supported       => [ grep { defined($_) && !ref($_) && length($_) }
+			ref($params->{supported}) ? @{$params->{supported}} : ($params->{'supported'}) ],
 		_cache           => $cache,
 		_info            => $info,
 		_syslog          => $params->{syslog},
@@ -523,8 +539,47 @@ sub new
 		_have_geoipfree  => $GEO_UNKNOWN,
 		_debug           => $params->{debug} || 0,
 	}, $class;
-}
 
+	# Try to restore the answers saved by DESTROY for this visitor.  Only the
+	# fields in %RESTORABLE are taken from the cache, each checked against
+	# its pattern: the cache can be written by others (world-writable /tmp,
+	# unauthenticated Redis), so a hostile entry must not set the logger,
+	# the supported list, dont_use_ip, or an HTML/path payload as a language.
+	if($cache && $ENV{'REMOTE_ADDR'}) {
+		my $key = _build_cache_key($ENV{'REMOTE_ADDR'}, $params, $class, $info);
+		if(my $frozen = _cache_call($params, $cache, 'get', $key)) {
+			# JSON::PP rather than Storable::thaw: Storable can run code via
+			# STORABLE_thaw hooks in a crafted blob; JSON cannot.  A blob that
+			# is not JSON (e.g. a legacy Storable entry) is quietly rebuilt.
+			my $rc = do { local $@; eval { local $SIG{__DIE__}; JSON::PP::decode_json($frozen) } };
+			if(ref($rc) eq 'HASH') {
+				my @bad = grep {
+					defined($rc->{$_}) && (ref($rc->{$_}) || ($rc->{$_} !~ $RESTORABLE{$_}))
+				} sort keys %RESTORABLE;
+				if(@bad) {
+					my $msg = "Discarding malformed cache entry for $key";
+					if(blessed($params->{'logger'}) && $params->{'logger'}->can('warn')) {
+						$params->{'logger'}->warn($msg);
+					} else {
+						carp($msg);
+					}
+					_cache_call($params, $cache, 'remove', $key);
+				} else {
+					$self->{$_} = $rc->{$_} for grep { defined $rc->{$_} } keys %RESTORABLE;
+
+					# A lang= CGI parameter overrides the browser, so the
+					# cached language choice may be stale: work it out again
+					if(_info_lang($info)) {
+						delete @{$self}{qw(_slanguage _rlanguage _sublanguage
+							_slanguage_code_alpha2 _sublanguage_code_alpha2)};
+					}
+				}
+			}
+		}
+	}
+
+	return $self;
+}
 # ── _build_cache_key ──────────────────────────────────────────────────────────
 # Purpose:      Produce a deterministic string key for the per-request cache
 #               entry stored in new() and DESTROY().
@@ -542,7 +597,7 @@ sub _build_cache_key
 	# Include the requested language (if determinable) so different
 	# Accept-Language values get distinct cache slots for the same IP.
 	my $l;
-	if($info && ($l = $info->lang())) {
+	if(defined($l = _info_lang($info)) && length($l)) {
 		$key .= "$l/";
 	} elsif($l = $class->_what_language()) {
 		$key .= "$l/";
@@ -565,7 +620,7 @@ sub _build_cache_key
 # ── _cache_call ──────────────────────────────────────────────────────────
 # Purpose:      Call get/set/remove on the caller-supplied cache without
 #               letting a cache failure take down the request.  The cache only
-#               saves time, so a broken backend (full disk, unreachable Redis,
+#               saves time, so a broken backend (full disc, unreachable Redis,
 #               CHI with on_get_error => 'die') must degrade to "not cached".
 # Entry:        $self   — a CGI::Lingua object, or new()'s params hashref
 #                         (used only to find a logger);
@@ -591,6 +646,44 @@ sub _cache_call
 	} else {
 		carp($msg);
 	}
+	return;
+}
+
+# ── _info_lang ───────────────────────────────────────────────────────────
+# Purpose:      Ask the CGI::Info-style object for the lang= parameter without
+#               letting a broken object (an AUTOLOAD that dies) end the request.
+# Entry:        $info — the info object, or undef.
+# Exit:         The lang value, or undef if there is none or the call died.
+sub _info_lang
+{
+	my $info = shift;
+
+	return undef unless $info;
+	local $@;
+	my $lang;
+	return undef unless eval { local $SIG{__DIE__}; $lang = $info->lang(); 1 };
+	return $lang;
+}
+
+# ── _cache_get_valid ─────────────────────────────────────────────────────
+# Purpose:      Read a value from the cache and use it only if it has the
+#               shape CGI::Lingua itself stores.  The cache may be shared or
+#               writable by others; a poisoned entry ("<script>", a hashref,
+#               "../../etc") must never become a language or country.
+# Entry:        $key — full cache key; $re — the pattern the value must match.
+# Exit:         The value, or undef on a miss or a malformed value.
+# Side Effects: A malformed value is removed and "Discarding malformed cache
+#               entry for <key>" is warned (the value itself is not logged:
+#               it is attacker-controlled).
+sub _cache_get_valid
+{
+	my ($self, $key, $re) = @_;
+
+	my $value = $self->_cache_call($self->{_cache}, 'get', $key);
+	return $value if !defined($value) || (!ref($value) && ($value =~ $re));
+
+	$self->_warn({ warning => "Discarding malformed cache entry for $key" });
+	$self->_cache_call($self->{_cache}, 'remove', $key);
 	return;
 }
 
@@ -623,17 +716,9 @@ sub DESTROY {
 	# geo-module objects (they are re-initialised on next construction).
 	# JSON::PP is used instead of Storable so that a compromised cache backend
 	# cannot deliver a blob that executes code via STORABLE_thaw hooks.
-	my %state = (
-		_slanguage               => $self->{_slanguage},
-		_slanguage_code_alpha2   => $self->{_slanguage_code_alpha2},
-		_sublanguage_code_alpha2 => $self->{_sublanguage_code_alpha2},
-		_country                 => $self->{_country},
-		_rlanguage               => $self->{_rlanguage},
-		_dont_use_ip             => $self->{_dont_use_ip},
-		_have_ipcountry          => $self->{_have_ipcountry},
-		_have_geoip              => $self->{_have_geoip},
-		_have_geoipfree          => $self->{_have_geoipfree},
-	);
+	# Only the fields new() will accept back (see %RESTORABLE).  _sublanguage
+	# used to be left out, so sublanguage() was undef after a restore.
+	my %state = map { $_ => $self->{$_} } keys %RESTORABLE;
 
 	$self->_cache_call($cache, 'set', $key, JSON::PP::encode_json(\%state), $CACHE_TTL_LONG);
 }
@@ -945,6 +1030,26 @@ sub _find_language
 	$self->{_slanguage} = 'Unknown';
 
 	my $http_accept_language = $self->_what_language();
+
+	# RFC 7231 section 5.3.1: q=0 means "not acceptable", so drop those tags
+	# before matching, or "fr;q=0, en;q=0.5" would choose French.  A q value
+	# outside the RFC grammar (0 to 1, at most three decimals: "q=abc",
+	# "q=1e309", "q=-1") makes the tag malformed, so drop it too, rather than
+	# let I18N::AcceptLanguage guess and warn.
+	if(defined($http_accept_language) && ($http_accept_language =~ /;\s*q\s*=/i)) {
+		my @acceptable;
+		for my $tag (split(/\s*,\s*/, $http_accept_language)) {
+			if($tag =~ /;\s*q\s*=\s*(\S*?)\s*\z/i) {
+				my $q = $1;
+				next unless $q =~ /^(?:0(?:\.[0-9]{0,3})?|1(?:\.0{0,3})?)\z/;
+				next if $q == 0;
+			}
+			push @acceptable, $tag;
+		}
+		$http_accept_language = @acceptable ? join(',', @acceptable) : undef;
+		$self->_debug('Accept-Language after dropping unacceptable tags: ', $http_accept_language // '(none)');
+	}
+
 	if(defined($http_accept_language)) {
 		$self->_debug(
 			"language wanted: $http_accept_language, "
@@ -1212,7 +1317,7 @@ sub _resolve_sublanguage_match
 			# Cache look-up for the base-language name
 			my $from_cache;
 			if($self->{_cache}) {
-				$from_cache = $self->_cache_call($self->{_cache}, 'get', $CACHE_NS . "accepts:$accepts");
+				$from_cache = $self->_cache_get_valid($CACHE_NS . "accepts:$accepts", $NAME_CODE_RE);
 			}
 			my $slanguage;
 			if($from_cache) {
@@ -1279,7 +1384,7 @@ sub _resolve_sublanguage_match
 
 		my ($from_cache, $language_name, $db_error);
 		if($self->{_cache}) {
-			$from_cache = $self->_cache_call($self->{_cache}, 'get', $CACHE_NS . "variety:$variety");
+			$from_cache = $self->_cache_get_valid($CACHE_NS . "variety:$variety", $NAME_CODE_RE);
 		}
 
 		if(defined($from_cache)) {
@@ -1380,7 +1485,7 @@ sub _find_language_from_ip
 
 	my ($language_name, $language_code2, $from_cache);
 	if($self->{_cache}) {
-		$from_cache = $self->_cache_call($self->{_cache}, 'get', $CACHE_NS . 'language_name:' . $country);
+		$from_cache = $self->_cache_get_valid($CACHE_NS . 'language_name:' . $country, $NAME_CODE_RE);
 	}
 
 	if($from_cache) {
@@ -1501,7 +1606,7 @@ sub _what_language {
 			return $self->{_what_language};
 		}
 		if(my $info = $self->{_info}) {
-			if(my $rc = $info->lang()) {
+			if(my $rc = _info_lang($info)) {
 				$self->_trace("_what_language set language to $rc from the lang argument");
 				return $self->{_what_language} = $rc;
 			}
@@ -1609,6 +1714,7 @@ These are warnings. C<country()> does not die.
     "Discarding malformed country code '...'"
     "geoplugin lookup failed: ..."
     "Cache get failed: ...", "Cache set failed: ...", "Cache remove failed: ..."
+    "Discarding malformed cache entry for ..."
 
 These are debug messages, sent only to the logger:
 
@@ -1673,7 +1779,7 @@ sub country {
 	}
 
 	my $raw_ip = $ENV{'REMOTE_ADDR'};
-	return unless defined $raw_ip;
+	return undef unless defined $raw_ip;
 
 	# Validate and untaint the IP address before passing to any geo module
 	my $ip;
@@ -1683,7 +1789,7 @@ sub country {
 		$ip = $1;    # untainted IPv6, including mixed notation (e.g. ::ffff:192.0.2.1)
 	} else {
 		$self->_warn({ warning => "$raw_ip isn't a valid IP address" });
-		return;
+		return undef;
 	}
 
 	# Data::Validate::IP depends on NetAddr::IP, which fails to build on Windows
@@ -1715,28 +1821,34 @@ sub country {
 			# turning 999.999.999.999 into a real routable address.
 			unless(is_ipv4($ip)) {
 				$self->_warn({ warning => "$ip isn't a valid IP address" });
-				return;
+				return undef;
 			}
 		} elsif(!is_ipv6($ip)) {
 			$self->_warn({ warning => "$ip isn't a valid IP address" });
-			return;
+			return undef;
 		}
 	}
 	if(is_private_ip($ip)) {
 		$self->_debug("Can't determine country from LAN connection $ip");
-		return;
+		return undef;
 	}
 	if(is_loopback_ip($ip)) {
 		$self->_debug("Can't determine country from loopback connection $ip");
-		return;
+		return undef;
 	}
 
 	# Cache look-up — skip for LAN/loopback (already returned above)
 	if($self->{_cache}) {
 		$self->{_country} = $self->_cache_call($self->{_cache}, 'get', $CACHE_NS . "country:$ip");
 		if(defined($self->{_country})) {
-			if($self->{_country} !~ /\D/) {
+			if(!ref($self->{_country}) && ($self->{_country} !~ /\D/)) {
 				$self->_warn({ warning => 'cache contains a numeric country: ' . $self->{_country} });
+				$self->_cache_call($self->{_cache}, 'remove', $CACHE_NS . "country:$ip");
+				delete $self->{_country};
+			} elsif(ref($self->{_country}) || ($self->{_country} !~ $COUNTRY_RE)) {
+				# Poisoned entry ("gb<script>", a hashref): same checks as a
+				# fresh look-up, or the cache would bypass them
+				$self->_warn({ warning => "Discarding malformed cache entry for ${CACHE_NS}country:$ip" });
 				$self->_cache_call($self->{_cache}, 'remove', $CACHE_NS . "country:$ip");
 				delete $self->{_country};
 			} else {
@@ -2203,7 +2315,7 @@ sub locale {
 			}
 		}
 	}
-	return;
+	return undef;
 }
 
 =head2 time_zone
@@ -2294,7 +2406,7 @@ sub time_zone {
 			$ip = $1;
 		} else {
 			$self->_warn({ warning => "$raw_ip isn't a valid IP address" });
-			return;
+			return undef;
 		}
 
 		if($self->{_have_geoip} == $GEO_UNKNOWN) {
@@ -2336,9 +2448,7 @@ sub time_zone {
 		}
 	} else {
 		# Local connection — read from /etc/timezone or DateTime::TimeZone
-		if(CORE::open(my $fin, '<', '/etc/timezone')) {
-			my $tz = <$fin>;
-			chomp $tz;
+		if(defined(my $tz = $self->_read_zone_file())) {
 			$self->{_timezone} = $tz;
 		} else {
 			# DateTime::TimeZone::Local::TimeZone() is not available on all
@@ -2358,8 +2468,8 @@ sub time_zone {
 	# responses while accepting all real IANA zone names (e.g. "America/New_York",
 	# "Etc/GMT+8", "UTC").
 	if(defined($self->{_timezone}) &&
-	   $self->{_timezone} !~ /^[A-Za-z][A-Za-z0-9_+\-\/]{0,50}$/) {
-		$self->_warn({ warning => "Discarding malformed timezone '$self->{_timezone}'" });
+	   (ref($self->{_timezone}) || ($self->{_timezone} !~ $ZONE_RE))) {
+		$self->_warn({ warning => "Discarding malformed timezone '" . _printable($self->{_timezone}) . "'" });
 		delete $self->{_timezone};
 	}
 
@@ -2367,6 +2477,35 @@ sub time_zone {
 		$self->_warn({ warning => "Couldn't determine the timezone" });
 	}
 	return $self->{_timezone};
+}
+
+# ── _read_zone_file ──────────────────────────────────────────────────────
+# Purpose:      Read the system time zone name from $ZONE_FILE (normally
+#               /etc/timezone) for command-line use.
+# Entry:        none.
+# Exit:         The zone name, or undef if the file is missing, unreadable,
+#               not a regular file, empty, or does not hold a zone name.
+# Notes:        Only a regular file is opened, and at most $ZONE_FILE_MAX bytes
+#               are read: a symlink to /dev/zero or /dev/urandom, or a huge
+#               file, must not hang the request or exhaust memory.  CORE::
+#               calls bypass autodie, so a failure returns undef, not a die.
+sub _read_zone_file
+{
+	my $self = shift;
+
+	return undef unless -f $ZONE_FILE && -r _;
+	CORE::open(my $fin, '<', $ZONE_FILE) or return undef;
+	my $got = CORE::read($fin, my $buf, $ZONE_FILE_MAX);
+	CORE::close($fin);
+	return undef unless $got;
+
+	# First word of the file; surrounding spaces and newlines are not part of it
+	my ($zone) = $buf =~ /\A\s*(\S+)/;
+	unless(defined($zone) && ($zone =~ $ZONE_RE)) {
+		$self->_debug("$ZONE_FILE does not hold a time zone name");
+		return undef;
+	}
+	return $zone;
 }
 
 =head2 is_rtl
@@ -2648,7 +2787,8 @@ sub plural_category
 Finds the translation file for the chosen language in the directory C<$dir>,
 and returns its path.
 
-It tries these file names, in order, and returns the first one that exists:
+It tries these file names, in order, and returns the first one that is a
+readable regular file:
 
 =over 4
 
@@ -2661,11 +2801,14 @@ It tries these file names, in order, and returns the first one that exists:
 C<$ext> is the file extension. It is C<'json'> if you do not give it.
 You can write it with or without the dot (C<'po'> or C<'.po'>).
 
-Returns C<undef> when no file exists, when no language was found,
+Returns C<undef> when no such file exists, when no language was found,
 when C<$dir> is C<undef>, or when C<$dir> or C<$ext> is unsafe (see below).
+A directory, a device (such as F</dev/urandom>), a broken symbolic link or a
+file you cannot read is never returned, even if it has the right name.
 
-For safety, C<$dir> must not contain C<..> or a null byte, and C<$ext> may only
-contain letters, digits and C<->.
+For safety, C<$dir> must be a non-empty string (not a reference) without
+C<..> or a null byte, and C<$ext> may only contain letters, digits and C<->.
+Control characters in a rejected value are shown as C<\xNN> in the warning.
 
 =head3 API SPECIFICATION
 
@@ -2708,40 +2851,60 @@ These are warnings. C<translation_file()> does not die.
 sub translation_file
 {
 	my ($self, $dir, $ext) = @_;
-	local $!;	# a failed -e test sets $!
-	return unless defined $dir;
+	local $!;	# a failed file test sets $!
+	return undef unless defined $dir;
 
 	# Reject traversal attempts in the directory argument.  A real translation
-	# directory never needs '..', null bytes, or other shell metacharacters.
-	# The caller is responsible for not passing user-controlled data as $dir,
-	# but we guard here as a defence-in-depth measure.
-	if($dir =~ /\.\./ || $dir =~ /\x00/) {
-		$self->_warn({ warning => "translation_file: unsafe directory '$dir' rejected" });
-		return;
+	# directory never needs '..' or null bytes; an empty name would mean "/",
+	# and a reference would be used as the string "ARRAY(0x...)".
+	if(ref($dir) || !length($dir) || $dir =~ /\.\./ || $dir =~ /\x00/) {
+		$self->_warn({ warning => "translation_file: unsafe directory '" . _printable($dir) . "' rejected" });
+		return undef;
 	}
 
 	$ext //= 'json';
 	$ext =~ s/^\.//;    # accept '.json' or 'json'
 
-	# Reject extensions containing path-traversal sequences or shell metacharacters.
-	# Valid extensions are word characters and hyphens only (e.g. 'json', 'po', 'yml').
-	unless($ext =~ /^[A-Za-z0-9\-]+$/) {
-		$self->_warn({ warning => "translation_file: unsafe extension '$ext' rejected" });
-		return;
+	# Valid extensions are letters, digits and hyphens only (e.g. 'json', 'po',
+	# 'yml'); \z, not $, so "json\n" is refused too
+	unless($ext =~ /^[A-Za-z0-9\-]+\z/) {
+		$self->_warn({ warning => "translation_file: unsafe extension '" . _printable($ext) . "' rejected" });
+		return undef;
 	}
 
+	# The codes become part of a path, so check their shape even though they
+	# come from the negotiated language
+	my $lang = $self->language_code_alpha2();
+	return undef unless defined($lang) && ($lang =~ $LANG_CODE_RE);
 	my @candidates;
-	if(my $sub = $self->sublanguage_code_alpha2()) {
-		push @candidates, $self->language_code_alpha2() . '-' . $sub;
+	if(defined(my $sub = $self->sublanguage_code_alpha2())) {
+		push @candidates, "$lang-$sub" if $sub =~ $LANG_CODE_RE;
 	}
-	push @candidates, $self->language_code_alpha2()
-		if defined $self->language_code_alpha2();
+	push @candidates, $lang;
 
+	# A translation file must be a readable regular file: a directory, a
+	# device such as /dev/urandom, a dangling symlink or an unreadable file
+	# named en.json is not one, and handing it back would only fail later
 	for my $code (@candidates) {
 		my $path = "$dir/$code.$ext";
-		return $path if -e $path;
+		return $path if -f $path && -r _;
 	}
-	return;
+	return undef;
+}
+
+# ── _printable ────────────────────────────────────────────────────────────
+# Purpose:      Make a caller-supplied value safe to put in a log message:
+#               control and non-ASCII characters (newlines that would forge
+#               log lines, NULs, terminal escapes) become \xNN.
+# Entry:        $value — any scalar; a reference is shown as its type.
+# Exit:         A printable ASCII string.
+sub _printable
+{
+	my $value = shift;
+	return 'undef' unless defined($value);
+	return ref($value) . ' reference' if ref($value);
+	$value =~ s/([^\x20-\x7e])/sprintf('\\x%02x', ord($1))/ge;
+	return $value;
 }
 
 # ── _code2language ────────────────────────────────────────────────────────
@@ -2765,7 +2928,7 @@ sub _code2language
 		return Locale::Language::code2language($code);
 	}
 
-	if(my $from_cache = $self->_cache_call($self->{_cache}, 'get', $CACHE_NS . "code2language:$code")) {
+	if(my $from_cache = $self->_cache_get_valid($CACHE_NS . "code2language:$code", $NAME_RE)) {
 		$self->_trace("_code2language found in cache $from_cache");
 		return $from_cache;
 	}
@@ -2855,7 +3018,7 @@ sub _code2countryname
 		return $self->_country_short_name($code);
 	}
 
-	if(my $from_cache = $self->_cache_call($self->{_cache}, 'get', $CACHE_NS . "code2countryname:$code")) {
+	if(my $from_cache = $self->_cache_get_valid($CACHE_NS . "code2countryname:$code", $NAME_RE)) {
 		$self->_trace("_code2countryname found in cache $from_cache");
 		return $from_cache;
 	}
@@ -3057,6 +3220,12 @@ so C<if($l-E<gt>language())> is always true.
     plural_category()         'other'
 
 Always test with C<eq 'Unknown'> or C<defined()>, as the table shows.
+
+C<undef> really is one value, even in list context, so it is safe to build a
+hash from the results:
+
+    my %vars = (country => $l->country(), zone => $l->time_zone());
+    # $vars{zone} is the time zone even when country() is undef
 
 =item * B<plural_category() returns 'other' when there is no language>
 
@@ -3515,11 +3684,11 @@ You do not need it to use the module.
     │ EnsureResolved
     │ dir? : PATH ∪ {⊥}
     │ ext? : seq CHAR ∪ {⊥}
-    │ files : ℙ PATH                       -- files that exist
+    │ files : ℙ PATH                       -- readable regular files
     │ result! : PATH ∪ {⊥}
     ├───────────────────────────────────────────────────────────────
     │ e == (if ext? = ⊥ then "json" else strip_dot(ext?))
-    │ (dir? = ⊥ ∨ ".." ⊆ dir? ∨ NUL ∈ ran dir?
+    │ (dir? = ⊥ ∨ dir? = ⟨⟩ ∨ ".." ⊆ dir? ∨ NUL ∈ ran dir?
     │     ∨ ¬ (ran e ⊆ ALNUM ∪ {'-'})) ⇒ result! = ⊥
     │ otherwise
     │   cands == ⟨ code2' ⁀ "-" ⁀ subcode2' | subcode2' ≠ ⊥ ⟩ ⁀ ⟨ code2' | code2' ≠ ⊥ ⟩

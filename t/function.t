@@ -1768,9 +1768,8 @@ subtest '_find_language_from_ip: unknown country or no official language' => sub
 	}
 };
 
-subtest '_find_language_from_ip: poisoned cache without REMOTE_ADDR' => sub {
-	# A cache value with no "=code" part forces the slow path, whose warning
-	# interpolated an undef REMOTE_ADDR when the country came from LANG.
+subtest '_find_language_from_ip: poisoned cache entry is discarded' => sub {
+	# A value without the "name=code" shape DESTROY writes must not be used
 	local %ENV = (LANG => 'xx');
 	my $cache = _fresh_cache();
 	$cache->set("${CACHE_NS}language_name:xx", 'garbage');
@@ -1778,8 +1777,27 @@ subtest '_find_language_from_ip: poisoned cache without REMOTE_ADDR' => sub {
 	Test::Mockingbird::mock('CGI::Lingua', 'country', sub { undef });
 	my @w = _warnings_from { $l->_find_language_from_ip(undef) };
 	is(scalar(@w), 0, 'no Perl warnings') or diag(explain(\@w));
-	ok((grep { /Can't determine code/ } $spy->messages('warn')), 'problem reported through the logger');
+	ok((grep { /^Discarding malformed cache entry for \Q${CACHE_NS}\Elanguage_name:xx$/ } $spy->messages('warn')),
+		'poisoned entry reported through the logger');
+	ok(!defined($cache->get("${CACHE_NS}language_name:xx")), 'and removed from the cache');
 	ok(!$l->{_slanguage}, 'no language chosen from garbage');
+	_reset_mocks();
+};
+
+subtest '_find_language_from_ip: unmappable language without REMOTE_ADDR' => sub {
+	# Regression: the "Can't determine code from IP" warning interpolated an
+	# undef REMOTE_ADDR when the country came from LANG (command-line use).
+	# A header is given so the slow language2code() path is taken, and the
+	# official language name maps to no code.
+	local %ENV = (LANG => 'xx');
+	my ($l, $spy) = _spied_obj();
+	Test::Mockingbird::mock('CGI::Lingua', 'country', sub { undef });
+	Test::Mockingbird::mock('CGI::Lingua', '_code2country', sub { _country_speaking('Nolanguage', undef) });
+	my @w = _warnings_from { $l->_find_language_from_ip('zz') };
+	is(scalar(@w), 0, 'no Perl warnings') or diag(explain(\@w));
+	ok((grep { /^Can't determine code from IP \(none\) for requested language Nolanguage$/ } $spy->messages('warn')),
+		'problem reported through the logger');
+	ok(!$l->{_slanguage}, 'no language chosen');
 	_reset_mocks();
 };
 

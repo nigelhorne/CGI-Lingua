@@ -233,6 +233,17 @@ The arguments are:
 
     An object with `get()`, `set()` and `remove()` methods, such as a [CHI](https://metacpan.org/pod/CHI) object.
     CGI::Lingua stores its answers here so that later requests are faster.
+    If a call to the cache dies (for example a full disk, an unreachable server,
+    or a [CHI](https://metacpan.org/pod/CHI) object created with `on_get_error => 'die'`), CGI::Lingua
+    warns `"Cache get failed: ..."` (or `set` / `remove`) and carries on as if
+    the value was not cached. Any method that uses the cache can give this warning.
+
+    Everything read back from the cache is checked before it is used, because a
+    cache can be shared with, or written by, other programs. A value that does not
+    have the shape CGI::Lingua stores (for example `gb<script>` as a country, or
+    a hash where a language name should be) is removed and warned about with
+    `"Discarding malformed cache entry for ..."`, and the answer is worked out
+    again.
 
 - `config_file` (optional)
 
@@ -337,6 +348,15 @@ my $l = CGI::Lingua->new({
     - logger is an object that is missing one of these methods
 "CGI::Lingua use ->new() not ::new() to instantiate"
     - new() was called as a function, with arguments
+```
+
+It warns, and carries on, with:
+
+```
+"Cache get failed: ..."
+    - the cache died while looking up saved answers
+"Discarding malformed cache entry for ..."
+    - the saved answers were not in the shape CGI::Lingua writes
 ```
 
 #### Pseudocode
@@ -575,8 +595,7 @@ If the visitor asked for a variant, it is shown in brackets,
 for example `'English (United Kingdom)'`.
 
 Returns `'Unknown'` when the visitor's language cannot be found at all.
-In rare cases (an unusual header that I18N::LangTags cannot read) it can
-return `undef`.
+It never returns `undef`.
 
 #### Api Specification
 
@@ -590,9 +609,8 @@ return `undef`.
 
 ```perl
 {
-    type     => 'string',
-    min      => 1,
-    optional => 1,
+    type => 'string',
+    min  => 1,
 }
 ```
 
@@ -684,6 +702,9 @@ These are warnings. `country()` does not die.
 "IP matches to a numeric country"
 "geoplugin returned unparseable JSON: ..."
 "Discarding malformed country code '...'"
+"geoplugin lookup failed: ..."
+"Cache get failed: ...", "Cache set failed: ...", "Cache remove failed: ..."
+"Discarding malformed cache entry for ..."
 ```
 
 These are debug messages, sent only to the logger:
@@ -697,8 +718,8 @@ These are debug messages, sent only to the logger:
 
 ```
 1. Return the remembered answer if there is one
-2. Check GEOIP_COUNTRY_CODE env var (mod_geoip); validate /^[A-Z]{2}$/
-3. Check HTTP_CF_IPCOUNTRY (Cloudflare); skip 'XX'; validate /^[A-Z]{2}$/
+2. Check GEOIP_COUNTRY_CODE env var (mod_geoip); validate /^[A-Z]{2}\z/
+3. Check HTTP_CF_IPCOUNTRY (Cloudflare); skip 'XX'; validate /^[A-Z]{2}\z/
 4. Untaint and validate REMOTE_ADDR; return undef if absent or invalid;
    change ::ffff:a.b.c.d into a.b.c.d
 5. Skip private and loopback IPs (return undef)
@@ -825,9 +846,11 @@ These are warnings. `time_zone()` does not die.
 "Couldn't determine the timezone"
 "X.X.X.X isn't a valid IP address"
 "LWP::Simple::WithCache and LWP::Simple are both absent; cannot contact ip-api.com"
+"JSON::Parse is absent; cannot read ip-api.com answers"
 "ip-api.com returned unparseable JSON: ..."
 "DateTime::TimeZone::Local failed: ..."
 "Discarding malformed timezone '...'"
+"ip-api.com lookup failed: ..."
 ```
 
 #### Pseudocode
@@ -839,7 +862,8 @@ These are warnings. `time_zone()` does not die.
    b. Try Geo::IP->time_zone() (local DB)
    c. Try LWP::Simple::WithCache + JSON::Parse against ip-api.com
    d. Fall back to LWP::Simple + JSON::Parse against ip-api.com
-   e. Warn and return undef if neither LWP variant is installed
+   e. Warn and return undef if neither LWP variant, or JSON::Parse,
+      is installed (the warning names the missing module)
 3. If REMOTE_ADDR is absent (local/CLI mode):
    a. Read /etc/timezone if readable
    b. Fall back to DateTime::TimeZone::Local->TimeZone()->name()
@@ -979,7 +1003,8 @@ print $l->plural_category(11);   # "many"
 Finds the translation file for the chosen language in the directory `$dir`,
 and returns its path.
 
-It tries these file names, in order, and returns the first one that exists:
+It tries these file names, in order, and returns the first one that is a
+readable regular file:
 
 - 1. `$dir/$lang-$sublang.$ext`  (for example `en-gb.json`)
 - 2. `$dir/$lang.$ext`           (for example `en.json`)
@@ -987,11 +1012,14 @@ It tries these file names, in order, and returns the first one that exists:
 `$ext` is the file extension. It is `'json'` if you do not give it.
 You can write it with or without the dot (`'po'` or `'.po'`).
 
-Returns `undef` when no file exists, when no language was found,
+Returns `undef` when no such file exists, when no language was found,
 when `$dir` is `undef`, or when `$dir` or `$ext` is unsafe (see below).
+A directory, a device (such as `/dev/urandom`), a broken symbolic link or a
+file you cannot read is never returned, even if it has the right name.
 
-For safety, `$dir` must not contain `..` or a null byte, and `$ext` may only
-contain letters, digits and `-`.
+For safety, `$dir` must be a non-empty string (not a reference) without
+`..` or a null byte, and `$ext` may only contain letters, digits and `-`.
+Control characters in a rejected value are shown as `\xNN` in the warning.
 
 #### Api Specification
 
@@ -1078,7 +1106,7 @@ These are warnings. `translation_file()` does not die.
     Method                    When it does not know
     ------------------------  -----------------------------
     language()                'Unknown'  (never undef)
-    requested_language()      'Unknown'  (undef in rare cases)
+    requested_language()      'Unknown'  (never undef)
     sublanguage()             undef
     language_code_alpha2()    undef
     sublanguage_code_alpha2() undef
@@ -1092,6 +1120,14 @@ These are warnings. `translation_file()` does not die.
     ```
 
     Always test with `eq 'Unknown'` or `defined()`, as the table shows.
+
+    `undef` really is one value, even in list context, so it is safe to build a
+    hash from the results:
+
+    ```perl
+    my %vars = (country => $l->country(), zone => $l->time_zone());
+    # $vars{zone} is the time zone even when country() is undef
+    ```
 
 - **plural\_category() returns 'other' when there is no language**
 
@@ -1447,7 +1483,7 @@ CodeAlpha2 ≙ LanguageCodeAlpha2
 ```
 ┌─ RequestedLanguage ───────────────────────────────────────────
 │ EnsureResolved
-│ result! : seq CHAR ∪ {⊥}
+│ result! : seq CHAR
 ├───────────────────────────────────────────────────────────────
 │ result! = rlanguage'
 │ -- rlanguage' = name(b) ⁀ " (" ⁀ cname(v) ⁀ ")" when the visitor
@@ -1562,11 +1598,11 @@ PluralError ≙ [ n? = ⊥ ] ⇒ croak
 │ EnsureResolved
 │ dir? : PATH ∪ {⊥}
 │ ext? : seq CHAR ∪ {⊥}
-│ files : ℙ PATH                       -- files that exist
+│ files : ℙ PATH                       -- readable regular files
 │ result! : PATH ∪ {⊥}
 ├───────────────────────────────────────────────────────────────
 │ e == (if ext? = ⊥ then "json" else strip_dot(ext?))
-│ (dir? = ⊥ ∨ ".." ⊆ dir? ∨ NUL ∈ ran dir?
+│ (dir? = ⊥ ∨ dir? = ⟨⟩ ∨ ".." ⊆ dir? ∨ NUL ∈ ran dir?
 │     ∨ ¬ (ran e ⊆ ALNUM ∪ {'-'})) ⇒ result! = ⊥
 │ otherwise
 │   cands == ⟨ code2' ⁀ "-" ⁀ subcode2' | subcode2' ≠ ⊥ ⟩ ⁀ ⟨ code2' | code2' ≠ ⊥ ⟩

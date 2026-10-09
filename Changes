@@ -18,6 +18,26 @@ Revision history for CGI-Lingua
 	  never used); LIMITATIONS no longer says that the logger must be a
 	  blessed object; locale() example called a non-existent currency_code()
 	  method; text_direction() example had broken quoting
+	[ Security ]
+	- Cache poisoning: values read back from the cache were trusted, so a
+	  shared or world-writable backend could make country() return
+	  "gb<script>...", language() return a hash, or language_code_alpha2()
+	  return "../../etc" (which translation_file() then put into a path).
+	  Every cached value is now checked against the shape CGI::Lingua writes;
+	  a malformed one is removed and warned about ("Discarding malformed cache
+	  entry for ..."), and the answer is worked out again
+	- new() restored every key of the saved blob into the object, so a blob
+	  could replace the logger, the supported list or dont_use_ip; only the
+	  six answer fields are restored now
+	- translation_file() returned anything named en.json that existed: a
+	  directory, /dev/urandom or /dev/zero (via a symlink), or an unreadable
+	  file; it now returns only readable regular files, refuses an empty or
+	  reference $dir and an extension with a trailing newline, and escapes
+	  control characters in its warnings (log-line forging)
+	- time_zone() read /etc/timezone with an unbounded <$fh>, so a link to
+	  /dev/zero would never finish; it now reads at most 256 bytes of a
+	  regular file, checks the zone name, and falls back to
+	  DateTime::TimeZone otherwise (an empty file used to warn and give undef)
 	[ Bug Fixes ]
 	- _is_ipv4() accepted non-ASCII digits (e.g. U+0661) and a trailing newline
 	- _is_ipv6() pure-Perl fallback could never return true: it used tr/:://,
@@ -64,6 +84,21 @@ Revision history for CGI-Lingua
 	- _resolve_sublanguage_match(): a stale $@ from the caller could be
 	  logged as a Locale::Object error; the eval's error is now kept in a
 	  lexical
+	- country(), locale(), time_zone() and translation_file() returned an
+	  empty list in list context instead of undef, so
+	  "%vars = (country => $l->country(), ...)" shifted every later key
+	- Accept-Language: q=0 ("not acceptable", RFC 7231) was ignored, so
+	  "fr;q=0, en;q=0.5" chose French; tags with a q value outside the RFC
+	  grammar are now dropped too
+	- sublanguage() was undef after a restore from the cache (_sublanguage was
+	  not saved), and a cached dont_use_ip overrode the caller's
+	- new() with supported => 'en' (a string) and a cache hit left
+	  _supported as a string
+	- An info object without lang() made new() die with Perl's own message;
+	  it now croaks "info must be an object with a lang() method", and an
+	  AUTOLOAD lang() that dies is treated as no lang parameter
+	- undef, references or '' inside the supported list made
+	  I18N::AcceptLanguage warn; they are now ignored
 	[ Tests ]
 	- t/pod-spelling.t: added stopwords for technical terms
 	- t/function.t: 60 new subtests covering every helper that had no direct
@@ -72,6 +107,11 @@ Revision history for CGI-Lingua
 	  last subtest fails if any was not produced.  New subtests for is_rtl,
 	  text_direction, plural_category, translation_file, time_zone failures
 	  and global-state ($@, $!, $_, alarm) preservation; file is now ASCII only
+	- t/edge_cases.t: list-context, read-only $_, hostile references,
+	  invalid UTF-8, q-value, REMOTE_ADDR boundary, filesystem (directories,
+	  devices, dangling links, shell-character names, Test::Permissions
+	  drops), zone-file, ENOSPC, cache-poisoning and upstream tests, with a
+	  regression subtest for each bug above; file is now ASCII only
 	- t/data-flow.t: country() and new() must now preserve the caller's $@,
 	  not clear it
 	- t/integration.t: optional-dependency matrix run in child perls with
