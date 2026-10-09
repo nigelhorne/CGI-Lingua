@@ -18,7 +18,31 @@ Revision history for CGI-Lingua
 	  never used); LIMITATIONS no longer says that the logger must be a
 	  blessed object; locale() example called a non-existent currency_code()
 	  method; text_direction() example had broken quoting
+	[ Bug Fixes ]
+	- _is_ipv4() accepted non-ASCII digits (e.g. U+0661) and a trailing newline
+	- _is_ipv6() pure-Perl fallback could never return true: it used tr/:://,
+	  which counts colon characters rather than "::" pairs
+	- _in_baidu_subnet() treated out-of-range octets as inside the subnet
+	  (pack 'C' wraps 185.10.104.300 to .44), accepted a trailing newline, and
+	  warned on undef
+	- _clean_country_code() warned on undef
+	- GEOIP_COUNTRY_CODE and HTTP_CF_IPCOUNTRY (in country() and locale())
+	  are now checked with /^([A-Z]{2})\z/a; with $ a trailing newline such as
+	  "GB\n" was accepted
+	- _find_language_from_ip(): the "Couldn't determine closest language"
+	  warning printed ARRAY(0x...) instead of the supported languages, and the
+	  "Can't determine code from IP" warning raised an uninitialized-value
+	  warning when the country came from LANG (no REMOTE_ADDR)
+	- _resolve_sublanguage_match(): a cached variety entry with an empty name
+	  (e.g. "=en") produced a requested language of "English ()"
+	- Warnings that CGI::Lingua does not suppress now reach the caller's
+	  $SIG{__WARN__} handler; previously they went straight to STDERR, and
+	  _accept_language_match() reset the handler to DEFAULT for the rest of the
+	  call
+	[ Tests ]
 	- t/pod-spelling.t: added stopwords for technical terms
+	- t/function.t: 60 new subtests covering every helper that had no direct
+	  test, plus hostile input for the public methods; file is now ASCII only
 	- Use Test::Log::Abstraction
 	- t/country.t: failed with 'gp' instead of 'gb' on machines with Debian's
 	  geoip-database installed, whose frozen GeoIP.dat (2019-12-24) maps

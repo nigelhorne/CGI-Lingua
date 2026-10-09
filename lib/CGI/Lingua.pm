@@ -964,13 +964,13 @@ sub _accept_language_match
 {
 	my ($self, $http_accept_language) = @_;
 
-	# Suppress I18N::AcceptLanguage's uninitialized-value warnings (RT 74338)
-	local $SIG{__WARN__} = sub {
-		warn $_[0] unless $_[0] =~ /^Use of uninitialized value/;
-	};
 	my $i18n = I18N::AcceptLanguage->new(debug => $self->{_debug}, strict => 1);
-	my $l = $i18n->accepts($http_accept_language, $self->{_supported});
-	local $SIG{__WARN__} = 'DEFAULT';
+	my $l;
+	{
+		# Suppress I18N::AcceptLanguage's uninitialized-value warnings (RT 74338)
+		local $SIG{__WARN__} = _warn_filter(qr/^Use of uninitialized value/);
+		$l = $i18n->accepts($http_accept_language, $self->{_supported});
+	}
 
 	# I18N-AcceptLanguage strict mode can return a sublanguage variant when
 	# the request contains a sublanguage we don't support; force a retry.
@@ -1237,6 +1237,8 @@ sub _resolve_sublanguage_match
 			# Cache stores "countryname=langcode" (e.g. "United Kingdom=en").
 			# Splitting on = gives the country name as the first field.
 			($language_name) = split(/=/, $from_cache);
+			# A poisoned entry such as "=en" has an empty name; treat it as a miss
+			undef $language_name unless defined($language_name) && length($language_name);
 		} elsif($_locale_object_db_ok // 1) {
 			# Locale::Object's SQLite database is absent on some Windows
 			# installations; the sentinel avoids repeated failed new() calls.
@@ -1343,7 +1345,8 @@ sub _find_language_from_ip
 		}
 	}
 
-	my $ip = $ENV{'REMOTE_ADDR'};
+	# REMOTE_ADDR is absent when the country came from LANG (command-line use)
+	my $ip = $ENV{'REMOTE_ADDR'} // '(none)';
 	return unless $language_name;
 
 	if((!defined($self->{_rlanguage})) || ($self->{_rlanguage} eq 'Unknown')) {
@@ -1387,7 +1390,8 @@ sub _find_language_from_ip
 			$self->_get_closest($code, $language_code2);
 			unless($self->{_slanguage}) {
 				$self->_warn({
-					warning => "Couldn't determine closest language for $language_name in $self->{_supported}"
+					warning => "Couldn't determine closest language for $language_name in "
+						. join(', ', @{$self->{_supported}})
 				});
 			} else {
 				$self->_debug("language set to $self->{_slanguage}, code set to $code");
@@ -1559,8 +1563,8 @@ These are debug messages, sent only to the logger:
 =head3 PSEUDOCODE
 
     1. Return the remembered answer if there is one
-    2. Check GEOIP_COUNTRY_CODE env var (mod_geoip); validate /^[A-Z]{2}$/
-    3. Check HTTP_CF_IPCOUNTRY (Cloudflare); skip 'XX'; validate /^[A-Z]{2}$/
+    2. Check GEOIP_COUNTRY_CODE env var (mod_geoip); validate /^[A-Z]{2}\z/
+    3. Check HTTP_CF_IPCOUNTRY (Cloudflare); skip 'XX'; validate /^[A-Z]{2}\z/
     4. Untaint and validate REMOTE_ADDR; return undef if absent or invalid;
        change ::ffff:a.b.c.d into a.b.c.d
     5. Skip private and loopback IPs (return undef)
@@ -1594,7 +1598,7 @@ sub country {
 
 	# mod_geoip: validate against ISO 3166-1 alpha-2 before trusting
 	if(defined($ENV{'GEOIP_COUNTRY_CODE'})) {
-		if($ENV{'GEOIP_COUNTRY_CODE'} =~ /^([A-Z]{2})$/a) {
+		if($ENV{'GEOIP_COUNTRY_CODE'} =~ /^([A-Z]{2})\z/a) {
 			$self->{_country} = lc($1);
 			return $self->{_country};
 		} else {
@@ -1604,7 +1608,7 @@ sub country {
 
 	# Cloudflare: 'XX' means Cloudflare couldn't determine country — skip it
 	if(($ENV{'HTTP_CF_IPCOUNTRY'}) && ($ENV{'HTTP_CF_IPCOUNTRY'} ne 'XX')) {
-		if($ENV{'HTTP_CF_IPCOUNTRY'} =~ /^([A-Z]{2})$/a) {
+		if($ENV{'HTTP_CF_IPCOUNTRY'} =~ /^([A-Z]{2})\z/a) {
 			$self->{_country} = lc($1);
 			return $self->{_country};
 		} else {
@@ -1877,6 +1881,7 @@ sub _resolve_country_via_whois
 sub _clean_country_code
 {
 	my ($raw) = @_;
+	return unless defined($raw);
 	$raw =~ s/[\r\n]//g;
 	# Accept exactly 2 alpha chars, optionally followed by whitespace and a
 	# comment (e.g. "GB # United Kingdom").  Anything else (CRLF injection
@@ -1897,7 +1902,10 @@ sub _clean_country_code
 sub _in_baidu_subnet
 {
 	my $ip = shift;
-	return 0 unless $ip =~ /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/;
+	return 0 unless defined($ip) && $ip =~ /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\z/a;
+	# pack('C') wraps octets above 255 (300 becomes 44), which would put a
+	# malformed address such as 185.10.104.300 inside the subnet
+	return 0 if grep { $_ > 255 } ($1, $2, $3, $4);
 	# pack/unpack avoids signed-integer overflow on 32-bit Perl
 	my $n   = unpack('N', pack('C4', $1, $2, $3, $4));
 	my $net = unpack('N', pack('C4', 185, 10, 104, 0));
@@ -2104,7 +2112,7 @@ sub locale {
 	# Fourth try: mod_geoip env var — apply the same ISO 3166-1 validation
 	# used in country() to guard against spoofed or malformed values
 	if(defined($ENV{'GEOIP_COUNTRY_CODE'})) {
-		if($ENV{'GEOIP_COUNTRY_CODE'} =~ /^([A-Z]{2})$/a) {
+		if($ENV{'GEOIP_COUNTRY_CODE'} =~ /^([A-Z]{2})\z/a) {
 			if(my $c = $self->_code2country(lc($1))) {
 				$self->{_locale} = $c;
 				return $c;
@@ -2695,9 +2703,7 @@ sub _code2country
 	if($_locale_object_db_ok // 1) {
 		# Suppress the routine "No result found" warning; catch the database-
 		# absent exception that Windows installations sometimes throw.
-		local $SIG{__WARN__} = sub {
-			warn $_[0] unless $_[0] =~ /No result found in country table/;
-		};
+		local $SIG{__WARN__} = _warn_filter(qr/No result found in country table/);
 		eval { $rc = Locale::Object::Country->new(code_alpha2 => $code) };
 		if($@) {
 			$_locale_object_db_ok = 0
@@ -2727,7 +2733,7 @@ sub _country_short_name
 	# Locale::Object may have partially initialised Locale::Codes::Country as a
 	# dependency before we get here; suppress the spurious 'redefine' warning
 	# that some Perl/Locale::Codes combinations produce on first full load.
-	{ local $SIG{__WARN__} = sub { warn $_[0] unless $_[0] =~ /redefined/ };
+	{ local $SIG{__WARN__} = _warn_filter(qr/redefined/);
 	  require Locale::Codes::Country; }
 	return Locale::Codes::Country::code2country($lc, 'alpha-2');
 }
@@ -2825,13 +2831,40 @@ sub _warn
 	}
 }
 
+# ── _warn_filter ──────────────────────────────────────────────────────────
+# Purpose:      Build a $SIG{__WARN__} handler that drops warnings matching
+#               $skip and passes every other warning on to the handler that
+#               was active when the filter was built.
+# Entry:        $skip — compiled regex of warnings to drop.
+# Exit:         Code reference suitable for "local $SIG{__WARN__} = ...".
+# Notes:        A plain "warn" inside a __WARN__ handler bypasses every handler
+#               and goes straight to STDERR, so the caller's handler (a logger,
+#               Test::Warnings, ...) would never see the warning; hence the
+#               explicit call to the previous handler.
+sub _warn_filter
+{
+	my $skip = shift;
+	my $prev = $SIG{__WARN__};
+
+	return sub {
+		return if $_[0] =~ $skip;
+		if(ref($prev) eq 'CODE') {
+			$prev->(@_);
+		} else {
+			warn @_;
+		}
+	};
+}
+
 # ── Pure-Perl IP-validation helpers ──────────────────────────────────────────
 # These are installed into the CGI::Lingua symbol table as is_ipv4() etc. when
 # Data::Validate::IP / NetAddr::IP are unavailable (see country()).
 
 sub _is_ipv4 {
 	my $ip = shift;
-	return unless defined($ip) && $ip =~ /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+	# /a: without it \d also matches non-ASCII digits such as U+0661, which
+	# then compare as 0 and make "\x{661}.\x{661}.\x{661}.\x{661}" look valid
+	return unless defined($ip) && $ip =~ /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\z/a;
 	return !(grep { $_ > 255 } ($1, $2, $3, $4));
 }
 
@@ -2839,13 +2872,14 @@ sub _is_ipv6 {
 	my $ip = shift;
 	return unless defined($ip) && $ip =~ /:/;
 	# Socket::inet_pton is core since Perl 5.14 and validates IPv6 reliably
+	require Socket;
 	if(defined &Socket::inet_pton) {
-		require Socket;
 		return defined Socket::inet_pton(Socket::AF_INET6(), $ip);
 	}
 	# Structural fallback: hex+colons, at least two colons, at most one ::
-	return ($ip =~ /^[0-9a-fA-F:]+$/ || $ip =~ /^[0-9a-fA-F:]+:\d{1,3}(?:\.\d{1,3}){3}$/)
-		&& ($ip =~ tr/:://) <= 1
+	# (tr/// counts characters, not "::" pairs, so count matches of /::/ instead)
+	return ($ip =~ /^[0-9a-fA-F:]+\z/ || $ip =~ /^[0-9a-fA-F:]+:\d{1,3}(?:\.\d{1,3}){3}\z/a)
+		&& (() = $ip =~ /::/g) <= 1
 		&& ($ip =~ tr/://) >= 2;
 }
 
