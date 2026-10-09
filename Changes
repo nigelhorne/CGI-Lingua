@@ -6,7 +6,19 @@ Revision history for CGI-Lingua
 	  October 2026 it returns HTTP 403 with no country code, so the lookup falls
 	  through to Whois), and that legacy GeoIP.dat databases are frozen and can
 	  be wrong for reallocated addresses
-	[ Tests ]
+	- Rewrote the POD in plain English: more SYNOPSIS examples, a DESCRIPTION
+	  of how the language and country are found, and new COMMON PITFALLS,
+	  ENCODING and STATE DIAGRAM sections
+	- Every public method now has an API SPECIFICATION with Input and Output
+	  schemas (Params::Validate::Strict / Return::Set format); the POD passes
+	  extract-schemas --strict-pod=fatal
+	- FORMAL SPECIFICATION rewritten as Z schemas and moved below LICENSE AND
+	  COPYRIGHT
+	- Fixed inaccurate POD: new() no longer lists a 'data' argument (it was
+	  never used); LIMITATIONS no longer says that the logger must be a
+	  blessed object; locale() example called a non-existent currency_code()
+	  method; text_direction() example had broken quoting
+	- t/pod-spelling.t: added stopwords for technical terms
 	- Use Test::Log::Abstraction
 	- t/country.t: failed with 'gp' instead of 'gb' on machines with Debian's
 	  geoip-database installed, whose frozen GeoIP.dat (2019-12-24) maps
@@ -14,6 +26,7 @@ Revision history for CGI-Lingua
 	  and checks the online lookup path
 	- Added t/geoip.t: tests country() against a real GeoIP.dat when Geo::IP and
 	  a database are available (standard locations, or GEOIP_DAT=/path)
+
 0.86	Mon Oct  5 02:32:02 PM EDT 2026
 	[ Bug Fixes ]
 	- t/mutant_killers.t: time_zone() local-mode test failed on FreeBSD, which has
