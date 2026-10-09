@@ -47,6 +47,22 @@ Revision history for CGI-Lingua
 	  $SIG{__WARN__} handler; previously they went straight to STDERR, and
 	  _accept_language_match() reset the handler to DEFAULT for the rest of the
 	  call
+	- An upstream failure no longer takes down the request: a geoplugin or
+	  ip-api.com timeout (LWP dying), an IANA connection error, or a cache
+	  backend that dies (full disk, unreachable server, CHI with
+	  on_get_error => 'die') used to make new(), country() or time_zone() die;
+	  each is now caught, logged ("geoplugin lookup failed: ...",
+	  "ip-api.com lookup failed: ...", "Cache get failed: ...") and treated as
+	  "no answer from that source"
+	- country(): a malformed geoplugin answer (a JSON object, "GB<script>") is
+	  now rejected at once, so the Whois fallback still runs; before, the junk
+	  value stopped Whois and was then discarded, leaving no country
+	- time_zone(): when only JSON::Parse is missing, the warning now says
+	  "JSON::Parse is absent; cannot read ip-api.com answers" instead of
+	  wrongly claiming that both LWP modules are absent
+	- _resolve_sublanguage_match(): a stale $@ from the caller could be
+	  logged as a Locale::Object error; the eval's error is now kept in a
+	  lexical
 	[ Tests ]
 	- t/pod-spelling.t: added stopwords for technical terms
 	- t/function.t: 60 new subtests covering every helper that had no direct
@@ -55,7 +71,15 @@ Revision history for CGI-Lingua
 	  last subtest fails if any was not produced.  New subtests for is_rtl,
 	  text_direction, plural_category, translation_file, time_zone failures
 	  and global-state ($@, $!, $_, alarm) preservation; file is now ASCII only
-	- t/data-flow.t: country() must now preserve the caller's $@, not clear it
+	- t/data-flow.t: country() and new() must now preserve the caller's $@,
+	  not clear it
+	- t/integration.t: optional-dependency matrix run in child perls with
+	  Test::Without::Module (all 32 combinations of the geo modules, all 8 of
+	  the time_zone modules, plus Data::Validate::IP, Net::Subnet,
+	  DateTime::TimeZone and HTTP::BrowserDetect); filesystem permission drops
+	  with Test::Permissions; upstream sabotage (timeouts, latency, malformed
+	  payloads, Whois and cache outages); three-object concurrency over one
+	  shared cache; file is now ASCII only
 	- Use Test::Log::Abstraction
 	- t/country.t: failed with 'gp' instead of 'gb' on machines with Debian's
 	  geoip-database installed, whose frozen GeoIP.dat (2019-12-24) maps

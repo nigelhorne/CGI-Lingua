@@ -43,8 +43,7 @@ before_install:
 install:
   - cpanm -qin --skip-satisfied --installdeps --notest .
 
-script:
-  perl Makefile.PL && make && cover -test -report coveralls
+script: perl Makefile.PL && make && cover -test -report coveralls
 
 jobs:
   include:

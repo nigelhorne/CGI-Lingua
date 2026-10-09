@@ -88,6 +88,7 @@ my %LEDGER = map { $_ => 1 } (
 	'new: croak "CGI::Lingua use ->new() not ::new() to instantiate"',
 	'new: returns CGI::Lingua object',
 	'new: returns copy when called on an object',
+	'new: warn "Cache get failed: ..."',
 	# Language accessors
 	'language: returns language name',
 	"language: returns 'Unknown'",
@@ -113,6 +114,10 @@ my %LEDGER = map { $_ => 1 } (
 	q{country: warn "Discarding malformed country code '...'"},
 	q{country: debug "Can't determine country from LAN connection X"},
 	q{country: debug "Can't determine country from loopback connection X"},
+	'country: warn "geoplugin lookup failed: ..."',
+	'country: warn "Cache get failed: ..."',
+	'country: warn "Cache set failed: ..."',
+	'country: warn "Cache remove failed: ..."',
 	'country: returns lower-case code',
 	'country: returns undef',
 	"country: returns 'Unknown' for EU",
@@ -124,6 +129,8 @@ my %LEDGER = map { $_ => 1 } (
 	q{time_zone: warn "Couldn't determine the timezone"},
 	q{time_zone: warn "X isn't a valid IP address"},
 	'time_zone: warn "LWP::Simple::WithCache and LWP::Simple are both absent; cannot contact ip-api.com"',
+	'time_zone: warn "JSON::Parse is absent; cannot read ip-api.com answers"',
+	'time_zone: warn "ip-api.com lookup failed: ..."',
 	'time_zone: warn "ip-api.com returned unparseable JSON: ..."',
 	'time_zone: warn "DateTime::TimeZone::Local failed: ..."',
 	q{time_zone: warn "Discarding malformed timezone '...'"},
@@ -161,6 +168,17 @@ sub _hit {
 sub _cannot_reach {
 	my ($key, $why) = @_;
 	$SKIPPED{$key} = $why if delete $LEDGER{$key};
+}
+
+# The geoplugin and ip-api.com paths need both LWP::Simple::WithCache and
+# JSON::Parse, which are optional (neither is a prerequisite, and CI runners
+# often lack them).  Without them, mark the states the caller would have
+# produced as unreachable, and say whether to skip.
+Readonly my $WEB_MISSING => 'LWP::Simple::WithCache or JSON::Parse not installed';
+sub _web_missing {
+	return 0 if $HAS_LWP && $HAS_JSONP;
+	_cannot_reach($_, $WEB_MISSING) for @_;
+	return 1;
 }
 
 # -- Helper --------------------------------------------------------------------
@@ -1039,7 +1057,11 @@ subtest 'ledger country: numeric country in the cache is removed' => sub {
 };
 
 subtest 'ledger country: hostile answers from the geo service' => sub {
-	plan(skip_all => 'LWP::Simple::WithCache or JSON::Parse not installed') unless $HAS_LWP && $HAS_JSONP;
+	plan(skip_all => $WEB_MISSING) if _web_missing(
+		'country: warn "IP matches to a numeric country"',
+		'country: warn "geoplugin returned unparseable JSON: ..."',
+		q{country: warn "Discarding malformed country code '...'"},
+	);
 	local %ENV = (REMOTE_ADDR => $IP{PUBLIC});
 	my @cases = (
 		[ _geoplugin('12'),        qr/^IP matches to a numeric country$/,           'country: warn "IP matches to a numeric country"' ],
@@ -1068,7 +1090,7 @@ subtest "ledger country: lower-case code and 'Unknown' for EU" => sub {
 		_hit('country: returns lower-case code');
 	}
 	SKIP: {
-		skip 'LWP::Simple::WithCache or JSON::Parse not installed', 1 unless $HAS_LWP && $HAS_JSONP;
+		skip $WEB_MISSING, 1 if _web_missing("country: returns 'Unknown' for EU");
 		local %ENV = (REMOTE_ADDR => $IP{PUBLIC});
 		_mock_get(_geoplugin('EU'));
 		my $l = _web_only(CGI::Lingua->new(supported => ['en']));
@@ -1112,7 +1134,13 @@ subtest 'ledger locale: country object from the User-Agent' => sub {
 # -- time_zone() ---------------------------------------------------------------
 
 subtest 'ledger time_zone: answers from ip-api.com' => sub {
-	plan(skip_all => 'LWP::Simple::WithCache or JSON::Parse not installed') unless $HAS_LWP && $HAS_JSONP;
+	plan(skip_all => $WEB_MISSING) if _web_missing(
+		'time_zone: returns IANA zone name',
+		'time_zone: returns undef',
+		q{time_zone: warn "Couldn't determine the timezone"},
+		q{time_zone: warn "Discarding malformed timezone '...'"},
+		'time_zone: warn "ip-api.com returned unparseable JSON: ..."',
+	);
 	local %ENV = (REMOTE_ADDR => $IP{PUBLIC});
 	my @cases = (
 		[ JSON::PP::encode_json({ timezone => $CFG{zone} }), undef, undef ],
@@ -1295,6 +1323,104 @@ subtest 'public methods leave $@, $!, $_ and alarm() alone' => sub {
 };
 
 # -- Ledger check --------------------------------------------------------------
+
+subtest 'ledger cache failures: new() and country() warn and carry on' => sub {
+	# Strategy: a CHI cache told to die on errors, whose Memory driver fails
+	# on demand.  Each documented "Cache ... failed" warning must appear and
+	# the method must still return its normal answer.
+	my $cache = CHI->new(driver => 'Memory', global => 0, on_get_error => 'die', on_set_error => 'die');
+	no warnings qw(redefine once);
+
+	{
+		local *CHI::Driver::Memory::fetch = sub { die "backend down\n" };
+		local %ENV = (REMOTE_ADDR => $IP{PUBLIC});
+		my @log;	# new()'s logger is its own arrayref until the object exists
+		my $l = CGI::Lingua->new(supported => ['en'], cache => $cache, logger => \@log);
+		isa_ok($l, 'CGI::Lingua', 'new() still returns an object');
+		ok((grep { $_->{level} eq 'warn' && $_->{message} =~ /^Cache get failed: .*backend down/ } @log), 'new(): exact warning');
+		_hit('new: warn "Cache get failed: ..."');
+	}
+
+	my %case = (
+		get    => [ fetch  => sub { die "backend down\n" } ],
+		set    => [ store  => sub { die "backend down\n" } ],
+		# remove is only called for a bad cached value; one is stored below
+		remove => [ remove => sub { die "backend down\n" } ],
+	);
+	for my $method (sort keys %case) {
+		# A fresh cache each time: DESTROY of the previous object saves its answers
+		my $cache = CHI->new(driver => 'Memory', global => 0, on_get_error => 'die', on_set_error => 'die');
+		my ($driver_sub, $stub) = @{$case{$method}};
+		$cache->set("CGI::Lingua:country:$IP{PUBLIC}", '42') if $method eq 'remove';
+		no strict 'refs';
+		# remove() on the cache is a role wrapper that captured the driver's
+		# method when CHI composed the class, so stub it on that class
+		my $class = $driver_sub eq 'remove' ? ref($cache) : 'CHI::Driver::Memory';
+		local *{"${class}::$driver_sub"} = $stub;
+		local %ENV = (REMOTE_ADDR => $IP{PUBLIC});
+		my ($l, $spy) = _spied(['en'], cache => $cache);
+		_mock_get(_geoplugin('GB'));
+		_web_only($l);
+		my $cc;
+		lives_ok { $cc = $l->country() } "$method failure: country() lives";
+		# DESTROY always writes to the cache, so "set" fails even when no geo
+		# source (and so no country() write) is available on this host
+		lives_ok { undef $l } "$method failure: DESTROY lives";
+		ok($spy->logged('warn', qr/^Cache \Q$method\E failed: /), "$method failure: exact warning")
+			or diag(explain($spy->{calls}));
+		_hit(qq{country: warn "Cache $method failed: ..."});
+		_unmock_all();
+	}
+};
+
+subtest 'ledger upstream outages: geoplugin and ip-api.com time out' => sub {
+	plan(skip_all => $WEB_MISSING) if _web_missing(
+		'country: warn "geoplugin lookup failed: ..."',
+		'time_zone: warn "ip-api.com lookup failed: ..."',
+	);
+	local %ENV = (REMOTE_ADDR => $IP{PUBLIC});
+	{
+		local $SIG{__WARN__} = sub { };
+		Test::Mockingbird::mock('LWP::Simple::WithCache', 'get', sub { die "500 read timeout\n" });
+	}
+	my ($l, $spy) = _spied(['en']);
+	_web_only($l);
+	my $cc;
+	lives_ok { $cc = $l->country() } 'country() survives the timeout';
+	ok($spy->logged('warn', qr/^geoplugin lookup failed: 500 read timeout/), 'country(): exact warning');
+	_hit('country: warn "geoplugin lookup failed: ..."');
+
+	my $tz;
+	lives_ok { $tz = $l->time_zone() } 'time_zone() survives the timeout';
+	ok(!defined($tz), 'time_zone() undef');
+	ok($spy->logged('warn', qr/^ip-api\.com lookup failed: 500 read timeout/), 'time_zone(): exact warning');
+	_hit('time_zone: warn "ip-api.com lookup failed: ..."');
+	_unmock_all();
+};
+
+subtest 'ledger time_zone: JSON::Parse missing is named in the warning' => sub {
+	my $key = 'time_zone: warn "JSON::Parse is absent; cannot read ip-api.com answers"';
+	unless($HAS_NO_MOD) {
+		_cannot_reach($key, 'Test::Without::Module not installed');
+		plan(skip_all => $SKIPPED{$key});
+	}
+	my $child = <<'CHILD';
+		$SIG{__WARN__} = sub { print "WARN: $_[0]" };
+		local $ENV{REMOTE_ADDR} = '8.8.8.8';
+		my $l = CGI::Lingua->new(supported => ['en']);
+		$l->{logger} = undef;
+		$l->{_have_geoip} = 0;
+		print 'RESULT: ', (defined($l->time_zone()) ? 'defined' : 'undef'), "\n";
+CHILD
+	open(my $fh, '-|', $^X, '-Ilib', '-MTest::Without::Module=JSON::Parse', '-MCGI::Lingua', '-e', $child)
+		or die "Can't run $^X: $!";
+	my $out = do { local $/; <$fh> };
+	close $fh;
+	like($out, qr/^RESULT: undef$/m, 'undef returned');
+	like($out, qr/^WARN: JSON::Parse is absent; cannot read ip-api\.com answers /m, 'exact warning');
+	unlike($out, qr/both absent/, 'does not wrongly blame LWP');
+	_hit($key);
+};
 
 subtest 'API ledger: every documented state was produced' => sub {
 	diag("Not reachable on this host: $_ ($SKIPPED{$_})") for sort keys %SKIPPED;

@@ -40,7 +40,7 @@ install:
   - cmd: cpan -i Test::Needs Test::Most Test::MockModule Test::LWP::UserAgent
   - cmd: cpanm -q --showdeps --with-develop --with-suggests . | findstr /v "^perl\>" | cpanm -qin --skip-satisfied
   - cpanm -qin --skip-satisfied --installdeps .
-  - cmd: 'echo End install at: & time /t'
+  - cmd: "echo End install at: & time /t"
 
 build_script:
   - perl Makefile.PL

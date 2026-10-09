@@ -294,6 +294,10 @@ C<supported_languages> is another name for the same argument.
 
 An object with C<get()>, C<set()> and C<remove()> methods, such as a L<CHI> object.
 CGI::Lingua stores its answers here so that later requests are faster.
+If a call to the cache dies (for example a full disk, an unreachable server,
+or a L<CHI> object created with C<< on_get_error =E<gt> 'die' >>), CGI::Lingua
+warns C<"Cache get failed: ..."> (or C<set> / C<remove>) and carries on as if
+the value was not cached. Any method that uses the cache can give this warning.
 
 =item * C<config_file> (optional)
 
@@ -394,6 +398,11 @@ C<new()> dies (with L<Carp/croak>) with one of these messages:
     "CGI::Lingua use ->new() not ::new() to instantiate"
         - new() was called as a function, with arguments
 
+It warns, and carries on, with:
+
+    "Cache get failed: ..."
+        - the cache died while looking up saved answers
+
 =head3 PSEUDOCODE
 
     1. Read the arguments with Params::Get
@@ -470,7 +479,7 @@ sub new
 	# Try to restore a frozen state from the cache before doing any work
 	if($cache && $ENV{'REMOTE_ADDR'}) {
 		my $key = _build_cache_key($ENV{'REMOTE_ADDR'}, $params, $class, $info);
-		if(my $frozen = $cache->get($key)) {
+		if(my $frozen = _cache_call($params, $cache, 'get', $key)) {
 			# JSON::PP is used in preference to Storable::thaw because Storable
 			# can execute arbitrary Perl code via STORABLE_thaw hooks if an
 			# attacker manages to write a crafted blob to the cache backend.
@@ -553,6 +562,38 @@ sub _build_cache_key
 	return $key;
 }
 
+# ── _cache_call ──────────────────────────────────────────────────────────
+# Purpose:      Call get/set/remove on the caller-supplied cache without
+#               letting a cache failure take down the request.  The cache only
+#               saves time, so a broken backend (full disk, unreachable Redis,
+#               CHI with on_get_error => 'die') must degrade to "not cached".
+# Entry:        $self   — a CGI::Lingua object, or new()'s params hashref
+#                         (used only to find a logger);
+#               $cache  — the cache object; $method — 'get', 'set' or 'remove';
+#               @args   — passed to the method unchanged.
+# Exit:         The method's scalar result, or undef if it died.
+# Side Effects: Warns "Cache <method> failed: <error>" on failure.
+sub _cache_call
+{
+	my ($self, $cache, $method, @args) = @_;
+
+	local $@;
+	my $rc;
+	return $rc if eval { local $SIG{__DIE__}; $rc = $cache->$method(@args); 1 };
+
+	my $err = $@ || 'unknown error';
+	$err =~ s/\s+\z//;
+	my $msg = "Cache $method failed: $err";
+	if(blessed($self)) {
+		$self->_warn({ warning => $msg });
+	} elsif((ref($self) eq 'HASH') && blessed($self->{'logger'}) && $self->{'logger'}->can('warn')) {
+		$self->{'logger'}->warn($msg);
+	} else {
+		carp($msg);
+	}
+	return;
+}
+
 # Some of the information takes a long time to work out, so cache what we can
 sub DESTROY {
 	# Destructors run at arbitrary points, e.g. while the caller is examining $@
@@ -574,7 +615,7 @@ sub DESTROY {
 		ref($self),
 		$self->{_info},
 	);
-	return if $cache->get($key);
+	return if $self->_cache_call($cache, 'get', $key);
 
 	$self->_debug("Storing self in cache as $key");
 
@@ -594,7 +635,7 @@ sub DESTROY {
 		_have_geoipfree          => $self->{_have_geoipfree},
 	);
 
-	$cache->set($key, JSON::PP::encode_json(\%state), $CACHE_TTL_LONG);
+	$self->_cache_call($cache, 'set', $key, JSON::PP::encode_json(\%state), $CACHE_TTL_LONG);
 }
 
 =head2 language
@@ -1171,7 +1212,7 @@ sub _resolve_sublanguage_match
 			# Cache look-up for the base-language name
 			my $from_cache;
 			if($self->{_cache}) {
-				$from_cache = $self->{_cache}->get($CACHE_NS . "accepts:$accepts");
+				$from_cache = $self->_cache_call($self->{_cache}, 'get', $CACHE_NS . "accepts:$accepts");
 			}
 			my $slanguage;
 			if($from_cache) {
@@ -1204,7 +1245,7 @@ sub _resolve_sublanguage_match
 
 				unless($from_cache) {
 					$self->_debug("Set $variety to $slanguage=$accepts");
-					$self->{_cache}->set(
+					$self->_cache_call($self->{_cache}, 'set',
 						$CACHE_NS . "accepts:$variety",
 						"$slanguage=$accepts",
 						$CACHE_TTL_LONG
@@ -1236,9 +1277,9 @@ sub _resolve_sublanguage_match
 			$variety = 'gb';
 		}
 
-		my ($from_cache, $language_name);
+		my ($from_cache, $language_name, $db_error);
 		if($self->{_cache}) {
-			$from_cache = $self->{_cache}->get($CACHE_NS . "variety:$variety");
+			$from_cache = $self->_cache_call($self->{_cache}, 'get', $CACHE_NS . "variety:$variety");
 		}
 
 		if(defined($from_cache)) {
@@ -1251,6 +1292,8 @@ sub _resolve_sublanguage_match
 		} elsif($_locale_object_db_ok // 1) {
 			# Locale::Object's SQLite database is absent on some Windows
 			# installations; the sentinel avoids repeated failed new() calls.
+			# Keep the error in a lexical: $@ itself may still hold an
+			# unrelated error from the caller when this branch is skipped.
 			eval {
 				my $db = Locale::Object::DB->new();
 				my @results = @{$db->lookup(
@@ -1265,16 +1308,17 @@ sub _resolve_sublanguage_match
 				} else {
 					$self->_debug("Can't find the country code for $variety in Locale::Object::DB");
 				}
-			};
-			if($@) {
+				1;
+			} or $db_error = ($@ || 'unknown error');
+			if($db_error) {
 				$_locale_object_db_ok = 0
-					if $@ =~ /database was not in/;
+					if $db_error =~ /database was not in/;
 				# fall through: $language_name stays undef, caught below
 			}
 		}
 
-		if($@ || !defined($language_name)) {
-			$self->_warn({ warning => $@ }) if $@;
+		if($db_error || !defined($language_name)) {
+			$self->_warn({ warning => $db_error }) if $db_error;
 			# Locale::Object DB may be absent (common on Windows CI); fall back to
 			# the short-name table / Locale::Codes before giving up.
 			$language_name = $self->_country_short_name($variety);
@@ -1292,7 +1336,7 @@ sub _resolve_sublanguage_match
 				# ("English=en" for en-gb) which was wrong — the cache-hit branch
 				# split on = and used the first field as the sublanguage (country) name.
 				$self->_debug("Set variety:$variety to $language_name=$self->{_slanguage_code_alpha2}");
-				$self->{_cache}->set(
+				$self->_cache_call($self->{_cache}, 'set',
 					$CACHE_NS . "variety:$variety",
 					"$language_name=$self->{_slanguage_code_alpha2}",
 					$CACHE_TTL_LONG
@@ -1336,7 +1380,7 @@ sub _find_language_from_ip
 
 	my ($language_name, $language_code2, $from_cache);
 	if($self->{_cache}) {
-		$from_cache = $self->{_cache}->get($CACHE_NS . 'language_name:' . $country);
+		$from_cache = $self->_cache_call($self->{_cache}, 'get', $CACHE_NS . 'language_name:' . $country);
 	}
 
 	if($from_cache) {
@@ -1412,7 +1456,7 @@ sub _find_language_from_ip
 		$self->_debug("Can't determine slanguage_code_alpha2");
 	} elsif(!defined($from_cache) && $self->{_cache} && defined($self->{_slanguage_code_alpha2})) {
 		$self->_debug("Set $country to $language_name=$self->{_slanguage_code_alpha2}");
-		$self->{_cache}->set(
+		$self->_cache_call($self->{_cache}, 'set',
 			$CACHE_NS . 'language_name:' . $country,
 			"$language_name=$self->{_slanguage_code_alpha2}",
 			$CACHE_TTL_LONG
@@ -1563,6 +1607,8 @@ These are warnings. C<country()> does not die.
     "IP matches to a numeric country"
     "geoplugin returned unparseable JSON: ..."
     "Discarding malformed country code '...'"
+    "geoplugin lookup failed: ..."
+    "Cache get failed: ...", "Cache set failed: ...", "Cache remove failed: ..."
 
 These are debug messages, sent only to the logger:
 
@@ -1687,11 +1733,11 @@ sub country {
 
 	# Cache look-up — skip for LAN/loopback (already returned above)
 	if($self->{_cache}) {
-		$self->{_country} = $self->{_cache}->get($CACHE_NS . "country:$ip");
+		$self->{_country} = $self->_cache_call($self->{_cache}, 'get', $CACHE_NS . "country:$ip");
 		if(defined($self->{_country})) {
 			if($self->{_country} !~ /\D/) {
 				$self->_warn({ warning => 'cache contains a numeric country: ' . $self->{_country} });
-				$self->{_cache}->remove($CACHE_NS . "country:$ip");
+				$self->_cache_call($self->{_cache}, 'remove', $CACHE_NS . "country:$ip");
 				delete $self->{_country};
 			} else {
 				$self->_debug("Get $ip from cache = $self->{_country}");
@@ -1764,9 +1810,26 @@ sub country {
 	   (eval { require LWP::Simple::WithCache; require JSON::Parse })) {
 		$self->_debug("Look up $ip on geoplugin");
 
-		if(my $data = LWP::Simple::WithCache::get("https://www.geoplugin.net/json.gp?ip=$ip")) {
+		# A timeout or connection error must not take down the request;
+		# fall through to Whois instead
+		my $data = eval { local $SIG{__DIE__}; LWP::Simple::WithCache::get("https://www.geoplugin.net/json.gp?ip=$ip") };
+		$self->_warn({ warning => "geoplugin lookup failed: $@" }) if $@;
+		if($data) {
 			eval { $self->{_country} = JSON::Parse::parse_json($data)->{'geoplugin_countryCode'} };
 			$self->_warn({ warning => "geoplugin returned unparseable JSON: $@" }) if $@;
+		}
+
+		# Check the answer now rather than at the end: a junk value (an object,
+		# "GB<script>") is true, so it would stop the Whois fallback below and
+		# then be thrown away, leaving no country at all
+		my $v = $self->{_country};
+		if(defined($v) && (ref($v) || $v !~ /^[A-Za-z]{2}\z/)) {
+			if(!ref($v) && length($v) && ($v !~ /\D/)) {
+				$self->_warn({ warning => 'IP matches to a numeric country' });
+			} elsif(ref($v) || length($v)) {
+				$self->_warn({ warning => q{Discarding malformed country code '} . lc($v) . q{'} });
+			}
+			delete $self->{_country};
 		}
 	}
 
@@ -1805,7 +1868,7 @@ sub country {
 				delete $self->{_country};
 			} elsif($self->{_country} && $self->{_cache}) {
 				$self->_debug("Set $ip to $self->{_country}");
-				$self->{_cache}->set(
+				$self->_cache_call($self->{_cache}, 'set',
 					$CACHE_NS . "country:$ip",
 					$self->{_country},
 					$CACHE_TTL_SHORT
@@ -1869,11 +1932,21 @@ sub _resolve_country_via_whois
 	require Net::Whois::IANA;
 	# No ->import(): Net::Whois::IANA->new() is a class method; import not needed.
 
-	my $iana = Net::Whois::IANA->new();
-	eval { $iana->whois_query(-ip => $ip) };
-	unless($@) {
-		$self->{_country} = $iana->country();
+	# The whole IANA exchange is in one eval: new(), the query and the parse
+	# of the answer can all die on a network or protocol error, and this is
+	# the last resort, so a failure simply means "no country"
+	my $country;
+	if(eval {
+		local $SIG{__DIE__};
+		my $iana = Net::Whois::IANA->new();
+		$iana->whois_query(-ip => $ip);
+		$country = $iana->country();
+		1;
+	}) {
+		$self->{_country} = $country;
 		$self->_debug("IANA reports $ip as ", $self->{_country});
+	} else {
+		$self->_debug("IANA look-up of $ip failed: $@");
 	}
 
 	if($self->{_country}) {
@@ -2174,9 +2247,11 @@ These are warnings. C<time_zone()> does not die.
     "Couldn't determine the timezone"
     "X.X.X.X isn't a valid IP address"
     "LWP::Simple::WithCache and LWP::Simple are both absent; cannot contact ip-api.com"
+    "JSON::Parse is absent; cannot read ip-api.com answers"
     "ip-api.com returned unparseable JSON: ..."
     "DateTime::TimeZone::Local failed: ..."
     "Discarding malformed timezone '...'"
+    "ip-api.com lookup failed: ..."
 
 =head3 PSEUDOCODE
 
@@ -2186,7 +2261,8 @@ These are warnings. C<time_zone()> does not die.
        b. Try Geo::IP->time_zone() (local DB)
        c. Try LWP::Simple::WithCache + JSON::Parse against ip-api.com
        d. Fall back to LWP::Simple + JSON::Parse against ip-api.com
-       e. Warn and return undef if neither LWP variant is installed
+       e. Warn and return undef if neither LWP variant, or JSON::Parse,
+          is installed (the warning names the missing module)
     3. If REMOTE_ADDR is absent (local/CLI mode):
        a. Read /etc/timezone if readable
        b. Fall back to DateTime::TimeZone::Local->TimeZone()->name()
@@ -2232,21 +2308,30 @@ sub time_zone {
 			if(eval { require LWP::Simple::WithCache; require JSON::Parse }) {
 				$self->_debug("Look up $ip on ip-api.com");
 
-				if(my $data = LWP::Simple::WithCache::get("http://ip-api.com/json/$ip")) {
+				my $data = eval { local $SIG{__DIE__}; LWP::Simple::WithCache::get("http://ip-api.com/json/$ip") };
+				$self->_warn({ warning => "ip-api.com lookup failed: $@" }) if $@;
+				if($data) {
 					eval { $self->{_timezone} = JSON::Parse::parse_json($data)->{'timezone'} };
 					$self->_warn({ warning => "ip-api.com returned unparseable JSON: $@" }) if $@;
 				}
 			} elsif(eval { require LWP::Simple; require JSON::Parse }) {
 				$self->_debug("Look up $ip on ip-api.com");
 
-				if(my $data = LWP::Simple::get("http://ip-api.com/json/$ip")) {
+				my $data = eval { local $SIG{__DIE__}; LWP::Simple::get("http://ip-api.com/json/$ip") };
+				$self->_warn({ warning => "ip-api.com lookup failed: $@" }) if $@;
+				if($data) {
 					eval { $self->{_timezone} = JSON::Parse::parse_json($data)->{'timezone'} };
 					$self->_warn({ warning => "ip-api.com returned unparseable JSON: $@" }) if $@;
 				}
 			} else {
-				# Neither LWP variant is available — degrade gracefully rather than
-				# killing the entire request with a croak; caller can check for undef.
-				$self->_warn({ warning => 'LWP::Simple::WithCache and LWP::Simple are both absent; cannot contact ip-api.com' });
+				# A module is missing — degrade gracefully rather than killing the
+				# entire request with a croak; caller can check for undef.  Name the
+				# module that is really missing: an LWP may be present without JSON::Parse.
+				if(eval { require JSON::Parse; 1 }) {
+					$self->_warn({ warning => 'LWP::Simple::WithCache and LWP::Simple are both absent; cannot contact ip-api.com' });
+				} else {
+					$self->_warn({ warning => 'JSON::Parse is absent; cannot read ip-api.com answers' });
+				}
 			}
 		}
 	} else {
@@ -2680,7 +2765,7 @@ sub _code2language
 		return Locale::Language::code2language($code);
 	}
 
-	if(my $from_cache = $self->{_cache}->get($CACHE_NS . "code2language:$code")) {
+	if(my $from_cache = $self->_cache_call($self->{_cache}, 'get', $CACHE_NS . "code2language:$code")) {
 		$self->_trace("_code2language found in cache $from_cache");
 		return $from_cache;
 	}
@@ -2690,7 +2775,7 @@ sub _code2language
 	$self->_trace('_code2language not in cache, storing');
 	my $name = Locale::Language::code2language($code);
 	if(defined $name) {
-		$self->{_cache}->set($CACHE_NS . "code2language:$code", $name, $CACHE_TTL_LONG);
+		$self->_cache_call($self->{_cache}, 'set', $CACHE_NS . "code2language:$code", $name, $CACHE_TTL_LONG);
 	}
 	return $name;
 }
@@ -2770,7 +2855,7 @@ sub _code2countryname
 		return $self->_country_short_name($code);
 	}
 
-	if(my $from_cache = $self->{_cache}->get($CACHE_NS . "code2countryname:$code")) {
+	if(my $from_cache = $self->_cache_call($self->{_cache}, 'get', $CACHE_NS . "code2countryname:$code")) {
 		$self->_trace("_code2countryname found in cache $from_cache");
 		return $from_cache;
 	}
@@ -2787,7 +2872,7 @@ sub _code2countryname
 	if(defined($name)) {
 		$self->_debug('_code2countryname not in cache, storing');
 		$self->_trace('<_code2countryname ', $name);
-		$self->{_cache}->set($CACHE_NS . "code2countryname:$code", $name, $CACHE_TTL_LONG);
+		$self->_cache_call($self->{_cache}, 'set', $CACHE_NS . "code2countryname:$code", $name, $CACHE_TTL_LONG);
 		return $name;
 	}
 	$self->_trace('<_code2countryname undef');
