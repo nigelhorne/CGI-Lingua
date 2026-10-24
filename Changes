@@ -1,6 +1,6 @@
 Revision history for CGI-Lingua
 
-0.87
+0.87	Fri Oct  9 04:54:52 PM EDT 2026
 	[ Incompatible changes ]
 	- Entries of the supported list that are not language tags (e.g.
 	  'english', undef, references) are dropped with a warning; a list entry
