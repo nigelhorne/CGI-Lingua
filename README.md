@@ -16,7 +16,7 @@ CGI::Lingua - Create a multilingual web page
 
 ## Version
 
-Version 0.87
+Version 0.88
 
 ## Synopsis
 
@@ -187,8 +187,9 @@ If nothing matches, ["language"](#language) returns the string `'Unknown'`.
 
 - 1. `GEOIP_COUNTRY_CODE` (set by Apache's mod\_geoip).
 - 2. `HTTP_CF_IPCOUNTRY` (set by Cloudflare).
-- 3. A local database: [IP::Country](https://metacpan.org/pod/IP%3A%3ACountry), then [Geo::IP](https://metacpan.org/pod/Geo%3A%3AIP), then [Geo::IPfree](https://metacpan.org/pod/Geo%3A%3AIPfree),
-if they are installed.
+- 3. A local database: a MaxMind GeoIP2 or GeoLite2 database (see
+["@CGI::Lingua::GEOIP2\_MMDB"](#cgi-lingua-geoip2_mmdb)), then [IP::Country](https://metacpan.org/pod/IP%3A%3ACountry), then [Geo::IP](https://metacpan.org/pod/Geo%3A%3AIP), then
+[Geo::IPfree](https://metacpan.org/pod/Geo%3A%3AIPfree), if they are installed.
 - 4. The geoplugin.net web service.
 - 5. A Whois look-up ([Net::Whois::IP](https://metacpan.org/pod/Net%3A%3AWhois%3A%3AIP), then [Net::Whois::IANA](https://metacpan.org/pod/Net%3A%3AWhois%3A%3AIANA)).
 
@@ -680,7 +681,8 @@ record that says `US` with the state `PR` is returned as `pr` (Puerto Rico
 has its own country code; RT#131347).
 
 See ["Finding the country"](#finding-the-country) for the order in which the sources are tried.
-If you have none of [IP::Country](https://metacpan.org/pod/IP%3A%3ACountry), [Geo::IP](https://metacpan.org/pod/Geo%3A%3AIP) or [Geo::IPfree](https://metacpan.org/pod/Geo%3A%3AIPfree) installed,
+If you have no GeoIP2 / GeoLite2 database and none of [IP::Country](https://metacpan.org/pod/IP%3A%3ACountry),
+[Geo::IP](https://metacpan.org/pod/Geo%3A%3AIP) or [Geo::IPfree](https://metacpan.org/pod/Geo%3A%3AIPfree) installed,
 every look-up goes over the network, so please use a `cache` (see ["new"](#new)).
 
 The answer is remembered, so a second call on the same object is fast.
@@ -695,6 +697,11 @@ Legacy MaxMind `GeoIP.dat` databases, as used by [Geo::IP](https://metacpan.org/
 longer updated (Debian's `geoip-database` package is frozen at
 2019-12-24), so they can give the wrong country for addresses that
 have been reallocated since then.
+A MaxMind GeoLite2 database is free (it needs a MaxMind account), is
+updated twice a week, and is used before any other local database.
+Install [IP::Geolocation::MMDB](https://metacpan.org/pod/IP%3A%3AGeolocation%3A%3AMMDB) or [MaxMind::DB::Reader](https://metacpan.org/pod/MaxMind%3A%3ADB%3A%3AReader) to read it,
+and keep it up to date with MaxMind's `geoipupdate` program,
+which writes it to `/var/lib/GeoIP` on Debian and Ubuntu.
 
 #### Api Specification
 
@@ -743,6 +750,8 @@ These are warnings. `country()` does not die.
 "geoplugin lookup failed: ..."
 "Cache get failed: ...", "Cache set failed: ...", "Cache remove failed: ..."
 "Discarding malformed cache entry for ..."
+"Can't open ... with Geo::IP; not using it"
+"Can't open ... with IP::Geolocation::MMDB or MaxMind::DB::Reader; not using it"
 ```
 
 These are debug messages, sent only to the logger:
@@ -762,15 +771,17 @@ These are debug messages, sent only to the logger:
    change ::ffff:a.b.c.d into a.b.c.d
 5. Skip private and loopback IPs (return undef)
 6. Check CHI cache; return cached value if present
-7. Try IP::Country::Fast (local DB, fastest)
-8. Try Geo::IP (local DB)
-9. Try Geo::IPfree (local DB, skip $BROKEN_GEOIPFREE)
-10. Try geoplugin.net JSON API (LWP::Simple::WithCache;
+7. Try a GeoIP2 / GeoLite2 .mmdb file from @GEOIP2_MMDB (local DB,
+   read with IP::Geolocation::MMDB or MaxMind::DB::Reader)
+8. Try IP::Country::Fast (local DB)
+9. Try Geo::IP (local DB)
+10. Try Geo::IPfree (local DB, skip $BROKEN_GEOIPFREE)
+11. Try geoplugin.net JSON API (LWP::Simple::WithCache;
     no free tier as of October 2026, so normally yields nothing)
-11. Last resort: Net::Whois::IP then Net::Whois::IANA
-12. Sanitise: discard numeric, normalise HK->CN, handle EU special case,
+12. Last resort: Net::Whois::IP then Net::Whois::IANA
+13. Sanitise: discard numeric, normalise HK->CN, handle EU special case,
     discard anything that is not two lower-case letters
-13. Store in CHI cache; return result
+14. Store in CHI cache; return result
 ```
 
 ### Locale
@@ -841,7 +852,8 @@ if(my $locale = $l->locale()) {
 Returns the visitor's time zone, as an IANA time zone name,
 for example `'Europe/London'` or `'America/New_York'`.
 
-When `REMOTE_ADDR` is set, it uses [Geo::IP](https://metacpan.org/pod/Geo%3A%3AIP) if a database is installed,
+When `REMOTE_ADDR` is set, it uses a MaxMind GeoIP2 or GeoLite2 City database
+(see ["@CGI::Lingua::GEOIP2\_MMDB"](#cgi-lingua-geoip2_mmdb)), then [Geo::IP](https://metacpan.org/pod/Geo%3A%3AIP), if a database is installed,
 and otherwise asks the ip-api.com web service (this needs
 [LWP::Simple::WithCache](https://metacpan.org/pod/LWP%3A%3ASimple%3A%3AWithCache) or [LWP::Simple](https://metacpan.org/pod/LWP%3A%3ASimple), and [JSON::Parse](https://metacpan.org/pod/JSON%3A%3AParse)).
 
@@ -889,6 +901,7 @@ These are warnings. `time_zone()` does not die.
 "DateTime::TimeZone::Local failed: ..."
 "Discarding malformed timezone '...'"
 "ip-api.com lookup failed: ..."
+"Can't open ... with IP::Geolocation::MMDB or MaxMind::DB::Reader; not using it"
 ```
 
 #### Pseudocode
@@ -897,10 +910,11 @@ These are warnings. `time_zone()` does not die.
 1. Return the remembered answer if there is one
 2. If REMOTE_ADDR is set:
    a. Untaint and validate the IP
-   b. Try Geo::IP->time_zone() (local DB)
-   c. Try LWP::Simple::WithCache + JSON::Parse against ip-api.com
-   d. Fall back to LWP::Simple + JSON::Parse against ip-api.com
-   e. Warn and return undef if neither LWP variant, or JSON::Parse,
+   b. Try location/time_zone in a GeoIP2 / GeoLite2 City .mmdb (local DB)
+   c. Try Geo::IP->time_zone() (local DB)
+   d. Try LWP::Simple::WithCache + JSON::Parse against ip-api.com
+   e. Fall back to LWP::Simple + JSON::Parse against ip-api.com
+   f. Warn and return undef if neither LWP variant, or JSON::Parse,
       is installed (the warning names the missing module)
 3. If REMOTE_ADDR is absent (local/CLI mode):
    a. Read /etc/timezone if readable
@@ -1229,7 +1243,7 @@ These are warnings. `translation_file()` does not die.
 - **Local geo databases can be out of date**
 
     Old `GeoIP.dat` files can give the wrong country for some addresses
-    (see ["country"](#country)).
+    (see ["country"](#country)); use a GeoLite2 database instead.
 
 ## Encoding
 
@@ -1291,6 +1305,25 @@ installations can, with `local`:
     local @CGI::Lingua::GEOIP_DAT = ('/opt/geo/GeoIP.dat');
     ```
 
+- `@CGI::Lingua::GEOIP2_MMDB`
+
+    The places where ["country"](#country) and ["time\_zone"](#time_zone) look for a MaxMind GeoIP2 or
+    GeoLite2 database (a `.mmdb` file); the first readable regular file is used.
+    The default is `GeoIP2-City.mmdb`, `GeoLite2-City.mmdb`,
+    `GeoIP2-Country.mmdb` and `GeoLite2-Country.mmdb`, in that order, in each of
+    `/var/lib/GeoIP`, `/usr/share/GeoIP` and `/usr/local/share/GeoIP` (and
+    `c:/GeoIP` first, on Windows). Only a City database holds time zones.
+
+    The file is read with [IP::Geolocation::MMDB](https://metacpan.org/pod/IP%3A%3AGeolocation%3A%3AMMDB) (fast, needs the libmaxminddb
+    C library) or, if that is not installed, [MaxMind::DB::Reader](https://metacpan.org/pod/MaxMind%3A%3ADB%3A%3AReader) (pure Perl,
+    installed with [GeoIP2::Database::Reader](https://metacpan.org/pod/GeoIP2%3A%3ADatabase%3A%3AReader)). If neither is installed the
+    database is not used. A file that neither can open is skipped with the warning
+    `"Can't open ... with IP::Geolocation::MMDB or MaxMind::DB::Reader; not using it"`.
+
+    ```
+    local @CGI::Lingua::GEOIP2_MMDB = ('/srv/geo/GeoLite2-City.mmdb');
+    ```
+
 ## Limitations
 
 - **is\_rtl() covers primary-script RTL languages only**
@@ -1323,7 +1356,7 @@ installations can, with `local`:
 
 - **Whois lookups are slow and unreliable**
 
-    Without `IP::Country`, `Geo::IP`, or `Geo::IPfree` installed, `country()`
+    Without a GeoIP2 / GeoLite2 database, `IP::Country`, `Geo::IP`, or `Geo::IPfree`, `country()`
     falls back to Whois queries against live RIPE/ARIN/IANA servers.  These can
     time out under load.  Install at least one local geo-database module and enable
     the CHI cache to avoid this.
@@ -1628,7 +1661,7 @@ where CC2↑ is CC2 in upper case, and canon(::ffff:a.b.c.d) = a.b.c.d.
 ├───────────────────────────────────────────────────────────────
 │ timezone ≠ ⊥ ⇒ result! = timezone
 │ timezone = ⊥ ∧ env?.REMOTE_ADDR ≠ ⊥ ⇒
-│     result! = first ⊥-free of ⟨ geoip_tz(ip), ipapi_tz(ip) ⟩
+│     result! = first ⊥-free of ⟨ mmdb_tz(ip), geoip_tz(ip), ipapi_tz(ip) ⟩
 │ timezone = ⊥ ∧ env?.REMOTE_ADDR = ⊥ ⇒
 │     result! = first ⊥-free of ⟨ etc_timezone, local_tz ⟩
 │ result! ∉ ZONE ⇒ result! = ⊥
@@ -1764,7 +1797,7 @@ Part 2: the country (used by country(), locale(), and the language IP path)
 +----------------------+
 ```
 
-Part 3: each geo module (IP::Country, Geo::IP, Geo::IPfree)
+Part 3: each geo source (GeoIP2 .mmdb, IP::Country, Geo::IP, Geo::IPfree)
 
 ```perl
 +-----------+  first use: module loads   +-----------+
