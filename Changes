@@ -1,5 +1,17 @@
 Revision history for CGI-Lingua
 
+0.88
+	[ Enhancement ]
+	- country() and time_zone() use a MaxMind GeoIP2 or GeoLite2 database
+	  (.mmdb) before any other local source, read with IP::Geolocation::MMDB
+	  or MaxMind::DB::Reader.  The files are looked for in @GEOIP2_MMDB,
+	  which by default covers /var/lib/GeoIP (where geoipupdate writes),
+	  /usr/share/GeoIP and /usr/local/share/GeoIP; a City database also
+	  gives the time zone
+	[ Tests ]
+	- t/mmdb.t builds small .mmdb files and tests both readers
+	- t/30-basics.t no longer fails when the on-line tests are disabled
+
 0.87	Fri Oct  9 04:54:52 PM EDT 2026
 	[ Incompatible changes ]
 	- Entries of the supported list that are not language tags (e.g.

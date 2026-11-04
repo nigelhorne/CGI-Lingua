@@ -145,8 +145,8 @@ WriteMakefile(
 		'meta-spec' => { version => 2 },
 		optional_features => {
 			local_geo_databases => {
-				description => 'Look up the country from a local database (fastest, no network): IP::Country, Geo::IP (needs a GeoIP.dat) or Geo::IPfree',
-				prereqs => { runtime => { recommends => { 'IP::Country' => 0, 'Geo::IP' => 0, 'Geo::IPfree' => 0 } } },
+				description => 'Look up the country from a local database (fastest, no network): a MaxMind GeoIP2 or GeoLite2 .mmdb (read by IP::Geolocation::MMDB or MaxMind::DB::Reader; a City database also gives time zones), IP::Country, Geo::IP (needs a GeoIP.dat) or Geo::IPfree',
+				prereqs => { runtime => { recommends => { 'IP::Geolocation::MMDB' => 0, 'MaxMind::DB::Reader' => 0, 'IP::Country' => 0, 'Geo::IP' => 0, 'Geo::IPfree' => 0 } } },
 			},
 			baidu_subnet_detection => {
 				description => 'Detect Baidu crawler IPs that misreport as EU (RT-86809); not available on Windows due to Socket6 build dependency',

@@ -17,7 +17,7 @@ use Class::Autouse qw{
 	I18N::AcceptLanguage
 };
 
-our $VERSION = '0.87';
+our $VERSION = '0.88';
 
 # Post-release roadmap (from the 0.87 gap analysis).
 #
@@ -29,9 +29,6 @@ our $VERSION = '0.87';
 # TODO: ip-api.com is plain HTTP and limited to 45 requests a minute; answers
 #	are validated but can be read and altered in transit.  Allow an API key
 #	/ HTTPS provider and add rate limiting or back-off.
-# TODO: Support MaxMind GeoLite2 (GeoIP2::Database::Reader or
-#	IP::Geolocation::MMDB); GeoIP.dat (frozen 2019) and Geo::IPfree (known
-#	wrong entries) are the only local databases today.
 # TODO: Add a timeout option: a slow upstream holds the request for LWP's
 #	default of 180 seconds.
 #
@@ -121,6 +118,22 @@ our @GEOIP_DAT = (
 	'/usr/local/share/GeoIP/GeoIP.dat',
 );
 
+# Where _load_mmdb() looks for a MaxMind GeoIP2 / GeoLite2 database (.mmdb).
+# Unlike GeoIP.dat these are still updated, so country() and time_zone() try
+# one first.  City databases come first because they also hold the time zone.
+# /var/lib/GeoIP is where geoipupdate writes on Debian and Ubuntu.  A package
+# variable so a test or a site can point it elsewhere.
+our @GEOIP2_MMDB = map {
+	my $dir = $_;
+	map { "$dir/$_.mmdb" } qw(GeoIP2-City GeoLite2-City GeoIP2-Country GeoLite2-Country)
+} (($^O eq 'MSWin32') ? ('c:/GeoIP') : ()), '/var/lib/GeoIP', '/usr/share/GeoIP', '/usr/local/share/GeoIP';
+
+# Modules that can read a .mmdb file, in order of preference.  Both have
+# new(file => ...) and record_for_address($ip), returning the same hashes.
+# IP::Geolocation::MMDB wraps the libmaxminddb C library; MaxMind::DB::Reader
+# is the pure-Perl reader that GeoIP2::Database::Reader is built on.
+Readonly my @MMDB_READERS => ('IP::Geolocation::MMDB', 'MaxMind::DB::Reader');
+
 Readonly my %RESTORABLE => (
 	_slanguage               => $NAME_RE,
 	_rlanguage               => $NAME_RE,
@@ -175,7 +188,7 @@ CGI::Lingua - Create a multilingual web page
 
 =head1 VERSION
 
-Version 0.87
+Version 0.88
 
 =cut
 
@@ -339,8 +352,9 @@ L</country> tries these sources in order, and stops at the first answer:
 
 =item 2. C<HTTP_CF_IPCOUNTRY> (set by Cloudflare).
 
-=item 3. A local database: L<IP::Country>, then L<Geo::IP>, then L<Geo::IPfree>,
-if they are installed.
+=item 3. A local database: a MaxMind GeoIP2 or GeoLite2 database (see
+L</@CGI::Lingua::GEOIP2_MMDB>), then L<IP::Country>, then L<Geo::IP>, then
+L<Geo::IPfree>, if they are installed.
 
 =item 4. The geoplugin.net web service.
 
@@ -638,6 +652,7 @@ sub new
 		_info            => $info,
 		_syslog          => $params->{syslog},
 		_dont_use_ip     => $params->{dont_use_ip} || 0,
+		_have_mmdb       => $GEO_UNKNOWN,
 		_have_ipcountry  => $GEO_UNKNOWN,
 		_have_geoip      => $GEO_UNKNOWN,
 		_have_geoipfree  => $GEO_UNKNOWN,
@@ -1743,7 +1758,8 @@ record that says C<US> with the state C<PR> is returned as C<pr> (Puerto Rico
 has its own country code; RT#131347).
 
 See L</Finding the country> for the order in which the sources are tried.
-If you have none of L<IP::Country>, L<Geo::IP> or L<Geo::IPfree> installed,
+If you have no GeoIP2 / GeoLite2 database and none of L<IP::Country>,
+L<Geo::IP> or L<Geo::IPfree> installed,
 every look-up goes over the network, so please use a C<cache> (see L</new>).
 
 The answer is remembered, so a second call on the same object is fast.
@@ -1758,6 +1774,11 @@ Legacy MaxMind F<GeoIP.dat> databases, as used by L<Geo::IP>, are no
 longer updated (Debian's C<geoip-database> package is frozen at
 2019-12-24), so they can give the wrong country for addresses that
 have been reallocated since then.
+A MaxMind GeoLite2 database is free (it needs a MaxMind account), is
+updated twice a week, and is used before any other local database.
+Install L<IP::Geolocation::MMDB> or L<MaxMind::DB::Reader> to read it,
+and keep it up to date with MaxMind's C<geoipupdate> program,
+which writes it to F</var/lib/GeoIP> on Debian and Ubuntu.
 
 =head3 API SPECIFICATION
 
@@ -1799,6 +1820,8 @@ These are warnings. C<country()> does not die.
     "geoplugin lookup failed: ..."
     "Cache get failed: ...", "Cache set failed: ...", "Cache remove failed: ..."
     "Discarding malformed cache entry for ..."
+    "Can't open ... with Geo::IP; not using it"
+    "Can't open ... with IP::Geolocation::MMDB or MaxMind::DB::Reader; not using it"
 
 These are debug messages, sent only to the logger:
 
@@ -1814,15 +1837,17 @@ These are debug messages, sent only to the logger:
        change ::ffff:a.b.c.d into a.b.c.d
     5. Skip private and loopback IPs (return undef)
     6. Check CHI cache; return cached value if present
-    7. Try IP::Country::Fast (local DB, fastest)
-    8. Try Geo::IP (local DB)
-    9. Try Geo::IPfree (local DB, skip $BROKEN_GEOIPFREE)
-    10. Try geoplugin.net JSON API (LWP::Simple::WithCache;
+    7. Try a GeoIP2 / GeoLite2 .mmdb file from @GEOIP2_MMDB (local DB,
+       read with IP::Geolocation::MMDB or MaxMind::DB::Reader)
+    8. Try IP::Country::Fast (local DB)
+    9. Try Geo::IP (local DB)
+    10. Try Geo::IPfree (local DB, skip $BROKEN_GEOIPFREE)
+    11. Try geoplugin.net JSON API (LWP::Simple::WithCache;
         no free tier as of October 2026, so normally yields nothing)
-    11. Last resort: Net::Whois::IP then Net::Whois::IANA
-    12. Sanitise: discard numeric, normalise HK->CN, handle EU special case,
+    12. Last resort: Net::Whois::IP then Net::Whois::IANA
+    13. Sanitise: discard numeric, normalise HK->CN, handle EU special case,
         discard anything that is not two lower-case letters
-    13. Store in CHI cache; return result
+    14. Store in CHI cache; return result
 
 =cut
 
@@ -1941,25 +1966,39 @@ sub country {
 		$self->_debug("$ip isn't in the cache");
 	}
 
-	# Try IP::Country first (fastest, local database)
-	if($self->{_have_ipcountry} == $GEO_UNKNOWN) {
-		if(eval { require IP::Country::Fast }) {
-			# Require the concrete class directly; IP::Country->import() is not needed
-			# because IP::Country::Fast->new() is a fully-qualified class method call.
-			$self->{_have_ipcountry} = $GEO_PRESENT;
-			$self->{_ipcountry}      = IP::Country::Fast->new();
+	# Try a GeoIP2 / GeoLite2 database first: it is the only local source
+	# that is still updated.  The record comes from a file, so check its
+	# shape like any other upstream answer.
+	if(my $record = $self->_mmdb_record($ip)) {
+		my $cc = (ref($record->{country}) eq 'HASH') ? $record->{country}{iso_code} : undef;
+		if(defined($cc) && !ref($cc) && ($cc =~ /^([A-Za-z]{2})\z/a)) {
+			$self->{_country} = lc($1);
 		} else {
-			$self->{_have_ipcountry} = $GEO_ABSENT;
+			$self->_debug("$ip has no country in the GeoIP2 database");
 		}
 	}
-	$self->_debug("have_ipcountry $self->{_have_ipcountry}");
 
-	if($self->{_have_ipcountry}) {
-		$self->{_country} = $self->{_ipcountry}->inet_atocc($ip);
-		if($self->{_country}) {
-			$self->{_country} = lc($self->{_country});
-		} elsif(is_ipv4($ip)) {
-			$self->_debug("$ip is not known by IP::Country");
+	# Then IP::Country (fast, local database)
+	unless(defined($self->{_country})) {
+		if($self->{_have_ipcountry} == $GEO_UNKNOWN) {
+			if(eval { require IP::Country::Fast }) {
+				# Require the concrete class directly; IP::Country->import() is not needed
+				# because IP::Country::Fast->new() is a fully-qualified class method call.
+				$self->{_have_ipcountry} = $GEO_PRESENT;
+				$self->{_ipcountry}      = IP::Country::Fast->new();
+			} else {
+				$self->{_have_ipcountry} = $GEO_ABSENT;
+			}
+		}
+		$self->_debug("have_ipcountry $self->{_have_ipcountry}");
+
+		if($self->{_have_ipcountry}) {
+			$self->{_country} = $self->{_ipcountry}->inet_atocc($ip);
+			if($self->{_country}) {
+				$self->{_country} = lc($self->{_country});
+			} elsif(is_ipv4($ip)) {
+				$self->_debug("$ip is not known by IP::Country");
+			}
 		}
 	}
 
@@ -2254,6 +2293,63 @@ sub _load_geoip
 	}
 }
 
+# ── _load_mmdb ────────────────────────────────────────────────────────────
+# Purpose:      Find a GeoIP2 / GeoLite2 database in @GEOIP2_MMDB and open it
+#               with the first module in @MMDB_READERS that can.
+# Entry:        _have_mmdb must be GEO_UNKNOWN.
+# Exit:         _have_mmdb set to GEO_PRESENT (and _mmdb to the reader) or
+#               GEO_ABSENT.  Warns if a reader is installed but none can open
+#               the file (corrupt or truncated download).
+# Side Effects: Requires the reader modules; opens the .mmdb file.
+sub _load_mmdb
+{
+	my $self = shift;
+
+	$self->{_have_mmdb} = $GEO_ABSENT;
+
+	# Look for the file before loading a module, as _load_geoip() does
+	my ($file) = grep { -f $_ && -r _ } @GEOIP2_MMDB;
+	return unless defined($file);
+
+	my $have_reader = 0;
+	for my $class (@MMDB_READERS) {
+		(my $pm = "$class.pm") =~ s{::}{/}g;
+		next unless eval { local $SIG{__DIE__}; require $pm; 1 };
+		$have_reader = 1;
+
+		# No ->import(): both are used only through new() and methods
+		my $reader = eval { local $SIG{__DIE__}; $class->new(file => $file) };
+		if(Scalar::Util::blessed($reader)) {
+			$self->_debug("Using $file with $class");
+			$self->{_have_mmdb} = $GEO_PRESENT;
+			$self->{_mmdb}      = $reader;
+			return;
+		}
+	}
+	if($have_reader) {
+		# Not $@: MaxMind::DB::Reader's message carries a whole stack trace
+		$self->_warn({ warning => "Can't open $file with " . join(' or ', @MMDB_READERS) . '; not using it' });
+	}
+}
+
+# ── _mmdb_record ──────────────────────────────────────────────────────────
+# Purpose:      Look an address up in the GeoIP2 / GeoLite2 database.
+# Entry:        $ip, already untainted and validated.
+# Exit:         The record (a hashref, e.g. { country => { iso_code => 'GB' },
+#               location => { time_zone => 'Europe/London' } }), or undef if
+#               there is no database, no record, or the look-up died (an IPv6
+#               address in an IPv4-only database dies in IP::Geolocation::MMDB).
+sub _mmdb_record
+{
+	my ($self, $ip) = @_;
+
+	$self->_load_mmdb() if $self->{_have_mmdb} == $GEO_UNKNOWN;
+	return undef unless $self->{_have_mmdb} == $GEO_PRESENT;
+
+	my $record = eval { local $SIG{__DIE__}; $self->{_mmdb}->record_for_address($ip) };
+	return (ref($record) eq 'HASH') ? $record : undef;
+}
+
 =head2 locale
 
 Returns a L<Locale::Object::Country> object for the visitor's country.
@@ -2402,7 +2498,8 @@ sub locale {
 Returns the visitor's time zone, as an IANA time zone name,
 for example C<'Europe/London'> or C<'America/New_York'>.
 
-When C<REMOTE_ADDR> is set, it uses L<Geo::IP> if a database is installed,
+When C<REMOTE_ADDR> is set, it uses a MaxMind GeoIP2 or GeoLite2 City database
+(see L</@CGI::Lingua::GEOIP2_MMDB>), then L<Geo::IP>, if a database is installed,
 and otherwise asks the ip-api.com web service (this needs
 L<LWP::Simple::WithCache> or L<LWP::Simple>, and L<JSON::Parse>).
 
@@ -2443,16 +2540,18 @@ These are warnings. C<time_zone()> does not die.
     "DateTime::TimeZone::Local failed: ..."
     "Discarding malformed timezone '...'"
     "ip-api.com lookup failed: ..."
+    "Can't open ... with IP::Geolocation::MMDB or MaxMind::DB::Reader; not using it"
 
 =head3 PSEUDOCODE
 
     1. Return the remembered answer if there is one
     2. If REMOTE_ADDR is set:
        a. Untaint and validate the IP
-       b. Try Geo::IP->time_zone() (local DB)
-       c. Try LWP::Simple::WithCache + JSON::Parse against ip-api.com
-       d. Fall back to LWP::Simple + JSON::Parse against ip-api.com
-       e. Warn and return undef if neither LWP variant, or JSON::Parse,
+       b. Try location/time_zone in a GeoIP2 / GeoLite2 City .mmdb (local DB)
+       c. Try Geo::IP->time_zone() (local DB)
+       d. Try LWP::Simple::WithCache + JSON::Parse against ip-api.com
+       e. Fall back to LWP::Simple + JSON::Parse against ip-api.com
+       f. Warn and return undef if neither LWP variant, or JSON::Parse,
           is installed (the warning names the missing module)
     3. If REMOTE_ADDR is absent (local/CLI mode):
        a. Read /etc/timezone if readable
@@ -2484,11 +2583,21 @@ sub time_zone {
 			return undef;
 		}
 
-		if($self->{_have_geoip} == $GEO_UNKNOWN) {
-			$self->_load_geoip();
+		# A GeoIP2 / GeoLite2 City database has the zone; a Country one does
+		# not.  The value is checked against $ZONE_RE below.
+		if(my $record = $self->_mmdb_record($ip)) {
+			if(ref($record->{location}) eq 'HASH') {
+				$self->{_timezone} = $record->{location}{time_zone};
+			}
 		}
-		if($self->{_have_geoip} == $GEO_PRESENT) {
-			eval { $self->{_timezone} = $self->{_geoip}->time_zone($ip) };
+
+		unless($self->{_timezone}) {
+			if($self->{_have_geoip} == $GEO_UNKNOWN) {
+				$self->_load_geoip();
+			}
+			if($self->{_have_geoip} == $GEO_PRESENT) {
+				eval { $self->{_timezone} = $self->{_geoip}->time_zone($ip) };
+			}
 		}
 
 		unless($self->{_timezone}) {
@@ -3362,7 +3471,7 @@ On the command line, only smaller look-ups (such as code-to-name) are cached.
 =item * B<Local geo databases can be out of date>
 
 Old F<GeoIP.dat> files can give the wrong country for some addresses
-(see L</country>).
+(see L</country>); use a GeoLite2 database instead.
 
 =back
 
@@ -3422,6 +3531,23 @@ open is skipped with the warning C<"Can't open ... with Geo::IP; not using it">.
 
     local @CGI::Lingua::GEOIP_DAT = ('/opt/geo/GeoIP.dat');
 
+=item * C<@CGI::Lingua::GEOIP2_MMDB>
+
+The places where L</country> and L</time_zone> look for a MaxMind GeoIP2 or
+GeoLite2 database (a F<.mmdb> file); the first readable regular file is used.
+The default is F<GeoIP2-City.mmdb>, F<GeoLite2-City.mmdb>,
+F<GeoIP2-Country.mmdb> and F<GeoLite2-Country.mmdb>, in that order, in each of
+F</var/lib/GeoIP>, F</usr/share/GeoIP> and F</usr/local/share/GeoIP> (and
+F<c:/GeoIP> first, on Windows). Only a City database holds time zones.
+
+The file is read with L<IP::Geolocation::MMDB> (fast, needs the libmaxminddb
+C library) or, if that is not installed, L<MaxMind::DB::Reader> (pure Perl,
+installed with L<GeoIP2::Database::Reader>). If neither is installed the
+database is not used. A file that neither can open is skipped with the warning
+C<"Can't open ... with IP::Geolocation::MMDB or MaxMind::DB::Reader; not using it">.
+
+    local @CGI::Lingua::GEOIP2_MMDB = ('/srv/geo/GeoLite2-City.mmdb');
+
 =back
 
 =head1 LIMITATIONS
@@ -3458,7 +3584,7 @@ This is a known limitation of the Locale::Object layer.
 
 =item * B<Whois lookups are slow and unreliable>
 
-Without C<IP::Country>, C<Geo::IP>, or C<Geo::IPfree> installed, C<country()>
+Without a GeoIP2 / GeoLite2 database, C<IP::Country>, C<Geo::IP>, or C<Geo::IPfree>, C<country()>
 falls back to Whois queries against live RIPE/ARIN/IANA servers.  These can
 time out under load.  Install at least one local geo-database module and enable
 the CHI cache to avoid this.
@@ -3759,7 +3885,7 @@ You do not need it to use the module.
     ├───────────────────────────────────────────────────────────────
     │ timezone ≠ ⊥ ⇒ result! = timezone
     │ timezone = ⊥ ∧ env?.REMOTE_ADDR ≠ ⊥ ⇒
-    │     result! = first ⊥-free of ⟨ geoip_tz(ip), ipapi_tz(ip) ⟩
+    │     result! = first ⊥-free of ⟨ mmdb_tz(ip), geoip_tz(ip), ipapi_tz(ip) ⟩
     │ timezone = ⊥ ∧ env?.REMOTE_ADDR = ⊥ ⇒
     │     result! = first ⊥-free of ⟨ etc_timezone, local_tz ⟩
     │ result! ∉ ZONE ⇒ result! = ⊥
@@ -3882,7 +4008,7 @@ Part 2: the country (used by country(), locale(), and the language IP path)
     |  _country = 'xx'     |  (or 'Unknown' for EU addresses)
     +----------------------+
 
-Part 3: each geo module (IP::Country, Geo::IP, Geo::IPfree)
+Part 3: each geo source (GeoIP2 .mmdb, IP::Country, Geo::IP, Geo::IPfree)
 
     +-----------+  first use: module loads   +-----------+
     |  UNKNOWN  |--------------------------->|  PRESENT  |

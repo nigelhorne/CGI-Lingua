@@ -109,6 +109,7 @@ subtest 'new: sentinel flags initialised to GEO_UNKNOWN' => sub {
 	is($l->{_have_ipcountry}, $GEO_UNKNOWN, '_have_ipcountry starts at -1');
 	is($l->{_have_geoip},     $GEO_UNKNOWN, '_have_geoip starts at -1');
 	is($l->{_have_geoipfree}, $GEO_UNKNOWN, '_have_geoipfree starts at -1');
+	is($l->{_have_mmdb},      $GEO_UNKNOWN, '_have_mmdb starts at -1');
 };
 
 subtest 'new: cloning overlays params onto existing state' => sub {
@@ -577,6 +578,7 @@ subtest 'country: numeric result from geo lookup is discarded' => sub {
 	$l->{_ipcountry}      = bless {}, 'IP::Country::Fast';
 	$l->{_have_geoip}     = $GEO_ABSENT;
 	$l->{_have_geoipfree} = $GEO_ABSENT;
+	$l->{_have_mmdb} = $GEO_ABSENT;
 	# Force skip of LWP/Whois fallbacks for this unit test
 	Test::Mockingbird::mock('CGI::Lingua', '_resolve_country_via_whois', sub {});
 	my $result = $l->country();
@@ -592,6 +594,7 @@ subtest 'country: eu result from IP::Country is discarded and falls through' => 
 	$l->{_ipcountry}      = bless {}, 'IP::Country::Fast';
 	$l->{_have_geoip}     = $GEO_ABSENT;
 	$l->{_have_geoipfree} = $GEO_ABSENT;
+	$l->{_have_mmdb} = $GEO_ABSENT;
 	# Block the Whois/geoplugin fallbacks to keep test fast and offline
 	Test::Mockingbird::mock('CGI::Lingua', '_resolve_country_via_whois', sub {});
 	my $r = $l->country();
@@ -607,6 +610,7 @@ subtest 'country: hk is mapped to cn' => sub {
 	$l->{_ipcountry}      = bless {}, 'IP::Country::Fast';
 	$l->{_have_geoip}     = $GEO_ABSENT;
 	$l->{_have_geoipfree} = $GEO_ABSENT;
+	$l->{_have_mmdb} = $GEO_ABSENT;
 	is($l->country(), 'cn', 'HK is remapped to CN (legacy Whois behavior)');
 	Test::Mockingbird::restore_all();
 };
@@ -620,6 +624,7 @@ subtest 'country: result is stored in CHI cache' => sub {
 	$l->{_ipcountry}      = bless {}, 'IP::Country::Fast';
 	$l->{_have_geoip}     = $GEO_ABSENT;
 	$l->{_have_geoipfree} = $GEO_ABSENT;
+	$l->{_have_mmdb} = $GEO_ABSENT;
 	$l->country();
 	is($cache->get($CACHE_NS . 'country:8.8.8.8'), 'us', 'Country stored in cache');
 	Test::Mockingbird::restore_all();
@@ -636,6 +641,7 @@ subtest 'country: numeric country in cache triggers removal' => sub {
 	$l->{_ipcountry}      = bless {}, 'IP::Country::Fast';
 	$l->{_have_geoip}     = $GEO_ABSENT;
 	$l->{_have_geoipfree} = $GEO_ABSENT;
+	$l->{_have_mmdb} = $GEO_ABSENT;
 	# The numeric cache entry must be discarded and the lookup must proceed
 	my $result = $l->country();
 	is($result, 'us', 'Numeric cache entry discarded; real lookup used');
@@ -2141,6 +2147,88 @@ subtest 'time_zone: falls back to LWP::Simple without LWP::Simple::WithCache' =>
 	my $tz = _hide_module_for('LWP/Simple/WithCache.pm', sub { $l->time_zone() });
 	is($tz, 'Asia/Tokyo', 'zone from LWP::Simple');
 	is_deeply(\@urls, ["http://ip-api.com/json/$CFG{public_v4}"], 'ip-api.com asked about the visitor');
+	_reset_mocks();
+};
+
+# -- _load_mmdb / _mmdb_record -------------------------------------------------
+
+# A stand-in for IP::Geolocation::MMDB / MaxMind::DB::Reader: answers from a
+# table, and dies for the key 'die' as the real readers do for bad input.
+{
+	package Fake::MMDB;
+	sub new { my ($c, %a) = @_; return bless { %a, asked => [] }, $c }
+	sub record_for_address {
+		my ($self, $ip) = @_;
+		push @{$self->{asked}}, $ip;
+		die "lookup failed\n" if $ip eq 'die';
+		return $self->{records}{$ip};
+	}
+}
+
+subtest '_load_mmdb: no readable file in @GEOIP2_MMDB is GEO_ABSENT, silently' => sub {
+	my $dir = File::Temp::tempdir(CLEANUP => 1);
+	no warnings 'once';
+	local @CGI::Lingua::GEOIP2_MMDB = ("$dir/missing.mmdb", $dir);	# missing, then a directory
+	my ($l, $spy) = _spied_obj();
+	$l->_load_mmdb();
+	is($l->{_have_mmdb}, $GEO_ABSENT, 'sentinel set to GEO_ABSENT');
+	ok(!exists($l->{_mmdb}), 'no reader stored');
+	is_deeply([ $spy->messages('warn') ], [], 'no warning');
+
+	local @CGI::Lingua::GEOIP2_MMDB = ();
+	$l->{_have_mmdb} = $GEO_UNKNOWN;
+	$l->_load_mmdb();
+	is($l->{_have_mmdb}, $GEO_ABSENT, 'empty search list is GEO_ABSENT');
+};
+
+subtest '_load_mmdb: a file but no reader module is GEO_ABSENT, silently' => sub {
+	my $dir = File::Temp::tempdir(CLEANUP => 1);
+	my $file = "$dir/GeoLite2-Country.mmdb";
+	open(my $fh, '>', $file) or die "$file: $!";
+	close $fh;
+	no warnings 'once';
+	local @CGI::Lingua::GEOIP2_MMDB = ($file);
+	my ($l, $spy) = _spied_obj();
+	_hide_module_for('IP/Geolocation/MMDB.pm', sub {
+		_hide_module_for('MaxMind/DB/Reader.pm', sub { $l->_load_mmdb() });
+	});
+	is($l->{_have_mmdb}, $GEO_ABSENT, 'sentinel set to GEO_ABSENT');
+	is_deeply([ $spy->messages('warn') ], [], 'no warning: nothing could have read it');
+};
+
+subtest '_mmdb_record: returns only hash records, survives a dying reader' => sub {
+	my $l = _basic_obj();
+	$l->{_have_mmdb} = $GEO_PRESENT;
+	$l->{_mmdb} = Fake::MMDB->new(records => {
+		'81.2.69.160' => { country => { iso_code => 'GB' } },
+		'1.2.3.4'     => 'GB',
+		'5.6.7.8'     => [ 'GB' ],
+	});
+	is_deeply($l->_mmdb_record('81.2.69.160'), { country => { iso_code => 'GB' } }, 'hash record returned');
+	is($l->_mmdb_record('1.2.3.4'), undef, 'string record is undef');
+	is($l->_mmdb_record('5.6.7.8'), undef, 'array record is undef');
+	is($l->_mmdb_record('9.9.9.9'), undef, 'address not in the database is undef');
+
+	my $r;
+	lives_ok { $r = $l->_mmdb_record('die') } 'a dying reader does not propagate';
+	is($r, undef, 'and gives undef');
+};
+
+subtest '_mmdb_record: GEO_ABSENT never asks a reader; GEO_UNKNOWN probes once' => sub {
+	my $l = _basic_obj();
+	my $fake = Fake::MMDB->new(records => {});
+	$l->{_have_mmdb} = $GEO_ABSENT;
+	$l->{_mmdb} = $fake;
+	is($l->_mmdb_record($CFG{public_v4}), undef, 'undef when absent');
+	is_deeply($fake->{asked}, [], 'reader not asked');
+
+	no warnings 'once';
+	local @CGI::Lingua::GEOIP2_MMDB = ();
+	my $probe = Test::Mockingbird::spy('CGI::Lingua', '_load_mmdb');
+	$l->{_have_mmdb} = $GEO_UNKNOWN;
+	$l->_mmdb_record($CFG{public_v4}) for 1 .. 3;
+	is(scalar($probe->()), 1, '_load_mmdb called once');
+	is($l->{_have_mmdb}, $GEO_ABSENT, 'and the answer remembered');
 	_reset_mocks();
 };
 
