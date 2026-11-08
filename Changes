@@ -22,6 +22,11 @@ Revision history for CGI-Lingua
 	- perl Makefile.PL --no-online-tests is honoured when a local geo
 	  database is installed, and a GeoIP2 or GeoLite2 .mmdb file now counts
 	  as one
+	- Without Data::Validate::IP (always the case on Windows), country()
+	  found no country for an IPv6 address on Windows: the check used
+	  Socket::inet_pton, which there fails until a socket has been opened.
+	  IPv6 addresses are now checked in Perl, and an IPv4 address with a
+	  leading zero (010.8.8.8) is refused, as Data::Validate::IP does
 	[ Tests ]
 	- t/mmdb.t builds small .mmdb files and tests both readers
 	- t/30-basics.t no longer fails when the on-line tests are disabled

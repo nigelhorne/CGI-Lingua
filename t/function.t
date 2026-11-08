@@ -1344,6 +1344,8 @@ subtest '_is_ipv4: rejects malformed and hostile addresses' => sub {
 		'negative octet'         => '-1.2.3.4',
 		'empty string'           => '',
 		'IPv6'                   => '::1',
+		'leading zero (octal)'   => '010.8.8.8',
+		'zero-padded octet'      => '1.2.3.04',
 		'Arabic-Indic digits'    => join('.', ("\x{661}") x 4),
 	);
 	my @w = _warnings_from {
@@ -1376,19 +1378,49 @@ subtest '_is_ipv6: rejects malformed and hostile addresses' => sub {
 	ok(!CGI::Lingua::_is_ipv6(undef), 'rejects undef');
 };
 
-subtest '_is_ipv6: structural fallback works without Socket::inet_pton' => sub {
-	# Strategy: hide inet_pton to force the pure-regex branch, which is what
-	# runs on very old Perls.  The branch used tr/::// (a character count),
-	# so it could never return true; these positives guard that fix.
+subtest '_is_ipv6: does not depend on Socket::inet_pton' => sub {
+	# Regression: on Windows inet_pton is Winsock's InetPton, which fails for
+	# every address until WSAStartup has run (the first socket).  The check
+	# used it, so without Data::Validate::IP no IPv6 address had a country.
+	# Make inet_pton fail as it does there; the answers must not change.
+	require Socket;
 	no warnings qw(redefine once);
-	local *Socket::inet_pton;
-	ok(!defined(&Socket::inet_pton), 'inet_pton hidden for this block');
-	ok(CGI::Lingua::_is_ipv6($CFG{public_v6}), "fallback accepts $CFG{public_v6}");
-	ok(CGI::Lingua::_is_ipv6('::1'), 'fallback accepts ::1');
-	ok(CGI::Lingua::_is_ipv6('::ffff:1.2.3.4'), 'fallback accepts mixed notation');
-	ok(!CGI::Lingua::_is_ipv6('1::2::3'), 'fallback rejects two "::"');
-	ok(!CGI::Lingua::_is_ipv6('zz::1'), 'fallback rejects non-hex');
-	ok(!CGI::Lingua::_is_ipv6("::1\n"), 'fallback rejects trailing newline');
+	local *Socket::inet_pton = sub { return undef };
+	ok(CGI::Lingua::_is_ipv6($CFG{public_v6}), "accepts $CFG{public_v6}");
+	ok(CGI::Lingua::_is_ipv6('::1'), 'accepts ::1');
+	ok(CGI::Lingua::_is_ipv6('::ffff:1.2.3.4'), 'accepts mixed notation');
+	ok(!CGI::Lingua::_is_ipv6('1::2::3'), 'rejects two "::"');
+	ok(!CGI::Lingua::_is_ipv6('zz::1'), 'rejects non-hex');
+	ok(!CGI::Lingua::_is_ipv6("::1\n"), 'rejects trailing newline');
+};
+
+subtest '_is_ipv6: group counts and embedded IPv4 boundaries' => sub {
+	my %good = (
+		'all eight groups'          => '1:2:3:4:5:6:7:8',
+		'unspecified address'       => '::',
+		'trailing ::'               => '1::',
+		'seven groups and ::'       => '1:2:3:4:5:6:7::',
+		'six groups and IPv4'       => '1:2:3:4:5:6:1.2.3.4',
+		'four-digit upper-case hex' => 'FFFF::ABCD',
+	);
+	for my $why (sort keys %good) {
+		ok(CGI::Lingua::_is_ipv6($good{$why}), "accepts $why ($good{$why})");
+	}
+	my %bad = (
+		'seven groups, no ::'      => '1:2:3:4:5:6:7',
+		'leading single colon'     => ':1:2:3:4:5:6:7',
+		'trailing single colon'    => '1:2:3:4:5:6:7:',
+		'triple colon'             => '1:::2',
+		'five-digit group'         => '12345::1',
+		'IPv4 octet over 255'      => '::ffff:256.1.1.1',
+		'IPv4 not at the end'      => '::1.2.3.4:1',
+		'seven groups and IPv4'    => '1:2:3:4:5:6:7:1.2.3.4',
+		'zone index'               => 'fe80::1%eth0',
+		'IPv4 with a leading zero' => '::ffff:01.2.3.4',
+	);
+	for my $why (sort keys %bad) {
+		ok(!CGI::Lingua::_is_ipv6($bad{$why}), "rejects $why ($bad{$why})");
+	}
 };
 
 # -- _is_private_ip / _is_loopback_ip ------------------------------------------

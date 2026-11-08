@@ -57,6 +57,7 @@ my $test_requires = {
 	# they are optional at run time (see the web_lookups feature below)
 	'JSON::Parse' => 0,
 	'LWP::Simple::WithCache' => 0.04,
+	'Socket' => 0,	# t/function.t makes inet_pton fail, as on Windows before a socket is opened
 	'Test::Compile' => 0,
 	'Test::DescribeMe' => 0,
 	'Test::Log::Abstraction' => 0,
@@ -118,7 +119,6 @@ WriteMakefile(
 		'Params::Get' => 0.17,	# 0.15 fast-path: unblessed hashref arg returned directly (not stored under default key)
 		'Readonly' => 0,
 		'Scalar::Util' => 0,
-		'Socket' => 0,	# inet_pton for the pure-Perl IPv6 check
 	}, dist => $dist,
 	clean => { FILES => 'CGI-Lingua-* t/online.enabled' },
 	META_MERGE => {

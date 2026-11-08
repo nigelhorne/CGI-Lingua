@@ -112,6 +112,10 @@ Readonly my $SUPPORTED_RE => qr/^[A-Za-z]{2,3}(?:[-_][A-Za-z0-9]{2,8})*\z/a;
 # it properly: dotted quad, or IPv6 including ::ffff:a.b.c.d.  Captures it.
 Readonly my $IP_SHAPE_RE => qr/^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|[0-9a-fA-F:]{2,39}|[0-9a-fA-F:]{2,30}:(?:\d{1,3}\.){3}\d{1,3})\z/a;
 
+# An IPv6 address has eight 16-bit groups of one to four hex digits (_is_ipv6)
+Readonly my $IPV6_GROUPS => 8;
+Readonly my $IPV6_GROUP_RE => qr/^[0-9A-Fa-f]{1,4}\z/;
+
 # Fields that DESTROY saves and new() restores, with the shape each must have
 # time_zone(): IANA zone names (e.g. "America/New_York", "Etc/GMT+8", "UTC")
 Readonly my $ZONE_RE       => qr/^[A-Za-z][A-Za-z0-9_+\-\/]{0,50}\z/a;
@@ -3372,22 +3376,38 @@ sub _is_ipv4 {
 	# /a: without it \d also matches non-ASCII digits such as U+0661, which
 	# then compare as 0 and make "\x{661}.\x{661}.\x{661}.\x{661}" look valid
 	return unless defined($ip) && $ip =~ /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\z/a;
-	return !(grep { $_ > 255 } ($1, $2, $3, $4));
+	# A leading zero is refused, as Data::Validate::IP does: inet_aton reads
+	# "010" as octal 8, while the range checks here would read it as 10
+	return !(grep { ($_ > 255) || /^0\d/ } ($1, $2, $3, $4));
 }
 
+# RFC 4291 section 2.2 text form, parsed in Perl.  Not Socket::inet_pton: on
+# Windows that is Winsock's InetPton, which fails for every address until
+# WSAStartup has run, and Perl only runs it when the first socket is made, so
+# a CGI script that has not opened a socket saw no IPv6 address as valid.
 sub _is_ipv6 {
 	my $ip = shift;
 	return unless defined($ip) && $ip =~ /:/;
-	# Socket::inet_pton is core since Perl 5.14 and validates IPv6 reliably
-	require Socket;
-	if(defined &Socket::inet_pton) {
-		return defined Socket::inet_pton(Socket::AF_INET6(), $ip);
+
+	# A trailing dotted quad ("::ffff:1.2.3.4") stands for the last two groups
+	if($ip =~ /^(.*:)(\d{1,3}(?:\.\d{1,3}){3})\z/as) {
+		my ($head, $v4) = ($1, $2);
+		return 0 unless _is_ipv4($v4);
+		$ip = "${head}0:0";
 	}
-	# Structural fallback: hex+colons, at least two colons, at most one ::
-	# (tr/// counts characters, not "::" pairs, so count matches of /::/ instead)
-	return ($ip =~ /^[0-9a-fA-F:]+\z/ || $ip =~ /^[0-9a-fA-F:]+:\d{1,3}(?:\.\d{1,3}){3}\z/a)
-		&& (() = $ip =~ /::/g) <= 1
-		&& ($ip =~ tr/://) >= 2;
+	return 0 unless $ip =~ /^[0-9A-Fa-f:]+\z/;
+
+	# At most one "::", which stands for one or more groups of zeros
+	my @halves = split(/::/, $ip, -1);
+	return 0 if(scalar(@halves) > 2);
+	my $groups = 0;
+	for my $half (grep { length } @halves) {
+		for my $group (split(/:/, $half, -1)) {
+			return 0 unless $group =~ $IPV6_GROUP_RE;
+			$groups++;
+		}
+	}
+	return (scalar(@halves) == 2) ? ($groups < $IPV6_GROUPS) : ($groups == $IPV6_GROUPS);
 }
 
 sub _is_private_ip {
