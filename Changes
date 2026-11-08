@@ -1,6 +1,6 @@
 Revision history for CGI-Lingua
 
-0.88
+0.88	Sun Nov  8 10:34:04 AM EST 2026
 	[ Incompatible changes ]
 	- The locale is read as POSIX does: LC_ALL, then LC_MESSAGES, then LANG,
 	  the first that is set deciding.  LC_ALL=C now means no language even
@@ -31,6 +31,7 @@ Revision history for CGI-Lingua
 	- t/mmdb.t builds small .mmdb files and tests both readers
 	- t/30-basics.t no longer fails when the on-line tests are disabled
 	- t/minimal-deps.t loads the module with only its prerequisites
+	- Added t/noshadow.t
 
 0.87	Fri Oct  9 04:54:52 PM EDT 2026
 	[ Incompatible changes ]
