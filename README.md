@@ -169,9 +169,16 @@ Languages with a higher `q` value are tried first.
 A language with `q=0` means "not acceptable" (RFC 7231) and is never chosen.
 Some browsers still send the old tag `en-uk`; it is treated as `en-gb`
 (the code for the United Kingdom is `gb`), with a warning.
-- 3. The `LANG` environment variable.
+- 3. The locale: `LC_ALL`, then `LC_MESSAGES`, then `LANG`.
 This is used when you run the program on the command line,
 for example `LANG=fr_FR.UTF-8`.
+As in POSIX, the first of these that is set and not empty decides, so
+`LC_ALL=C` means no language even when `LANG` names one.
+The locale is read as the language tag it stands for:
+`en_US.UTF-8` is `en-US` (English, United States) and `de_DE@euro` is
+`de-DE`; `C` and `POSIX` name no language.
+Before 0.88 the locale was passed on as it was written, and `en_US.UTF-8`
+matched no language.
 - 4. The visitor's country (see below).
 CGI::Lingua uses the official language of that country.
 This step is skipped when you give `dont_use_ip` to ["new"](#new).
@@ -441,6 +448,8 @@ ignores the value, when one of its inputs is not acceptable:
 ```
 "lang parameter contains invalid characters; ignoring"
 "HTTP_ACCEPT_LANGUAGE contains invalid characters; ignoring"
+"LC_ALL contains invalid characters; ignoring"
+"LC_MESSAGES contains invalid characters; ignoring"
 "LANG contains invalid characters; ignoring"
 ```
 
@@ -1216,7 +1225,8 @@ These are warnings. `translation_file()` does not die.
 
     If `HTTP_ACCEPT_LANGUAGE` is longer than 256 characters, or contains a
     character that is not allowed (see ["ENCODING"](#encoding)), the whole header is ignored
-    with a warning. CGI::Lingua then uses `LANG` or the IP address instead.
+    with a warning. CGI::Lingua then uses the locale (`LC_ALL`, `LC_MESSAGES`,
+    `LANG`) or the IP address instead.
 
 - **The supported list holds tags, not names**
 
@@ -1259,7 +1269,8 @@ HTTP_ACCEPT_LANGUAGE    A-Z a-z 0-9 - , ; = . *     no: header is ignored
                         space and tab (never CR or
                         LF); max 256 chars
 lang (CGI::Info)        as HTTP_ACCEPT_LANGUAGE     no: parameter is ignored
-LANG                    A-Z a-z 0-9 _ . -           no: LANG is ignored
+LC_ALL, LC_MESSAGES,    A-Z a-z 0-9 _ . - @         no: the variable is
+LANG                                                ignored
 HTTP_USER_AGENT         printable ASCII             no: user agent ignored
                         (0x20-0x7E), max 512 chars
 REMOTE_ADDR             IPv4 or IPv6 address        no: address is rejected
@@ -1492,7 +1503,7 @@ RTL_LANGS == { ar, dv, fa, he, ku, ps, sd, ug, ur, yi }
 │ (slanguage = ⊥) ⇔ (rlanguage = ⊥)
 └───────────────────────────────────────────────────────────────
 
-request   : ENV ⇸ seq (LANGTAG × ℝ)   -- lang param, Accept-Language or LANG
+request   : ENV ⇸ seq (LANGTAG × ℝ)   -- lang param, Accept-Language or locale
 negotiate : seq (LANGTAG × ℝ) × seq LANGTAG ⇸ LANGTAG
 geo       : IPADDR ⇸ CC2              -- first answer of the geo sources
 official  : CC2 ⇸ LANGTAG             -- official language of a country

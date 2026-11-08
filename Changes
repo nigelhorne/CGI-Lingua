@@ -16,9 +16,16 @@ Revision history for CGI-Lingua
 	- A locale such as LANG=en_US.UTF-8 now chooses English (United States);
 	  it was passed on as written and matched no language.  C and POSIX
 	  name no language, and a modifier (de_DE@euro, sr_RS@latin) is allowed
+	- CGI::Lingua no longer uses autodie, whose qw(:all) needed the
+	  undeclared IPC::System::Simple.  Object::Configure 0.25 is now the
+	  minimum, because 0.24 had the same problem
+	- perl Makefile.PL --no-online-tests is honoured when a local geo
+	  database is installed, and a GeoIP2 or GeoLite2 .mmdb file now counts
+	  as one
 	[ Tests ]
 	- t/mmdb.t builds small .mmdb files and tests both readers
 	- t/30-basics.t no longer fails when the on-line tests are disabled
+	- t/minimal-deps.t loads the module with only its prerequisites
 
 0.87	Fri Oct  9 04:54:52 PM EDT 2026
 	[ Incompatible changes ]

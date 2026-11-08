@@ -52,6 +52,7 @@ t/logger.t
 t/manifest.t
 t/metrics.t
 t/modules-used.t
+t/minimal-deps.t
 t/mmdb.t
 t/mutant_killers.t
 t/no404s.t

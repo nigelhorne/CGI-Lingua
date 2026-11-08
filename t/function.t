@@ -979,6 +979,25 @@ subtest 'locale: valid GEOIP_COUNTRY_CODE used after validation' => sub {
 	Test::Mockingbird::restore_all();
 };
 
+subtest '_find_locale: searches every time; locale() remembers only a find' => sub {
+	local %ENV = (GEOIP_COUNTRY_CODE => 'GB');
+	my $fake_country = bless {}, 'Locale::Object::Country';
+	my @answers = (undef, $fake_country);
+	my $calls = 0;
+	Test::Mockingbird::mock('CGI::Lingua', '_code2country', sub { $calls++; shift @answers });
+	Test::Mockingbird::mock('CGI::Lingua', 'country', sub { undef });
+	my $l = _basic_obj();
+	is($l->locale(), undef, 'nothing found: undef');
+	ok(!exists($l->{_locale}) || !defined($l->{_locale}), 'and nothing remembered');
+	is($l->locale(), $fake_country, 'a later call searches again and finds it');
+	is($l->{_locale}, $fake_country, 'which is remembered');
+	is($l->locale(), $fake_country, 'and returned without searching');
+	is($calls, 2, '_code2country was asked twice, not three times');
+	is($l->_find_locale(), undef, '_find_locale itself never reads the remembered answer');
+	Test::Mockingbird::restore_all();
+	_block_network();
+};
+
 # -- time_zone() ---------------------------------------------------------------
 
 subtest 'time_zone: quick return when _timezone cached' => sub {
