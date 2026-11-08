@@ -94,6 +94,8 @@ my %LEDGER = map { $_ => 1 } (
 	q{new: warn "Ignoring '...' in the supported list: not a language code"},
 	'language: warn "lang parameter contains invalid characters; ignoring"',
 	'language: warn "HTTP_ACCEPT_LANGUAGE contains invalid characters; ignoring"',
+	'language: warn "LC_ALL contains invalid characters; ignoring"',
+	'language: warn "LC_MESSAGES contains invalid characters; ignoring"',
 	'language: warn "LANG contains invalid characters; ignoring"',
 	'language: warn "Resetting country code to GB for ..."',
 	q{country: warn "Can't open ... with Geo::IP; not using it"},
@@ -1515,6 +1517,8 @@ subtest 'ledger input warnings: supported list, lang parameter, header, LANG' =>
 	my %case = (
 		'lang parameter'       => [ { HTTP_ACCEPT_LANGUAGE => 'en' }, info => Unit::HostileInfo->new() ],
 		'HTTP_ACCEPT_LANGUAGE' => [ { HTTP_ACCEPT_LANGUAGE => "en\r\nstats" } ],
+		'LC_ALL'               => [ { LC_ALL => 'fr;rm -rf /', LANG => 'fr_FR.UTF-8' } ],
+		'LC_MESSAGES'          => [ { LC_MESSAGES => "fr\nX", LANG => 'fr_FR.UTF-8' } ],
 		'LANG'                 => [ { LANG => 'en;rm -rf /' } ],
 	);
 	for my $what (sort keys %case) {

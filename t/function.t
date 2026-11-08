@@ -333,7 +333,63 @@ subtest '_what_language: falls back to LANG env var' => sub {
 	local %ENV = (LANG => 'de_DE.UTF-8');
 	delete $ENV{HTTP_ACCEPT_LANGUAGE};
 	my $l = _basic_obj();
-	is($l->_what_language(), 'de_DE.UTF-8', 'Falls back to LANG when no HTTP header');
+	is($l->_what_language(), 'de-DE', 'Falls back to LANG when no HTTP header, as a language tag');
+};
+
+subtest '_what_language: a locale becomes the language tag it stands for' => sub {
+	my %tag = (
+		'en_US.UTF-8'    => 'en-US',
+		'en_US'          => 'en-US',
+		'de_DE@euro'     => 'de-DE',
+		'sr_RS.UTF-8@latin' => 'sr-RS',
+		'fr'             => 'fr',
+		'fr.UTF-8'       => 'fr',
+		'es_419'         => 'es-419',
+		'en-GB'          => 'en-GB',
+	);
+	for my $locale (sort keys %tag) {
+		local %ENV = (LANG => $locale);
+		is(_basic_obj()->_what_language(), $tag{$locale}, "LANG=$locale is $tag{$locale}");
+		is(CGI::Lingua->_what_language(), $tag{$locale}, "and so as a class method");
+	}
+	for my $locale ('C', 'POSIX', 'C.UTF-8', 'english') {
+		local %ENV = (LANG => $locale);
+		is(_basic_obj()->_what_language(), undef, "LANG=$locale names no language");
+	}
+};
+
+subtest '_what_language: LC_ALL, then LC_MESSAGES, then LANG' => sub {
+	{
+		local %ENV = (LC_ALL => 'fr_FR.UTF-8', LC_MESSAGES => 'de_DE.UTF-8', LANG => 'en_US.UTF-8');
+		is(_basic_obj()->_what_language(), 'fr-FR', 'LC_ALL first');
+	}
+	{
+		local %ENV = (LC_MESSAGES => 'de_DE.UTF-8', LANG => 'en_US.UTF-8');
+		is(_basic_obj()->_what_language(), 'de-DE', 'then LC_MESSAGES');
+	}
+	{
+		local %ENV = (LC_ALL => '', LC_MESSAGES => '', LANG => 'en_US.UTF-8');
+		is(_basic_obj()->_what_language(), 'en-US', 'an empty one counts as unset');
+	}
+	{
+		local %ENV = (LC_ALL => 'C', LANG => 'en_US.UTF-8');
+		is(_basic_obj()->_what_language(), undef, 'LC_ALL=C decides: no language, LANG is not read');
+	}
+	{
+		local %ENV = (HTTP_ACCEPT_LANGUAGE => 'fr', LC_ALL => 'de_DE.UTF-8');
+		is(_basic_obj()->_what_language(), 'fr', 'the header still comes before the locale');
+	}
+};
+
+subtest 'language: the locale chooses a supported variant' => sub {
+	local %ENV = (LANG => 'en_US.UTF-8');
+	my $l = CGI::Lingua->new(supported => ['en', 'en-us'], dont_use_ip => 1);
+	is($l->language_code_alpha2(), 'en', 'en_US.UTF-8 is English');
+	is($l->sublanguage_code_alpha2(), 'us', 'from the United States');
+
+	local %ENV = (LANG => 'de_DE.UTF-8');
+	$l = CGI::Lingua->new(supported => ['en', 'de'], dont_use_ip => 1);
+	is($l->language(), 'German', 'de_DE.UTF-8 is German');
 };
 
 subtest '_what_language: class method reads env directly' => sub {
@@ -1738,6 +1794,17 @@ subtest '_find_language_from_ip: country from LANG when there is no IP' => sub {
 	$l->_find_language_from_ip(undef);
 	is_deeply(\@asked, ['FR'], 'country taken from the LANG territory');
 	is($l->{_slanguage}, 'French', 'language found');
+	_reset_mocks();
+};
+
+subtest '_find_language_from_ip: a header region is not taken as the country' => sub {
+	local %ENV = (HTTP_ACCEPT_LANGUAGE => 'fr-CA');
+	my ($l) = _spied_obj();
+	my @asked;
+	Test::Mockingbird::mock('CGI::Lingua', 'country', sub { undef });
+	Test::Mockingbird::mock('CGI::Lingua', '_code2country', sub { push @asked, $_[1]; _country_speaking('English', 'en') });
+	$l->_find_language_from_ip(undef);
+	is_deeply(\@asked, [], 'fr-CA in Accept-Language says nothing about where the reader is');
 	_reset_mocks();
 };
 

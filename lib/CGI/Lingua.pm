@@ -91,6 +91,20 @@ Readonly my $COUNTRY_RE   => qr/^(?:[a-z]{2}|Unknown)\z/a;
 # $ACCEPT_LANG_MAX bytes.  Captures the untainted value.
 Readonly my $ACCEPT_LANG_RE => qr/^([A-Za-z0-9\-,;=.* \t]{1,$ACCEPT_LANG_MAX})\z/a;
 
+# A locale from LC_ALL, LC_MESSAGES or LANG, as POSIX names them:
+# language[_territory][.codeset][@modifier], e.g. "en_US.UTF-8",
+# "sr_RS@latin", "C".  The characters only; captures the untainted value.
+Readonly my $LOCALE_RE => qr/^([A-Za-z0-9_.\-@]{1,$ACCEPT_LANG_MAX})\z/a;
+
+# The language tag a locale stands for: its language, and its territory if it
+# has one ("en_US.UTF-8" is en-US).  A hyphen is taken too, for "LANG=en-US".
+# "C", "POSIX" and other names that are not a language do not match.
+Readonly my $LOCALE_TAG_RE => qr/^([A-Za-z]{2,3})(?:[_-]([A-Za-z]{2}|[0-9]{3}))?(?:\.[A-Za-z0-9_\-]+)?(?:\@[A-Za-z0-9_\-]+)?\z/a;
+
+# The locale variables, in the order POSIX consults them for the language of
+# messages: the first that is set and not empty decides.
+Readonly my @LOCALE_VARS => qw(LC_ALL LC_MESSAGES LANG);
+
 # A supported-list entry: a language tag such as "en", "en-gb", "es-419" or
 # "zh-Hant" (an underscore is accepted for "en_gb").  "english" is not one.
 Readonly my $SUPPORTED_RE => qr/^[A-Za-z]{2,3}(?:[-_][A-Za-z0-9]{2,8})*\z/a;
@@ -327,9 +341,16 @@ A language with C<q=0> means "not acceptable" (RFC 7231) and is never chosen.
 Some browsers still send the old tag C<en-uk>; it is treated as C<en-gb>
 (the code for the United Kingdom is C<gb>), with a warning.
 
-=item 3. The C<LANG> environment variable.
+=item 3. The locale: C<LC_ALL>, then C<LC_MESSAGES>, then C<LANG>.
 This is used when you run the program on the command line,
 for example C<LANG=fr_FR.UTF-8>.
+As in POSIX, the first of these that is set and not empty decides, so
+C<LC_ALL=C> means no language even when C<LANG> names one.
+The locale is read as the language tag it stands for:
+C<en_US.UTF-8> is C<en-US> (English, United States) and C<de_DE@euro> is
+C<de-DE>; C<C> and C<POSIX> name no language.
+Before 0.88 the locale was passed on as it was written, and C<en_US.UTF-8>
+matched no language.
 
 =item 4. The visitor's country (see below).
 CGI::Lingua uses the official language of that country.
@@ -912,6 +933,8 @@ ignores the value, when one of its inputs is not acceptable:
 
     "lang parameter contains invalid characters; ignoring"
     "HTTP_ACCEPT_LANGUAGE contains invalid characters; ignoring"
+    "LC_ALL contains invalid characters; ignoring"
+    "LC_MESSAGES contains invalid characters; ignoring"
     "LANG contains invalid characters; ignoring"
 
 It also warns when it changes the deprecated tag C<en-uk> into C<en-gb>:
@@ -1564,10 +1587,15 @@ sub _find_language_from_ip
 
 	my $country = $self->country();
 
-	# If country() returned nothing, try to derive from the LANG env var
+	# If country() returned nothing, try to derive from the locale's territory
+	# (_what_language gives LANG=fr_FR.UTF-8 as "fr-FR").  Only a locale's
+	# hyphen counts: a header's "fr-CA" is the reader's language, not where
+	# they are, and was never read as a country.
 	if(!defined($country) && (my $c = $self->_what_language())) {
 		if($c =~ /^(..)_(..)/) {
 			$country = $2;
+		} elsif($self->{_what_language_from_locale} && ($c =~ /^[A-Za-z]{2,3}-([A-Za-z]{2})\z/)) {
+			$country = $1;
 		} elsif($c =~ /^(..)$/) {
 			$country = $1;
 		}
@@ -1721,23 +1749,50 @@ sub _what_language {
 		}
 	}
 
-	if(defined($ENV{'LANG'})) {
-		# Running locally (debug mode) — derive from system locale.
-		# Apply the same untainting discipline as HTTP_ACCEPT_LANGUAGE: only
-		# alphanumeric, hyphen, underscore, and dot are legitimate in a POSIX
-		# locale name (e.g. "en_US.UTF-8", "de_DE", "ja").  Anything else is
-		# either malformed or an injection attempt; discard it silently.
-		if($ENV{'LANG'} =~ /^([A-Za-z0-9_.\-]{1,$ACCEPT_LANG_MAX})$/a) {
-			my $rc = $1;    # untainted
-			if(ref($self)) {
-				return $self->{_what_language} = $rc;
-			}
-			return $rc;
-		} elsif(ref($self)) {
-			$self->_warn({ warning => 'LANG contains invalid characters; ignoring' });
+	# Running locally (the command line) - derive from the system locale.
+	# POSIX takes the language of messages from LC_ALL, then LC_MESSAGES,
+	# then LANG: the first that is set and not empty decides, even when it
+	# names no language (LC_ALL=C), so a later one is not consulted.
+	for my $var (@LOCALE_VARS) {
+		my $locale = $ENV{$var};
+		next unless defined($locale) && length($locale);
+
+		# The same untainting discipline as HTTP_ACCEPT_LANGUAGE: only the
+		# characters of a POSIX locale name (e.g. "en_US.UTF-8",
+		# "sr_RS@latin", "ja").  Anything else is malformed or an injection
+		# attempt, and is ignored with a warning.
+		unless($locale =~ $LOCALE_RE) {
+			$self->_warn({ warning => "$var contains invalid characters; ignoring" }) if(ref($self));
+			return;
 		}
+
+		# A locale is not a language tag, and what follows matches tags:
+		# "en_US.UTF-8" read as one names no language at all.  So pass on the
+		# tag the locale stands for, "en-US".  "C" and "POSIX" name none.
+		my $tag = _locale_tag($1);
+		return unless defined($tag);
+		if(ref($self)) {
+			$self->_trace("_what_language set language to $tag from $var");
+			$self->{_what_language_from_locale} = 1;
+			return $self->{_what_language} = $tag;
+		}
+		return $tag;
 	}
 	return;
+}
+
+# ── _locale_tag ───────────────────────────────────────────────────────────
+# Purpose:      The language tag a POSIX locale name stands for.
+# Entry:        $locale — an untainted locale name ("en_US.UTF-8", "de_DE@euro",
+#               "fr", "C").
+# Exit:         "en-US", "de-DE", "fr"; undef for a name that is not a
+#               language ("C", "POSIX", "C.UTF-8").
+sub _locale_tag
+{
+	my $locale = $_[0];
+
+	return undef unless(defined($locale) && ($locale =~ $LOCALE_TAG_RE));
+	return defined($2) ? "$1-$2" : $1;
 }
 
 =head2 country
@@ -3444,7 +3499,8 @@ C<REMOTE_ADDR> still has the value you want:
 
 If C<HTTP_ACCEPT_LANGUAGE> is longer than 256 characters, or contains a
 character that is not allowed (see L</ENCODING>), the whole header is ignored
-with a warning. CGI::Lingua then uses C<LANG> or the IP address instead.
+with a warning. CGI::Lingua then uses the locale (C<LC_ALL>, C<LC_MESSAGES>,
+C<LANG>) or the IP address instead.
 
 =item * B<The supported list holds tags, not names>
 
@@ -3488,7 +3544,8 @@ CGI::Lingua works with ASCII text. This table shows what each input accepts.
                             space and tab (never CR or
                             LF); max 256 chars
     lang (CGI::Info)        as HTTP_ACCEPT_LANGUAGE     no: parameter is ignored
-    LANG                    A-Z a-z 0-9 _ . -           no: LANG is ignored
+    LC_ALL, LC_MESSAGES,    A-Z a-z 0-9 _ . - @         no: the variable is
+    LANG                                                ignored
     HTTP_USER_AGENT         printable ASCII             no: user agent ignored
                             (0x20-0x7E), max 512 chars
     REMOTE_ADDR             IPv4 or IPv6 address        no: address is rejected
@@ -3734,7 +3791,7 @@ You do not need it to use the module.
     │ (slanguage = ⊥) ⇔ (rlanguage = ⊥)
     └───────────────────────────────────────────────────────────────
 
-    request   : ENV ⇸ seq (LANGTAG × ℝ)   -- lang param, Accept-Language or LANG
+    request   : ENV ⇸ seq (LANGTAG × ℝ)   -- lang param, Accept-Language or locale
     negotiate : seq (LANGTAG × ℝ) × seq LANGTAG ⇸ LANGTAG
     geo       : IPADDR ⇸ CC2              -- first answer of the geo sources
     official  : CC2 ⇸ LANGTAG             -- official language of a country

@@ -1,6 +1,10 @@
 Revision history for CGI-Lingua
 
 0.88
+	[ Incompatible changes ]
+	- The locale is read as POSIX does: LC_ALL, then LC_MESSAGES, then LANG,
+	  the first that is set deciding.  LC_ALL=C now means no language even
+	  when LANG names one
 	[ Enhancement ]
 	- country() and time_zone() use a MaxMind GeoIP2 or GeoLite2 database
 	  (.mmdb) before any other local source, read with IP::Geolocation::MMDB
@@ -8,6 +12,10 @@ Revision history for CGI-Lingua
 	  which by default covers /var/lib/GeoIP (where geoipupdate writes),
 	  /usr/share/GeoIP and /usr/local/share/GeoIP; a City database also
 	  gives the time zone
+	[ Bug Fixes ]
+	- A locale such as LANG=en_US.UTF-8 now chooses English (United States);
+	  it was passed on as written and matched no language.  C and POSIX
+	  name no language, and a modifier (de_DE@euro, sr_RS@latin) is allowed
 	[ Tests ]
 	- t/mmdb.t builds small .mmdb files and tests both readers
 	- t/30-basics.t no longer fails when the on-line tests are disabled
